@@ -1,0 +1,11 @@
+{
+  "name": "sports-crawler",
+  "version": "1.0.0",
+  "description": "자동 스포츠 순위 크롤러",
+  "scripts": {
+    "crawl": "node crawl-sports.js"
+  },
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  }
+}
