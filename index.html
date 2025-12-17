@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MY SPORT</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+        const { Trophy, Users, Globe, User } = lucide;
+
+        // 스포츠 카드 데이터 타입 정의
+        const SPORT_TYPES = {
+          BASEBALL: 'baseball',
+          VOLLEYBALL: 'volleyball',
+          OLYMPICS: 'olympics',
+          ASIAD: 'asiad',
+          WORLDCUP: 'worldcup',
+          BADMINTON: 'badminton'
+        };
+
+        // 메가 이벤트 일정 데이터
+        const majorEventSchedule = {
+          olympics_winter_2026: {
+            name: '동계올림픽',
+            startDate: new Date('2026-02-06'),
+            endDate: new Date('2026-02-22'),
+            displayName: '2026 밀라노-코르티나 동계올림픽'
+          },
+          olympics_summer_2028: {
+            name: '하계올림픽',
+            startDate: new Date('2028-07-21'),
+            endDate: new Date('2028-08-06'),
+            displayName: '2028 LA 올림픽'
+          },
+          asiad: {
+            name: '아시안게임',
+            startDate: new Date('2026-09-19'),
+            endDate: new Date('2026-10-04'),
+            displayName: '2026 나고야 아시안게임'
+          },
+          worldcup: {
+            name: '월드컵',
+            startDate: new Date('2026-06-11'),
+            endDate: new Date('2026-07-19'),
+            displayName: '2026 FIFA 월드컵'
+          }
+        };
+
+        const getCurrentMajorEvent = () => {
+          const today = new Date();
+          const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+          
+          const olympicsEvents = [];
+          const otherEvents = [];
+          
+          for (const [eventKey, schedule] of Object.entries(majorEventSchedule)) {
+            if (eventKey.startsWith('olympics_')) {
+              olympicsEvents.push({ key: eventKey, schedule });
+            } else {
+              otherEvents.push({ key: eventKey, schedule });
+            }
+          }
+          
+          let nearestOlympics = null;
+          let minOlympicsDiff = Infinity;
+          
+          for (const { key, schedule } of olympicsEvents) {
+            const startDate = new Date(schedule.startDate);
+            const endDate = new Date(schedule.endDate);
+            const oneWeekBefore = new Date(startDate.getTime() - ONE_WEEK);
+            
+            if (today >= oneWeekBefore && today <= endDate) {
+              return 'olympics';
+            }
+            
+            const diff = startDate - today;
+            if (diff > 0 && diff < minOlympicsDiff) {
+              minOlympicsDiff = diff;
+              nearestOlympics = key;
+            }
+          }
+          
+          for (const { key, schedule } of otherEvents) {
+            const startDate = new Date(schedule.startDate);
+            const endDate = new Date(schedule.endDate);
+            const oneWeekBefore = new Date(startDate.getTime() - ONE_WEEK);
+            
+            if (today >= oneWeekBefore && today <= endDate) {
+              return key;
+            }
+          }
+          
+          return null;
+        };
+
+        const sportsData = {
+          baseball: {
+            id: 'baseball',
+            type: SPORT_TYPES.BASEBALL,
+            title: '한화 이글스',
+            subtitle: '2025 KBO 시즌 최종 순위',
+            route: '/baseball/hanwha',
+            icon: Trophy,
+            bgColor: 'bg-gray-800',
+            bgImage: 'https://wizzap.ktwiz.co.kr/files/emblem/20230323_181556238_34612.png',
+            priority: 2,
+            ranking: { rank: 2, wins: 83, losses: 57, draws: 4, winRate: 0.593, gameDiff: 1.5 }
+          },
+          volleyball: {
+            id: 'volleyball',
+            type: SPORT_TYPES.VOLLEYBALL,
+            title: '현대캐피탈 스카이워커스',
+            subtitle: 'V-리그 시즌 중',
+            route: '/volleyball/hyundai-capital',
+            icon: Users,
+            bgColor: 'bg-gray-800',
+            bgImage: 'https://www.kovo.co.kr/upload/team/sitelogo/20240830_150527_men_hdec.png',
+            priority: 3,
+            ranking: { rank: 2, wins: 8, losses: 6, points: 1, setRatio: 1.033 },
+            nextMatch: { opponent: 'vs 대한항공', date: '12월 16일', time: '19:00', location: '천안유관순체육관' }
+          },
+          olympics: {
+            id: 'olympics',
+            type: SPORT_TYPES.OLYMPICS,
+            title: '올림픽',
+            subtitle: '하계/동계 통합',
+            route: '/event/olympics',
+            icon: Globe,
+            bgColor: 'bg-gray-800',
+            bgImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Olympic_rings_without_rims.svg/200px-Olympic_rings_without_rims.svg.png',
+            priority: 1
+          },
+          asiad: {
+            id: 'asiad',
+            type: SPORT_TYPES.ASIAD,
+            title: '2026 나고야 아시안게임',
+            subtitle: '개막 D-7 이내',
+            route: '/event/asiad',
+            icon: Globe,
+            bgColor: 'bg-gray-800',
+            bgImage: 'https://upload.wikimedia.org/wikipedia/en/thumb/c/ce/Olympic_Council_of_Asia_logo.svg/150px-Olympic_Council_of_Asia_logo.svg.png',
+            priority: 1
+          },
+          worldcup: {
+            id: 'worldcup',
+            type: SPORT_TYPES.WORLDCUP,
+            title: '2026 FIFA 월드컵',
+            subtitle: '개막 D-7 이내',
+            route: '/event/worldcup',
+            icon: Globe,
+            bgColor: 'bg-gray-800',
+            bgImage: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/67/2026_FIFA_World_Cup_logo.svg/150px-2026_FIFA_World_Cup_logo.svg.png',
+            priority: 1
+          },
+          anseyoung: {
+            id: 'anseyoung',
+            type: SPORT_TYPES.BADMINTON,
+            title: '안세영',
+            subtitle: 'BWF 월드투어 파이널스',
+            route: '/player/anseyoung',
+            icon: User,
+            bgColor: 'bg-gray-800',
+            bgImage: 'https://bwf.tournamentsoftware.com/res/img/Flags/KOR.png',
+            priority: 4,
+            fixed: true,
+            tournament: {
+              name: 'BWF 월드투어 파이널스',
+              location: '중국 항저우',
+              startDate: new Date('2025-12-17'),
+              endDate: new Date('2025-12-21'),
+              status: 'upcoming',
+              groupStage: {
+                group: 'A조',
+                matches: [
+                  { opponent: '푸트리 쿠수마 (인도네시아)', date: '12/17', result: null },
+                  { opponent: '미야자키 도모카 (일본)', date: '12/18', result: null },
+                  { opponent: '야마구치 아카네 (일본)', date: '12/19', result: null }
+                ],
+                standing: { rank: '-', wins: 0, losses: 0 }
+              },
+              knockout: {
+                semifinal: { opponent: null, result: null },
+                final: { opponent: null, result: null }
+              }
+            }
+          }
+        };
+
+        const getNextMajorEvent = () => {
+          const today = new Date();
+          let nearestEvent = null;
+          let nearestEventKey = null;
+          let minDiff = Infinity;
+          
+          const olympicsEvents = Object.entries(majorEventSchedule).filter(([key]) => key.startsWith('olympics_'));
+          
+          let nearestOlympics = null;
+          let minOlympicsDiff = Infinity;
+          
+          for (const [eventKey, schedule] of olympicsEvents) {
+            const startDate = new Date(schedule.startDate);
+            const diff = startDate - today;
+            
+            if (diff > 0 && diff < minOlympicsDiff) {
+              minOlympicsDiff = diff;
+              nearestOlympics = schedule;
+            }
+          }
+          
+          if (nearestOlympics && minOlympicsDiff < minDiff) {
+            minDiff = minOlympicsDiff;
+            nearestEvent = nearestOlympics;
+            nearestEventKey = 'olympics';
+          }
+          
+          for (const [eventKey, schedule] of Object.entries(majorEventSchedule)) {
+            if (eventKey.startsWith('olympics_')) continue;
+            
+            const startDate = new Date(schedule.startDate);
+            const diff = startDate - today;
+            
+            if (diff > 0 && diff < minDiff) {
+              minDiff = diff;
+              nearestEvent = schedule;
+              nearestEventKey = eventKey;
+            }
+          }
+          
+          if (nearestEvent && sportsData[nearestEventKey]) {
+            const daysUntil = Math.ceil(minDiff / (24 * 60 * 60 * 1000));
+            const eventData = { ...sportsData[nearestEventKey] };
+            eventData.title = nearestEvent.displayName || eventData.title;
+            eventData.subtitle = `개막 D-${daysUntil}`;
+            return eventData;
+          }
+          
+          return null;
+        };
+
+        const SportCard = ({ data, onClick }) => {
+          if (!data) {
+            return (
+              <div className="bg-gray-800 border border-gray-700 flex items-center justify-center">
+                <p className="text-gray-500 text-lg">시즌 대기 중</p>
+              </div>
+            );
+          }
+
+          const Icon = data.icon;
+          
+          const getTournamentStatus = (tournament) => {
+            if (!tournament) return null;
+            const today = new Date();
+            const start = new Date(tournament.startDate);
+            const end = new Date(tournament.endDate);
+            
+            if (today < start) {
+              const daysUntil = Math.ceil((start - today) / (24 * 60 * 60 * 1000));
+              return { status: 'upcoming', text: `D-${daysUntil}` };
+            } else if (today >= start && today <= end) {
+              return { status: 'ongoing', text: '경기 중' };
+            } else {
+              return { status: 'completed', text: '대회 종료' };
+            }
+          };
+          
+          const tournamentStatus = data.tournament ? getTournamentStatus(data.tournament) : null;
+          
+          return React.createElement('div', {
+            onClick: onClick,
+            className: `${data.bgColor} border border-gray-700 cursor-pointer transform transition-all duration-300 hover:brightness-110 flex items-center justify-center p-6 relative overflow-y-auto custom-scrollbar`,
+            style: {
+              backgroundImage: data.bgImage ? `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${data.bgImage})` : 'none',
+              backgroundSize: 'contain',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }
+          },
+            React.createElement('div', { className: 'flex flex-col items-center justify-start text-white text-center w-full' },
+              React.createElement(Icon, { size: 48, strokeWidth: 1.5, className: 'mb-4 flex-shrink-0' }),
+              React.createElement('h2', { className: 'text-2xl font-bold mb-2 flex-shrink-0' }, data.title),
+              React.createElement('p', { className: 'text-white text-opacity-90 text-sm mb-3 flex-shrink-0' }, data.subtitle),
+              
+              // 배드민턴 대회 정보
+              data.tournament && tournamentStatus?.status !== 'ongoing' && React.createElement('div', {
+                className: 'mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg w-full max-w-xs flex-shrink-0'
+              },
+                React.createElement('div', { className: 'space-y-1.5 text-xs' },
+                  React.createElement('div', { className: 'flex items-center justify-between' },
+                    React.createElement('span', { className: 'text-white text-opacity-70' }, '대회'),
+                    React.createElement('span', { className: 'font-semibold text-right' }, data.tournament.name)
+                  ),
+                  React.createElement('div', { className: 'flex items-center justify-between' },
+                    React.createElement('span', { className: 'text-white text-opacity-70' }, '장소'),
+                    React.createElement('span', { className: 'font-semibold' }, data.tournament.location)
+                  ),
+                  React.createElement('div', { className: 'flex items-center justify-between' },
+                    React.createElement('span', { className: 'text-white text-opacity-70' }, '기간'),
+                    React.createElement('span', { className: 'font-semibold text-xs' },
+                      new Date(data.tournament.startDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) +
+                      ' ~ ' +
+                      new Date(data.tournament.endDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
+                    )
+                  ),
+                  tournamentStatus && React.createElement('div', {
+                    className: 'pt-2 mt-2 border-t border-white border-opacity-20 text-center'
+                  },
+                    React.createElement('span', {
+                      className: `inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                        tournamentStatus.status === 'ongoing' ? 'bg-green-500 text-white animate-pulse' :
+                        tournamentStatus.status === 'upcoming' ? 'bg-blue-500 text-white' :
+                        'bg-gray-500 text-white'
+                      }`
+                    }, tournamentStatus.text)
+                  )
+                )
+              ),
+              
+              // 야구 순위
+              data.ranking && data.type === SPORT_TYPES.BASEBALL && React.createElement('div', {
+                className: 'mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0'
+              },
+                React.createElement('div', { className: 'flex items-center gap-3' },
+                  React.createElement('div', { className: 'text-center' },
+                    React.createElement('p', { className: 'text-4xl font-bold' }, data.ranking.rank),
+                    React.createElement('p', { className: 'text-xs text-white text-opacity-70 mt-1' }, '순위')
+                  ),
+                  React.createElement('div', { className: 'h-10 w-px bg-white bg-opacity-30' }),
+                  React.createElement('div', { className: 'text-left space-y-0.5' },
+                    React.createElement('p', { className: 'text-xs' },
+                      React.createElement('span', { className: 'font-semibold' }, data.ranking.wins), '승 · ',
+                      React.createElement('span', { className: 'font-semibold' }, data.ranking.losses), '패 · ',
+                      React.createElement('span', { className: 'font-semibold' }, data.ranking.draws), '무'
+                    ),
+                    React.createElement('p', { className: 'text-xs' },
+                      '승률 ', React.createElement('span', { className: 'font-semibold' }, data.ranking.winRate.toFixed(3)),
+                      ' · ', React.createElement('span', { className: 'text-xs' }, '게임차 ', data.ranking.gameDiff)
+                    )
+                  )
+                )
+              ),
+              
+              // 배구 순위
+              data.ranking && data.type === SPORT_TYPES.VOLLEYBALL && React.createElement('div', {
+                className: 'mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0'
+              },
+                React.createElement('div', { className: 'flex items-center gap-3 mb-2' },
+                  React.createElement('div', { className: 'text-center' },
+                    React.createElement('p', { className: 'text-4xl font-bold' }, data.ranking.rank),
+                    React.createElement('p', { className: 'text-xs text-white text-opacity-70 mt-1' }, '순위')
+                  ),
+                  React.createElement('div', { className: 'h-10 w-px bg-white bg-opacity-30' }),
+                  React.createElement('div', { className: 'text-left space-y-0.5' },
+                    React.createElement('p', { className: 'text-xs' },
+                      React.createElement('span', { className: 'font-semibold' }, data.ranking.wins), '승 · ',
+                      React.createElement('span', { className: 'font-semibold' }, data.ranking.losses), '패'
+                    ),
+                    React.createElement('p', { className: 'text-xs' },
+                      '승점 ', React.createElement('span', { className: 'font-semibold' }, data.ranking.points), '점 · ',
+                      React.createElement('span', { className: 'text-xs' }, '세트득실 ', data.ranking.setRatio.toFixed(3))
+                    )
+                  )
+                ),
+                data.nextMatch && React.createElement('div', {
+                  className: 'pt-2 mt-2 border-t border-white border-opacity-20'
+                },
+                  React.createElement('p', { className: 'text-xs text-white text-opacity-70 mb-1.5' }, '다음 경기'),
+                  React.createElement('div', { className: 'bg-white bg-opacity-10 rounded px-2.5 py-2' },
+                    React.createElement('p', { className: 'font-bold text-xs mb-1' }, data.nextMatch.opponent),
+                    React.createElement('div', { className: 'flex items-center gap-2 text-xs text-white text-opacity-80' },
+                      React.createElement('span', null, data.nextMatch.date),
+                      React.createElement('span', null, '•'),
+                      React.createElement('span', null, data.nextMatch.time)
+                    ),
+                    React.createElement('p', { className: 'text-xs text-white text-opacity-60 mt-0.5' }, data.nextMatch.location)
+                  )
+                )
+              )
+            )
+          );
+        };
+
+        const SportsDashboard = () => {
+          const [currentPage, setCurrentPage] = useState('home');
+          const [currentRoute, setCurrentRoute] = useState('');
+          const [liveRankings, setLiveRankings] = useState(null);
+          const [isLoading, setIsLoading] = useState(true);
+          
+          useEffect(() => {
+            const fetchLiveRankings = async () => {
+              try {
+                const response = await fetch('./data/sports-rankings.json');
+                const data = await response.json();
+                setLiveRankings(data);
+                console.log('✅ 실시간 순위 로딩 완료:', data);
+              } catch (error) {
+                console.error('❌ 순위 데이터 로딩 실패:', error);
+              } finally {
+                setIsLoading(false);
+              }
+            };
+            
+            fetchLiveRankings();
+          }, []);
+          
+          const updatedSportsData = useMemo(() => {
+            const data = { ...sportsData };
+            
+            if (liveRankings?.baseball) {
+              data.baseball = { ...data.baseball, ranking: liveRankings.baseball };
+            }
+            
+            if (liveRankings?.volleyball) {
+              data.volleyball = { ...data.volleyball, ranking: liveRankings.volleyball };
+            }
+            
+            return data;
+          }, [liveRankings]);
+
+          const majorEvent = useMemo(() => getCurrentMajorEvent(), []);
+          
+          const layout = useMemo(() => {
+            const fixedCard = updatedSportsData.anseyoung;
+            
+            if (majorEvent && updatedSportsData[majorEvent]) {
+              return [updatedSportsData[majorEvent], updatedSportsData.baseball, updatedSportsData.volleyball, fixedCard];
+            } else {
+              const nextEvent = getNextMajorEvent();
+              return [updatedSportsData.baseball, updatedSportsData.volleyball, nextEvent, fixedCard];
+            }
+          }, [majorEvent, updatedSportsData]);
+          
+          const handleCardClick = (route) => {
+            setCurrentRoute(route);
+            setCurrentPage('detail');
+          };
+          
+          const handleBackToHome = () => {
+            setCurrentPage('home');
+            setCurrentRoute('');
+          };
+          
+          if (isLoading) {
+            return React.createElement('div', { className: 'h-screen bg-gray-900 flex items-center justify-center' },
+              React.createElement('div', { className: 'text-center' },
+                React.createElement('div', {
+                  className: 'animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto mb-4'
+                }),
+                React.createElement('p', { className: 'text-white text-xl' }, '실시간 순위 불러오는 중...')
+              )
+            );
+          }
+          
+          if (currentPage === 'detail') {
+            return React.createElement('div', { className: 'min-h-screen bg-gray-100 p-8' },
+              React.createElement('div', { className: 'max-w-4xl mx-auto' },
+                React.createElement('button', {
+                  onClick: handleBackToHome,
+                  className: 'mb-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
+                }, '← 대시보드로 돌아가기'),
+                React.createElement('div', { className: 'bg-white rounded-2xl p-12 shadow-lg' },
+                  React.createElement('h1', { className: 'text-4xl font-bold mb-4' }, '상세 페이지'),
+                  React.createElement('p', { className: 'text-gray-600 text-xl mb-8' }, '라우트: ', currentRoute),
+                  React.createElement('div', { className: 'bg-gray-50 p-8 rounded-xl' },
+                    React.createElement('p', { className: 'text-gray-700 leading-relaxed' },
+                      '여기에 실제 데이터가 표시됩니다.'
+                    )
+                  )
+                )
+              )
+            );
+          }
+          
+          return React.createElement('div', { className: 'h-screen bg-gray-900 flex flex-col overflow-hidden' },
+            React.createElement('header', {
+              className: 'px-6 py-3 bg-gray-800 flex items-center justify-between'
+            },
+              React.createElement('div', null,
+                React.createElement('h1', { className: 'text-xl font-bold text-white' }, 'MY SPORT'),
+                React.createElement('p', { className: 'text-gray-400 text-xs' },
+                  liveRankings && React.createElement('span', { className: 'text-green-400' },
+                    '실시간 업데이트 (',
+                    new Date(liveRankings.lastUpdated).toLocaleString('ko-KR', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }),
+                    ')'
+                  )
+                )
+              ),
+              React.createElement('p', { className: 'text-gray-500 text-xs' }, '나만 보는 페이지')
+            ),
+            React.createElement('div', { className: 'flex-1 grid grid-cols-2 grid-rows-2 gap-0' },
+              layout.map((card, index) =>
+                React.createElement(SportCard, {
+                  key: card?.id || `empty-${index}`,
+                  data: card,
+                  onClick: () => card && handleCardClick(card.route)
+                })
+              )
+            )
+          );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(SportsDashboard));
+    </script>
+</body>
+</html>
