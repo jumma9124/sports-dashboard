@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MY SPORT</title>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -255,10 +255,10 @@
 
         const SportCard = ({ data, onClick }) => {
           if (!data) {
-            return (
-              <div className="bg-gray-800 border border-gray-700 flex items-center justify-center">
-                <p className="text-gray-500 text-lg">시즌 대기 중</p>
-              </div>
+            return React.createElement('div', { 
+              className: 'bg-gray-800 border border-gray-700 flex items-center justify-center' 
+            },
+              React.createElement('p', { className: 'text-gray-500 text-lg' }, '시즌 대기 중')
             );
           }
 
@@ -501,6 +501,7 @@
                       hour: '2-digit',
                       minute: '2-digit'
                     }) + ')'
+                    ')'
                   )
                 )
               ),
