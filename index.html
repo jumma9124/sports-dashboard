@@ -24,7 +24,6 @@
         const { useState, useMemo, useEffect } = React;
         const { Trophy, Users, Globe, User } = lucide;
 
-        // 스포츠 카드 데이터 타입 정의
         const SPORT_TYPES = {
           BASEBALL: 'baseball',
           VOLLEYBALL: 'volleyball',
@@ -34,7 +33,6 @@
           BADMINTON: 'badminton'
         };
 
-        // 메가 이벤트 일정 데이터
         const majorEventSchedule = {
           olympics_winter_2026: {
             name: '동계올림픽',
@@ -338,19 +336,24 @@
               },
                 React.createElement('div', { className: 'flex items-center gap-3' },
                   React.createElement('div', { className: 'text-center' },
-                    React.createElement('p', { className: 'text-4xl font-bold' }, data.ranking.rank),
+                    React.createElement('p', { className: 'text-4xl font-bold' }, String(data.ranking.rank)),
                     React.createElement('p', { className: 'text-xs text-white text-opacity-70 mt-1' }, '순위')
                   ),
                   React.createElement('div', { className: 'h-10 w-px bg-white bg-opacity-30' }),
                   React.createElement('div', { className: 'text-left space-y-0.5' },
                     React.createElement('p', { className: 'text-xs' },
-                      React.createElement('span', { className: 'font-semibold' }, data.ranking.wins), '승 · ',
-                      React.createElement('span', { className: 'font-semibold' }, data.ranking.losses), '패 · ',
-                      React.createElement('span', { className: 'font-semibold' }, data.ranking.draws), '무'
+                      React.createElement('span', { className: 'font-semibold' }, String(data.ranking.wins)),
+                      ' 승 · ',
+                      React.createElement('span', { className: 'font-semibold' }, String(data.ranking.losses)),
+                      ' 패 · ',
+                      React.createElement('span', { className: 'font-semibold' }, String(data.ranking.draws)),
+                      ' 무'
                     ),
                     React.createElement('p', { className: 'text-xs' },
-                      '승률 ', React.createElement('span', { className: 'font-semibold' }, data.ranking.winRate.toFixed(3)),
-                      ' · ', React.createElement('span', { className: 'text-xs' }, '게임차 ', data.ranking.gameDiff)
+                      '승률 ',
+                      React.createElement('span', { className: 'font-semibold' }, data.ranking.winRate.toFixed(3)),
+                      ' · ',
+                      React.createElement('span', { className: 'text-xs' }, '게임차 ' + String(data.ranking.gameDiff))
                     )
                   )
                 )
@@ -362,18 +365,22 @@
               },
                 React.createElement('div', { className: 'flex items-center gap-3 mb-2' },
                   React.createElement('div', { className: 'text-center' },
-                    React.createElement('p', { className: 'text-4xl font-bold' }, data.ranking.rank),
+                    React.createElement('p', { className: 'text-4xl font-bold' }, String(data.ranking.rank)),
                     React.createElement('p', { className: 'text-xs text-white text-opacity-70 mt-1' }, '순위')
                   ),
                   React.createElement('div', { className: 'h-10 w-px bg-white bg-opacity-30' }),
                   React.createElement('div', { className: 'text-left space-y-0.5' },
                     React.createElement('p', { className: 'text-xs' },
-                      React.createElement('span', { className: 'font-semibold' }, data.ranking.wins), '승 · ',
-                      React.createElement('span', { className: 'font-semibold' }, data.ranking.losses), '패'
+                      React.createElement('span', { className: 'font-semibold' }, String(data.ranking.wins)),
+                      ' 승 · ',
+                      React.createElement('span', { className: 'font-semibold' }, String(data.ranking.losses)),
+                      ' 패'
                     ),
                     React.createElement('p', { className: 'text-xs' },
-                      '승점 ', React.createElement('span', { className: 'font-semibold' }, data.ranking.points), '점 · ',
-                      React.createElement('span', { className: 'text-xs' }, '세트득실 ', data.ranking.setRatio.toFixed(3))
+                      '승점 ',
+                      React.createElement('span', { className: 'font-semibold' }, String(data.ranking.points)),
+                      ' 점 · ',
+                      React.createElement('span', { className: 'text-xs' }, '세트득실 ' + data.ranking.setRatio.toFixed(3))
                     )
                   )
                 ),
@@ -476,7 +483,7 @@
                 }, '← 대시보드로 돌아가기'),
                 React.createElement('div', { className: 'bg-white rounded-2xl p-12 shadow-lg' },
                   React.createElement('h1', { className: 'text-4xl font-bold mb-4' }, '상세 페이지'),
-                  React.createElement('p', { className: 'text-gray-600 text-xl mb-8' }, '라우트: ', currentRoute),
+                  React.createElement('p', { className: 'text-gray-600 text-xl mb-8' }, '라우트: ' + currentRoute),
                   React.createElement('div', { className: 'bg-gray-50 p-8 rounded-xl' },
                     React.createElement('p', { className: 'text-gray-700 leading-relaxed' },
                       '여기에 실제 데이터가 표시됩니다.'
