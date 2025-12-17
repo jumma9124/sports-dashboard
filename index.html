@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MY SPORT</title>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -296,7 +296,7 @@
               React.createElement('p', { className: 'text-white text-opacity-90 text-sm mb-3 flex-shrink-0' }, data.subtitle),
               
               // 배드민턴 대회 정보
-              data.tournament && tournamentStatus?.status !== 'ongoing' && React.createElement('div', {
+              (data.tournament && tournamentStatus?.status !== 'ongoing') ? React.createElement('div', {
                 className: 'mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg w-full max-w-xs flex-shrink-0'
               },
                 React.createElement('div', { className: 'space-y-1.5 text-xs' },
@@ -316,7 +316,7 @@
                       new Date(data.tournament.endDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
                     )
                   ),
-                  tournamentStatus && React.createElement('div', {
+                  tournamentStatus ? React.createElement('div', {
                     className: 'pt-2 mt-2 border-t border-white border-opacity-20 text-center'
                   },
                     React.createElement('span', {
@@ -326,12 +326,12 @@
                         'bg-gray-500 text-white'
                       }`
                     }, tournamentStatus.text)
-                  )
+                  ) : null
                 )
-              ),
+              ) : null,
               
               // 야구 순위
-              data.ranking && data.type === SPORT_TYPES.BASEBALL && React.createElement('div', {
+              (data.ranking && data.type === SPORT_TYPES.BASEBALL) ? React.createElement('div', {
                 className: 'mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0'
               },
                 React.createElement('div', { className: 'flex items-center gap-3' },
@@ -357,10 +357,10 @@
                     )
                   )
                 )
-              ),
+              ) : null,
               
               // 배구 순위
-              data.ranking && data.type === SPORT_TYPES.VOLLEYBALL && React.createElement('div', {
+              (data.ranking && data.type === SPORT_TYPES.VOLLEYBALL) ? React.createElement('div', {
                 className: 'mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0'
               },
                 React.createElement('div', { className: 'flex items-center gap-3 mb-2' },
@@ -384,7 +384,7 @@
                     )
                   )
                 ),
-                data.nextMatch && React.createElement('div', {
+                data.nextMatch ? React.createElement('div', {
                   className: 'pt-2 mt-2 border-t border-white border-opacity-20'
                 },
                   React.createElement('p', { className: 'text-xs text-white text-opacity-70 mb-1.5' }, '다음 경기'),
@@ -397,8 +397,8 @@
                     ),
                     React.createElement('p', { className: 'text-xs text-white text-opacity-60 mt-0.5' }, data.nextMatch.location)
                   )
-                )
-              )
+                ) : null
+              ) : null
             )
           );
         };
