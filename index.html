@@ -9,7 +9,6 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body { margin: 0; padding: 0; overflow: hidden; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
@@ -22,7 +21,6 @@
     
     <script type="text/babel">
         const { useState, useMemo, useEffect } = React;
-        const { Trophy, Users, Globe, User } = lucide;
 
         const SPORT_TYPES = {
           BASEBALL: 'baseball',
@@ -36,7 +34,8 @@
             type: SPORT_TYPES.BASEBALL,
             title: '한화 이글스',
             subtitle: '2025 KBO 시즌 최종 순위',
-            icon: Trophy,
+            route: '/baseball/hanwha',
+            emoji: '⚾',
             bgColor: 'bg-gray-800',
             ranking: { rank: 2, wins: 83, losses: 57, draws: 4, winRate: 0.593, gameDiff: 1.5 }
           },
@@ -45,7 +44,8 @@
             type: SPORT_TYPES.VOLLEYBALL,
             title: '현대캐피탈 스카이워커스',
             subtitle: 'V-리그 시즌 중',
-            icon: Users,
+            route: '/volleyball/hyundai-capital',
+            emoji: '🏐',
             bgColor: 'bg-gray-800',
             ranking: { rank: 2, wins: 8, losses: 6, points: 1, setRatio: 1.033 },
             nextMatch: { opponent: 'vs 대한항공', date: '12월 16일', time: '19:00', location: '천안유관순체육관' }
@@ -54,7 +54,8 @@
             id: 'worldcup',
             title: '2026 FIFA 월드컵',
             subtitle: '개막 D-540',
-            icon: Globe,
+            route: '/event/worldcup',
+            emoji: '⚽',
             bgColor: 'bg-gray-800'
           },
           anseyoung: {
@@ -62,7 +63,8 @@
             type: SPORT_TYPES.BADMINTON,
             title: '안세영',
             subtitle: 'BWF 월드투어 파이널스',
-            icon: User,
+            route: '/player/anseyoung',
+            emoji: '🏸',
             bgColor: 'bg-gray-800',
             tournament: {
               name: 'BWF 월드투어 파이널스',
@@ -83,8 +85,6 @@
             );
           }
 
-          const Icon = data.icon;
-          
           const getTournamentStatus = (tournament) => {
             if (!tournament) return null;
             const today = new Date();
@@ -113,7 +113,7 @@
               className={`${data.bgColor} border border-gray-700 cursor-pointer transform transition-all duration-300 hover:brightness-110 flex items-center justify-center p-6 relative overflow-y-auto custom-scrollbar`}
             >
               <div className="flex flex-col items-center justify-start text-white text-center w-full">
-                <Icon size={48} strokeWidth={1.5} className="mb-4 flex-shrink-0" />
+                <div className="text-6xl mb-4">{data.emoji}</div>
                 <h2 className="text-2xl font-bold mb-2 flex-shrink-0">{data.title}</h2>
                 <p className="text-white text-opacity-90 text-sm mb-3 flex-shrink-0">{data.subtitle}</p>
                 
