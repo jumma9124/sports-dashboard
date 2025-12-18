@@ -1,0 +1,41 @@
+{
+  "lastUpdated": "2025-12-18T06:43:28.699Z",
+  "ahnSeYoung": {
+    "rank": 1,
+    "name": "안세영",
+    "country": "KOR",
+    "points": 102895
+  },
+  "topRankings": [
+    {
+      "rank": 1,
+      "name": "안세영",
+      "country": "KOR",
+      "points": 102895
+    },
+    {
+      "rank": 2,
+      "name": "왕즈이",
+      "country": "CHN",
+      "points": 95000
+    },
+    {
+      "rank": 3,
+      "name": "야마구치 아카네",
+      "country": "JPN",
+      "points": 88000
+    },
+    {
+      "rank": 4,
+      "name": "한웨",
+      "country": "CHN",
+      "points": 82000
+    },
+    {
+      "rank": 5,
+      "name": "천위페이",
+      "country": "CHN",
+      "points": 78000
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "player": "안세영",
+  "lastUpdated": "2025-12-18T06:43:28.701Z",
+  "currentTournament": "2025 BWF 월드투어 파이널스",
+  "status": "진행 중 (2025-12-17 ~ 2025-12-21)",
+  "seasonActive": true,
+  "updateFrequency": "매일 3회 (6시, 12시, 18시)",
+  "recentResults": [
+    {
+      "date": "2025.12.17",
+      "tournament": "2025 BWF 월드투어 파이널스",
+      "round": "조별리그 A조 1차전",
+      "opponent": "푸트리 쿠수마 와르다니 (인도네시아)",
+      "result": "승",
+      "score": "2-1 (21-16, 8-21, 21-8)"
+    },
+    {
+      "date": "2025.10.26",
+      "tournament": "2025 프랑스오픈",
+      "round": "결승",
+      "opponent": "왕즈이 (중국)",
+      "result": "승",
+      "score": "2-0 (21-13, 21-7)"
+    },
+    {
+      "date": "2025.10.19",
+      "tournament": "2025 덴마크오픈",
+      "round": "결승",
+      "opponent": "야마구치 아카네 (일본)",
+      "result": "승",
+      "score": "2-0"
+    },
+    {
+      "date": "2025.08.30",
+      "tournament": "2025 세계선수권대회",
+      "round": "4강",
+      "opponent": "천위페이 (중국)",
+      "result": "패",
+      "score": "0-2 (15-21, 17-21)"
+    },
+    {
+      "date": "2025.06.08",
+      "tournament": "인도네시아오픈",
+      "round": "결승",
+      "opponent": "왕즈이 (중국)",
+      "result": "승",
+      "score": "2-1 (13-21, 21-19, 21-15)"
+    }
+  ],
+  "upcomingMatches": [
+    {
+      "date": "2025.12.18",
+      "tournament": "2025 BWF 월드투어 파이널스",
+      "round": "조별리그 A조 2차전",
+      "opponent": "미야자키 토모카 (일본)",
+      "result": "",
+      "score": ""
+    },
+    {
+      "date": "2025.12.19",
+      "tournament": "2025 BWF 월드투어 파이널스",
+      "round": "조별리그 A조 3차전",
+      "opponent": "야마구치 아카네 (일본)",
+      "result": "",
+      "score": ""
+    }
+  ],
+  "seasonRecord": {
+    "wins": 10,
+    "tournaments": 14,
+    "winRate": "95%"
+  },
+  "allMatches": [
+    {
+      "date": "2025.12.17",
+      "tournament": "2025 BWF 월드투어 파이널스",
+      "round": "조별리그 A조 1차전",
+      "opponent": "푸트리 쿠수마 와르다니 (인도네시아)",
+      "result": "승",
+      "score": "2-1 (21-16, 8-21, 21-8)"
+    },
+    {
+      "date": "2025.10.26",
+      "tournament": "2025 프랑스오픈",
+      "round": "결승",
+      "opponent": "왕즈이 (중국)",
+      "result": "승",
+      "score": "2-0 (21-13, 21-7)"
+    },
+    {
+      "date": "2025.10.19",
+      "tournament": "2025 덴마크오픈",
+      "round": "결승",
+      "opponent": "야마구치 아카네 (일본)",
+      "result": "승",
+      "score": "2-0"
+    },
+    {
+      "date": "2025.08.30",
+      "tournament": "2025 세계선수권대회",
+      "round": "4강",
+      "opponent": "천위페이 (중국)",
+      "result": "패",
+      "score": "0-2 (15-21, 17-21)"
+    },
+    {
+      "date": "2025.06.08",
+      "tournament": "인도네시아오픈",
+      "round": "결승",
+      "opponent": "왕즈이 (중국)",
+      "result": "승",
+      "score": "2-1 (13-21, 21-19, 21-15)"
+    },
+    {
+      "date": "2025.12.18",
+      "tournament": "2025 BWF 월드투어 파이널스",
+      "round": "조별리그 A조 2차전",
+      "opponent": "미야자키 토모카 (일본)",
+      "result": "",
+      "score": ""
+    },
+    {
+      "date": "2025.12.19",
+      "tournament": "2025 BWF 월드투어 파이널스",
+      "round": "조별리그 A조 3차전",
+      "opponent": "야마구치 아카네 (일본)",
+      "result": "",
+      "score": ""
+    }
+  ]
+}
