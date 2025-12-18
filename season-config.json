@@ -1,0 +1,21 @@
+{
+  "badminton": {
+    "seasonActive": true,
+    "currentTournament": {
+      "name": "2025 BWF 월드투어 파이널스",
+      "startDate": "2025-12-17",
+      "endDate": "2025-12-21",
+      "updateFrequency": "daily"
+    },
+    "upcomingTournaments": [
+      {
+        "name": "2026 말레이시아 마스터스",
+        "startDate": "2026-01-14",
+        "endDate": "2026-01-19",
+        "updateFrequency": "daily"
+      }
+    ],
+    "offSeasonUpdateFrequency": "biweekly"
+  },
+  "lastUpdated": "2025-12-18T00:00:00Z"
+}

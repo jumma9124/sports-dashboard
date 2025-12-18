@@ -1,0 +1,141 @@
+name: Update Sports Data (Smart Schedule)
+
+on:
+  schedule:
+    # 매일 한국 시간 오전 6시, 12시, 오후 6시 (경기 시즌)
+    - cron: '0 21 * * *'  # 06:00 KST
+    - cron: '0 3 * * *'   # 12:00 KST
+    - cron: '0 9 * * *'   # 18:00 KST
+    
+    # 2주마다 일요일 오전 9시 (비시즌)
+    - cron: '0 0 * * 0'   # 09:00 KST every Sunday
+  
+  workflow_dispatch: # 수동 실행 가능
+    inputs:
+      force_update:
+        description: '강제 업데이트 (시즌 체크 무시)'
+        required: false
+        default: 'false'
+
+jobs:
+  check-season:
+    runs-on: ubuntu-latest
+    outputs:
+      should_update: ${{ steps.season_check.outputs.should_update }}
+      update_reason: ${{ steps.season_check.outputs.update_reason }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Check if update is needed
+        id: season_check
+        run: |
+          # season-config.json 파일 읽기
+          if [ ! -f season-config.json ]; then
+            echo "should_update=true" >> $GITHUB_OUTPUT
+            echo "update_reason=No config file" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # 현재 날짜
+          current_date=$(date -u +%Y-%m-%d)
+          current_timestamp=$(date -u +%s)
+          
+          # JSON 파싱 (jq 사용)
+          season_active=$(cat season-config.json | grep -o '"seasonActive"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false')
+          
+          # 강제 업데이트 체크
+          if [ "${{ github.event.inputs.force_update }}" = "true" ]; then
+            echo "should_update=true" >> $GITHUB_OUTPUT
+            echo "update_reason=Force update requested" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # 현재 시간 (KST)
+          current_hour=$(TZ=Asia/Seoul date +%H)
+          
+          # 시즌 활성화 상태면 매일 업데이트
+          if [ "$season_active" = "true" ]; then
+            # 하루 3회만 업데이트 (6시, 12시, 18시)
+            if [ "$current_hour" = "06" ] || [ "$current_hour" = "12" ] || [ "$current_hour" = "18" ]; then
+              echo "should_update=true" >> $GITHUB_OUTPUT
+              echo "update_reason=Active season - scheduled update" >> $GITHUB_OUTPUT
+            else
+              echo "should_update=false" >> $GITHUB_OUTPUT
+              echo "update_reason=Active season but not scheduled time" >> $GITHUB_OUTPUT
+            fi
+          else
+            # 비시즌이면 일요일만 업데이트
+            day_of_week=$(date +%u)  # 1=Monday, 7=Sunday
+            if [ "$day_of_week" = "7" ]; then
+              echo "should_update=true" >> $GITHUB_OUTPUT
+              echo "update_reason=Off-season biweekly update (Sunday)" >> $GITHUB_OUTPUT
+            else
+              echo "should_update=false" >> $GITHUB_OUTPUT
+              echo "update_reason=Off-season, not Sunday" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  update-data:
+    needs: check-season
+    if: needs.check-season.outputs.should_update == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: |
+          npm install axios cheerio
+      
+      - name: Create data directory
+        run: mkdir -p public/data
+      
+      - name: Run sports crawler
+        run: |
+          echo "Update reason: ${{ needs.check-season.outputs.update_reason }}"
+          node crawl-sports.js
+      
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git diff --quiet public/data/ || echo "changed=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push if changed
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add public/data/
+          git commit -m "Update sports data - $(TZ=Asia/Seoul date +'%Y-%m-%d %H:%M KST') [${{ needs.check-season.outputs.update_reason }}]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: No changes detected
+        if: steps.check_changes.outputs.changed != 'true'
+        run: echo "No changes in sports data"
+
+  skip-update:
+    needs: check-season
+    if: needs.check-season.outputs.should_update != 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Skip notification
+        run: |
+          echo "Skipping update: ${{ needs.check-season.outputs.update_reason }}"
