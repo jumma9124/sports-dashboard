@@ -27,84 +27,7 @@
         const SPORT_TYPES = {
           BASEBALL: 'baseball',
           VOLLEYBALL: 'volleyball',
-          OLYMPICS: 'olympics',
-          ASIAD: 'asiad',
-          WORLDCUP: 'worldcup',
           BADMINTON: 'badminton'
-        };
-
-        const majorEventSchedule = {
-          olympics_winter_2026: {
-            name: '동계올림픽',
-            startDate: new Date('2026-02-06'),
-            endDate: new Date('2026-02-22'),
-            displayName: '2026 밀라노-코르티나 동계올림픽'
-          },
-          olympics_summer_2028: {
-            name: '하계올림픽',
-            startDate: new Date('2028-07-21'),
-            endDate: new Date('2028-08-06'),
-            displayName: '2028 LA 올림픽'
-          },
-          asiad: {
-            name: '아시안게임',
-            startDate: new Date('2026-09-19'),
-            endDate: new Date('2026-10-04'),
-            displayName: '2026 나고야 아시안게임'
-          },
-          worldcup: {
-            name: '월드컵',
-            startDate: new Date('2026-06-11'),
-            endDate: new Date('2026-07-19'),
-            displayName: '2026 FIFA 월드컵'
-          }
-        };
-
-        const getCurrentMajorEvent = () => {
-          const today = new Date();
-          const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-          
-          const olympicsEvents = [];
-          const otherEvents = [];
-          
-          for (const [eventKey, schedule] of Object.entries(majorEventSchedule)) {
-            if (eventKey.startsWith('olympics_')) {
-              olympicsEvents.push({ key: eventKey, schedule });
-            } else {
-              otherEvents.push({ key: eventKey, schedule });
-            }
-          }
-          
-          let nearestOlympics = null;
-          let minOlympicsDiff = Infinity;
-          
-          for (const { key, schedule } of olympicsEvents) {
-            const startDate = new Date(schedule.startDate);
-            const endDate = new Date(schedule.endDate);
-            const oneWeekBefore = new Date(startDate.getTime() - ONE_WEEK);
-            
-            if (today >= oneWeekBefore && today <= endDate) {
-              return 'olympics';
-            }
-            
-            const diff = startDate - today;
-            if (diff > 0 && diff < minOlympicsDiff) {
-              minOlympicsDiff = diff;
-              nearestOlympics = key;
-            }
-          }
-          
-          for (const { key, schedule } of otherEvents) {
-            const startDate = new Date(schedule.startDate);
-            const endDate = new Date(schedule.endDate);
-            const oneWeekBefore = new Date(startDate.getTime() - ONE_WEEK);
-            
-            if (today >= oneWeekBefore && today <= endDate) {
-              return key;
-            }
-          }
-          
-          return null;
         };
 
         const sportsData = {
@@ -113,11 +36,8 @@
             type: SPORT_TYPES.BASEBALL,
             title: '한화 이글스',
             subtitle: '2025 KBO 시즌 최종 순위',
-            route: '/baseball/hanwha',
             icon: Trophy,
             bgColor: 'bg-gray-800',
-            bgImage: 'https://wizzap.ktwiz.co.kr/files/emblem/20230323_181556238_34612.png',
-            priority: 2,
             ranking: { rank: 2, wins: 83, losses: 57, draws: 4, winRate: 0.593, gameDiff: 1.5 }
           },
           volleyball: {
@@ -125,58 +45,25 @@
             type: SPORT_TYPES.VOLLEYBALL,
             title: '현대캐피탈 스카이워커스',
             subtitle: 'V-리그 시즌 중',
-            route: '/volleyball/hyundai-capital',
             icon: Users,
             bgColor: 'bg-gray-800',
-            bgImage: 'https://www.kovo.co.kr/upload/team/sitelogo/20240830_150527_men_hdec.png',
-            priority: 3,
             ranking: { rank: 2, wins: 8, losses: 6, points: 1, setRatio: 1.033 },
             nextMatch: { opponent: 'vs 대한항공', date: '12월 16일', time: '19:00', location: '천안유관순체육관' }
           },
-          olympics: {
-            id: 'olympics',
-            type: SPORT_TYPES.OLYMPICS,
-            title: '올림픽',
-            subtitle: '하계/동계 통합',
-            route: '/event/olympics',
-            icon: Globe,
-            bgColor: 'bg-gray-800',
-            bgImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Olympic_rings_without_rims.svg/200px-Olympic_rings_without_rims.svg.png',
-            priority: 1
-          },
-          asiad: {
-            id: 'asiad',
-            type: SPORT_TYPES.ASIAD,
-            title: '2026 나고야 아시안게임',
-            subtitle: '개막 D-7 이내',
-            route: '/event/asiad',
-            icon: Globe,
-            bgColor: 'bg-gray-800',
-            bgImage: 'https://upload.wikimedia.org/wikipedia/en/thumb/c/ce/Olympic_Council_of_Asia_logo.svg/150px-Olympic_Council_of_Asia_logo.svg.png',
-            priority: 1
-          },
           worldcup: {
             id: 'worldcup',
-            type: SPORT_TYPES.WORLDCUP,
             title: '2026 FIFA 월드컵',
-            subtitle: '개막 D-7 이내',
-            route: '/event/worldcup',
+            subtitle: '개막 D-540',
             icon: Globe,
-            bgColor: 'bg-gray-800',
-            bgImage: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/67/2026_FIFA_World_Cup_logo.svg/150px-2026_FIFA_World_Cup_logo.svg.png',
-            priority: 1
+            bgColor: 'bg-gray-800'
           },
           anseyoung: {
             id: 'anseyoung',
             type: SPORT_TYPES.BADMINTON,
             title: '안세영',
             subtitle: 'BWF 월드투어 파이널스',
-            route: '/player/anseyoung',
             icon: User,
             bgColor: 'bg-gray-800',
-            bgImage: 'https://bwf.tournamentsoftware.com/res/img/Flags/KOR.png',
-            priority: 4,
-            fixed: true,
             tournament: {
               name: 'BWF 월드투어 파이널스',
               location: '중국 항저우',
@@ -185,57 +72,6 @@
               status: 'upcoming'
             }
           }
-        };
-
-        const getNextMajorEvent = () => {
-          const today = new Date();
-          let nearestEvent = null;
-          let nearestEventKey = null;
-          let minDiff = Infinity;
-          
-          const olympicsEvents = Object.entries(majorEventSchedule).filter(([key]) => key.startsWith('olympics_'));
-          
-          let nearestOlympics = null;
-          let minOlympicsDiff = Infinity;
-          
-          for (const [eventKey, schedule] of olympicsEvents) {
-            const startDate = new Date(schedule.startDate);
-            const diff = startDate - today;
-            
-            if (diff > 0 && diff < minOlympicsDiff) {
-              minOlympicsDiff = diff;
-              nearestOlympics = schedule;
-            }
-          }
-          
-          if (nearestOlympics && minOlympicsDiff < minDiff) {
-            minDiff = minOlympicsDiff;
-            nearestEvent = nearestOlympics;
-            nearestEventKey = 'olympics';
-          }
-          
-          for (const [eventKey, schedule] of Object.entries(majorEventSchedule)) {
-            if (eventKey.startsWith('olympics_')) continue;
-            
-            const startDate = new Date(schedule.startDate);
-            const diff = startDate - today;
-            
-            if (diff > 0 && diff < minDiff) {
-              minDiff = diff;
-              nearestEvent = schedule;
-              nearestEventKey = eventKey;
-            }
-          }
-          
-          if (nearestEvent && sportsData[nearestEventKey]) {
-            const daysUntil = Math.ceil(minDiff / (24 * 60 * 60 * 1000));
-            const eventData = { ...sportsData[nearestEventKey] };
-            eventData.title = nearestEvent.displayName || eventData.title;
-            eventData.subtitle = `개막 D-${daysUntil}`;
-            return eventData;
-          }
-          
-          return null;
         };
 
         const SportCard = ({ data, onClick }) => {
@@ -252,8 +88,8 @@
           const getTournamentStatus = (tournament) => {
             if (!tournament) return null;
             const today = new Date();
-            const start = new Date(tournament.startDate);
-            const end = new Date(tournament.endDate);
+            const start = tournament.startDate;
+            const end = tournament.endDate;
             
             if (today < start) {
               const daysUntil = Math.ceil((start - today) / (24 * 60 * 60 * 1000));
@@ -267,16 +103,14 @@
           
           const tournamentStatus = data.tournament ? getTournamentStatus(data.tournament) : null;
           
+          const formatDate = (date) => {
+            return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+          };
+          
           return (
             <div
               onClick={onClick}
               className={`${data.bgColor} border border-gray-700 cursor-pointer transform transition-all duration-300 hover:brightness-110 flex items-center justify-center p-6 relative overflow-y-auto custom-scrollbar`}
-              style={{
-                backgroundImage: data.bgImage ? `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${data.bgImage})` : 'none',
-                backgroundSize: 'contain',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-              }}
             >
               <div className="flex flex-col items-center justify-start text-white text-center w-full">
                 <Icon size={48} strokeWidth={1.5} className="mb-4 flex-shrink-0" />
@@ -298,9 +132,7 @@
                       <div className="flex items-center justify-between">
                         <span className="text-white text-opacity-70">기간</span>
                         <span className="font-semibold text-xs">
-                          {new Date(data.tournament.startDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                          {' ~ '}
-                          {new Date(data.tournament.endDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                          {formatDate(data.tournament.startDate)} ~ {formatDate(data.tournament.endDate)}
                         </span>
                       </div>
                       {tournamentStatus && (
@@ -393,17 +225,19 @@
             const fetchLiveRankings = async () => {
               try {
                 const response = await fetch('./data/sports-rankings.json');
+                if (!response.ok) throw new Error('Failed to fetch');
                 const data = await response.json();
                 setLiveRankings(data);
                 console.log('✅ 실시간 순위 로딩 완료:', data);
               } catch (error) {
-                console.error('❌ 순위 데이터 로딩 실패:', error);
+                console.warn('⚠️ 실시간 데이터를 불러올 수 없습니다. 기본 데이터를 사용합니다.');
               } finally {
                 setIsLoading(false);
               }
             };
             
-            fetchLiveRankings();
+            const timeout = setTimeout(() => setIsLoading(false), 3000);
+            fetchLiveRankings().finally(() => clearTimeout(timeout));
           }, []);
           
           const updatedSportsData = useMemo(() => {
@@ -420,18 +254,14 @@
             return data;
           }, [liveRankings]);
 
-          const majorEvent = useMemo(() => getCurrentMajorEvent(), []);
-          
           const layout = useMemo(() => {
-            const fixedCard = updatedSportsData.anseyoung;
-            
-            if (majorEvent && updatedSportsData[majorEvent]) {
-              return [updatedSportsData[majorEvent], updatedSportsData.baseball, updatedSportsData.volleyball, fixedCard];
-            } else {
-              const nextEvent = getNextMajorEvent();
-              return [updatedSportsData.baseball, updatedSportsData.volleyball, nextEvent, fixedCard];
-            }
-          }, [majorEvent, updatedSportsData]);
+            return [
+              updatedSportsData.baseball,
+              updatedSportsData.volleyball,
+              updatedSportsData.worldcup,
+              updatedSportsData.anseyoung
+            ];
+          }, [updatedSportsData]);
           
           const handleCardClick = (route) => {
             setCurrentRoute(route);
@@ -441,6 +271,16 @@
           const handleBackToHome = () => {
             setCurrentPage('home');
             setCurrentRoute('');
+          };
+          
+          const formatUpdateTime = (dateString) => {
+            const date = new Date(dateString);
+            return date.toLocaleString('ko-KR', {
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
           };
           
           if (isLoading) {
@@ -476,25 +316,19 @@
             );
           }
           
-          const formatUpdateTime = (dateString) => {
-            const date = new Date(dateString);
-            return date.toLocaleString('ko-KR', {
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            });
-          };
-          
           return (
             <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
               <header className="px-6 py-3 bg-gray-800 flex items-center justify-between">
                 <div>
                   <h1 className="text-xl font-bold text-white">MY SPORT</h1>
                   <p className="text-gray-400 text-xs">
-                    {liveRankings && (
+                    {liveRankings ? (
                       <span className="text-green-400">
                         실시간 업데이트 ({formatUpdateTime(liveRankings.lastUpdated)})
+                      </span>
+                    ) : (
+                      <span className="text-yellow-400">
+                        실시간 데이터 준비 중...
                       </span>
                     )}
                   </p>
