@@ -17,6 +17,7 @@ async function crawlSportsData() {
     lastUpdated: new Date().toISOString(),
     baseball: null,
     volleyball: null,
+    badminton: null,
     seasonDates: {
       baseball: {
         start: '2025-03-29',
@@ -208,6 +209,78 @@ async function crawlSportsData() {
         note: '2024-25 시즌 최종 순위 (자동 크롤링 실패)'
       };
       console.log('📊 폴백 데이터 사용');
+    }
+    
+    // ===== BWF 배드민턴 순위 크롤링 (안세영) =====
+    console.log('🏸 BWF 배드민턴 순위 크롤링 중...');
+    
+    try {
+      // BWF 세계 랭킹 페이지
+      await page.goto('https://bwf.tournamentsoftware.com/ranking/category.aspx?id=43071&category=472', {
+        waitUntil: 'networkidle2',
+        timeout: 30000
+      });
+      
+      await page.waitForTimeout(3000);
+      
+      const badmintonData = await page.evaluate(() => {
+        const rows = document.querySelectorAll('table.ruler tbody tr');
+        
+        for (let row of rows) {
+          const cells = row.querySelectorAll('td');
+          if (cells.length === 0) continue;
+          
+          const playerName = cells[3]?.textContent?.trim() || '';
+          
+          // 안세영 찾기
+          if (playerName.toLowerCase().includes('an') && playerName.toLowerCase().includes('se')) {
+            const rank = cells[0]?.textContent?.trim();
+            const country = cells[2]?.textContent?.trim();
+            const points = cells[4]?.textContent?.trim();
+            const tournaments = cells[5]?.textContent?.trim();
+            
+            return {
+              rank: parseInt(rank),
+              player: playerName,
+              country: country,
+              points: parseFloat(points?.replace(/,/g, '')),
+              tournaments: parseInt(tournaments)
+            };
+          }
+        }
+        return null;
+      });
+      
+      if (badmintonData) {
+        results.badminton = badmintonData;
+        console.log('✅ 안세영 BWF 랭킹:', badmintonData);
+      } else {
+        console.log('⚠️ 안세영 데이터를 찾지 못했습니다.');
+        
+        // 폴백 데이터
+        results.badminton = {
+          rank: 1,
+          player: 'AN Se Young',
+          country: 'KOR',
+          points: 111490,
+          tournaments: 17,
+          note: '폴백 데이터 (크롤링 실패)'
+        };
+        console.log('📊 폴백 데이터 사용');
+      }
+      
+    } catch (error) {
+      console.error('❌ BWF 배드민턴 크롤링 오류:', error.message);
+      
+      // 폴백
+      results.badminton = {
+        rank: 1,
+        player: 'AN Se Young',
+        country: 'KOR',
+        points: 111490,
+        tournaments: 17,
+        note: '폴백 데이터 (크롤링 오류)'
+      };
     }
     
   } catch (error) {

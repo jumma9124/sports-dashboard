@@ -104,13 +104,18 @@
               onClick={onClick}
               className={`${data.bgColor} border border-gray-700 cursor-pointer transform transition-all duration-300 hover:brightness-110 flex items-center justify-center p-6 relative overflow-y-auto custom-scrollbar`}
             >
-              <div className="flex flex-col items-center justify-start text-white text-center w-full">
-                <div className="text-6xl mb-4">{data.emoji}</div>
-                <h2 className="text-2xl font-bold mb-2 flex-shrink-0">{data.title}</h2>
-                <p className="text-white text-opacity-90 text-sm mb-3 flex-shrink-0">{data.subtitle}</p>
+              <div className="flex flex-col items-center justify-center text-white text-center w-full h-full">
+                {/* 작은 화면: 이모지만 */}
+                <div className="text-8xl lg:hidden">{data.emoji}</div>
+                
+                {/* 큰 화면 (960px+): 전체 정보 */}
+                <div className="hidden lg:flex lg:flex-col lg:items-center lg:justify-start w-full">
+                  <div className="text-6xl mb-4">{data.emoji}</div>
+                  <h2 className="text-2xl font-bold mb-2 flex-shrink-0">{data.title}</h2>
+                  <p className="text-white text-opacity-90 text-sm mb-3 flex-shrink-0">{data.subtitle}</p>
                 
                 {data.tournament && tournamentStatus?.status !== 'ongoing' && (
-                  <div className="mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg w-full max-w-xs flex-shrink-0">
+                  <div className="hidden lg:block mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg w-full max-w-xs flex-shrink-0">
                     <div className="space-y-1.5 text-xs">
                       <div className="flex items-center justify-between">
                         <span className="text-white text-opacity-70">대회</span>
@@ -142,10 +147,10 @@
                 )}
                 
                 {data.ranking && data.type === SPORT_TYPES.BASEBALL && (
-                  <div className="mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0">
-                    <div className="flex items-center gap-3">
+                  <div className="hidden lg:block mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <div className="text-center">
-                        <p className="text-4xl font-bold">{data.ranking.rank}</p>
+                        <p className="text-3xl sm:text-4xl font-bold">{data.ranking.rank}</p>
                         <p className="text-xs text-white text-opacity-70 mt-1">순위</p>
                       </div>
                       <div className="h-10 w-px bg-white bg-opacity-30" />
@@ -165,10 +170,10 @@
                 )}
                 
                 {data.ranking && data.type === SPORT_TYPES.VOLLEYBALL && (
-                  <div className="mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0">
-                    <div className="flex items-center gap-3 mb-2">
+                  <div className="hidden lg:block mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
                       <div className="text-center">
-                        <p className="text-4xl font-bold">{data.ranking.rank}</p>
+                        <p className="text-3xl sm:text-4xl font-bold">{data.ranking.rank}</p>
                         <p className="text-xs text-white text-opacity-70 mt-1">순위</p>
                       </div>
                       <div className="h-10 w-px bg-white bg-opacity-30" />
@@ -199,6 +204,27 @@
                     )}
                   </div>
                 )}
+                
+                {data.ranking && data.type === SPORT_TYPES.BADMINTON && (
+                  <div className="hidden lg:block mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0">
+                    <div className="flex items-center gap-3">
+                      <div className="text-center">
+                        <p className="text-4xl font-bold">{data.ranking.rank}</p>
+                        <p className="text-xs text-white text-opacity-70 mt-1">세계 순위</p>
+                      </div>
+                      <div className="h-10 w-px bg-white bg-opacity-30" />
+                      <div className="text-left space-y-0.5">
+                        <p className="text-xs">
+                          포인트 <span className="font-semibold">{data.ranking.points?.toLocaleString()}</span>
+                        </p>
+                        <p className="text-xs">
+                          참가 대회 <span className="font-semibold">{data.ranking.tournaments}</span>개
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                </div>
               </div>
             </div>
           );
@@ -361,6 +387,15 @@
             const volleyballActive = isSeasonActive(seasonDates.volleyball.start, seasonDates.volleyball.end);
             data.volleyball.subtitle = volleyballActive ? 'V-리그 시즌 중' : 'V-리그 오프시즌';
             
+            // 안세영 배드민턴 랭킹 업데이트
+            if (liveRankings?.badminton) {
+              data.anseyoung = {
+                ...data.anseyoung,
+                subtitle: `세계 ${liveRankings.badminton.rank}위`,
+                ranking: liveRankings.badminton
+              };
+            }
+            
             return data;
           }, [liveRankings]);
 
@@ -474,9 +509,9 @@
           
           return (
             <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
-              <header className="px-6 py-3 bg-gray-800 flex items-center justify-between">
+              <header className="px-4 lg:px-6 py-3 bg-gray-800 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2 lg:gap-0">
                 <div>
-                  <h1 className="text-xl font-bold text-white">MY SPORT</h1>
+                  <h1 className="text-lg lg:text-xl font-bold text-white">MY SPORT</h1>
                   <p className="text-gray-400 text-xs">
                     {liveRankings ? (
                       <span className="text-green-400">
@@ -489,7 +524,7 @@
                     )}
                   </p>
                 </div>
-                <p className="text-gray-500 text-xs">나만 보는 페이지</p>
+                <p className="text-gray-500 text-xs hidden lg:block">나만 보는 페이지</p>
               </header>
               <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-0">
                 {layout.map((card, index) => (
