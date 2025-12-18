@@ -310,7 +310,7 @@
               
               // 안세영 경기 정보 불러오기 추가
               try {
-                const badmintonResponse = await fetch('./public/data/ahn-seyoung-matches.json');
+                const badmintonResponse = await fetch('./data/ahn-seyoung-matches.json');
                 if (badmintonResponse.ok) {
                   const badmintonData = await badmintonResponse.json();
                   setBadmintonMatches(badmintonData);
