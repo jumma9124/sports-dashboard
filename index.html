@@ -54,10 +54,17 @@
             id: 'anseyoung',
             type: SPORT_TYPES.BADMINTON,
             title: '안세영',
-            subtitle: 'BWF 월드투어 파이널스',
+            subtitle: '세계 1위',
             route: '/player/anseyoung',
             emoji: '🏸',
             bgColor: 'bg-gray-800',
+            ranking: {
+              rank: 1,
+              player: 'AN Se Young',
+              country: 'KOR',
+              points: 111490,
+              tournaments: 17
+            },
             tournament: {
               name: 'BWF 월드투어 파이널스',
               location: '중국 항저우',
@@ -457,12 +464,44 @@
           const handleCardClick = (route) => {
             setCurrentRoute(route);
             setCurrentPage('detail');
+            // 브라우저 히스토리에 추가
+            window.history.pushState({ page: 'detail', route }, '', '#detail');
           };
           
           const handleBackToHome = () => {
             setCurrentPage('home');
             setCurrentRoute('');
+            // 브라우저 히스토리에 추가
+            window.history.pushState({ page: 'home' }, '', '#home');
           };
+          
+          // 브라우저 뒤로가기 버튼 처리
+          useEffect(() => {
+            const handlePopState = (event) => {
+              if (event.state) {
+                if (event.state.page === 'home') {
+                  setCurrentPage('home');
+                  setCurrentRoute('');
+                } else if (event.state.page === 'detail') {
+                  setCurrentPage('detail');
+                  setCurrentRoute(event.state.route);
+                }
+              } else {
+                // 히스토리 상태가 없으면 홈으로
+                setCurrentPage('home');
+                setCurrentRoute('');
+              }
+            };
+            
+            window.addEventListener('popstate', handlePopState);
+            
+            // 초기 상태 설정
+            window.history.replaceState({ page: 'home' }, '', '#home');
+            
+            return () => {
+              window.removeEventListener('popstate', handlePopState);
+            };
+          }, []);
           
           const formatUpdateTime = (dateString) => {
             const date = new Date(dateString);
