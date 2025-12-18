@@ -269,6 +269,101 @@ async function crawlSportsData() {
         console.log('📊 폴백 데이터 사용');
       }
       
+      // ===== 진행 중인 대회 경기 일정 및 결과 크롤링 =====
+      console.log('📅 BWF 대회 경기 일정 크롤링 중...');
+      
+      try {
+        // BWF 메인 토너먼트 페이지
+        await page.goto('https://bwf.tournamentsoftware.com/sport/tournament.aspx?id=FDFC4C4C-7FC1-4C7D-BBE9-1406277F3897', {
+          waitUntil: 'networkidle2',
+          timeout: 30000
+        });
+        
+        await page.waitForTimeout(3000);
+        
+        // 안세영 경기 정보 찾기
+        const matchData = await page.evaluate(() => {
+          const today = new Date();
+          const todayStr = today.toISOString().split('T')[0];
+          
+          // 모든 경기 행 찾기
+          const rows = document.querySelectorAll('table tr, .match-row, .schedule-item');
+          
+          let lastMatch = null;
+          let nextMatch = null;
+          
+          for (let row of rows) {
+            const text = row.textContent;
+            
+            // 안세영 경기 찾기
+            if (text.includes('AN Se Young') || text.includes('AN Seyoung')) {
+              const cells = row.querySelectorAll('td');
+              
+              if (cells.length > 0) {
+                // 날짜, 시간, 상대, 결과 추출 시도
+                const dateCell = cells[0]?.textContent?.trim();
+                const timeCell = cells[1]?.textContent?.trim();
+                const player1 = cells[2]?.textContent?.trim();
+                const player2 = cells[3]?.textContent?.trim();
+                const scoreCell = cells[4]?.textContent?.trim();
+                const roundCell = cells[5]?.textContent?.trim();
+                
+                // 날짜 파싱
+                let matchDate = null;
+                const dateMatch = dateCell?.match(/(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
+                if (dateMatch) {
+                  matchDate = `${dateMatch[3]}-${dateMatch[2].padStart(2, '0')}-${dateMatch[1].padStart(2, '0')}`;
+                }
+                
+                const opponent = player1?.includes('AN') ? player2 : player1;
+                
+                // 경기 결과가 있으면 (과거 경기)
+                if (scoreCell && scoreCell !== '-' && scoreCell !== '') {
+                  lastMatch = {
+                    date: matchDate || dateCell,
+                    time: timeCell,
+                    opponent: opponent,
+                    score: scoreCell,
+                    round: roundCell,
+                    result: scoreCell.includes('AN') ? 'win' : 'loss'
+                  };
+                }
+                // 결과가 없으면 (예정된 경기)
+                else if (matchDate && matchDate >= todayStr) {
+                  if (!nextMatch || matchDate < nextMatch.date) {
+                    nextMatch = {
+                      date: matchDate || dateCell,
+                      time: timeCell,
+                      opponent: opponent,
+                      round: roundCell
+                    };
+                  }
+                }
+              }
+            }
+          }
+          
+          return { lastMatch, nextMatch };
+        });
+        
+        if (matchData.lastMatch || matchData.nextMatch) {
+          results.badminton.lastMatch = matchData.lastMatch;
+          results.badminton.nextMatch = matchData.nextMatch;
+          
+          if (matchData.lastMatch) {
+            console.log('✅ 최근 경기:', matchData.lastMatch);
+          }
+          if (matchData.nextMatch) {
+            console.log('✅ 다음 경기:', matchData.nextMatch);
+          }
+        } else {
+          console.log('⚠️ 경기 일정을 찾지 못했습니다.');
+        }
+        
+      } catch (error) {
+        console.error('❌ BWF 경기 일정 크롤링 오류:', error.message);
+      }
+      
     } catch (error) {
       console.error('❌ BWF 배드민턴 크롤링 오류:', error.message);
       

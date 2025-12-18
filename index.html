@@ -213,8 +213,8 @@
                 )}
                 
                 {data.ranking && data.type === SPORT_TYPES.BADMINTON && (
-                  <div className="hidden lg:block mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0">
-                    <div className="flex items-center gap-3">
+                  <div className="hidden lg:block mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0 w-full max-w-xs">
+                    <div className="flex items-center gap-3 mb-2">
                       <div className="text-center">
                         <p className="text-4xl font-bold">{data.ranking.rank}</p>
                         <p className="text-xs text-white text-opacity-70 mt-1">세계 순위</p>
@@ -229,6 +229,51 @@
                         </p>
                       </div>
                     </div>
+                    
+                    {/* 최근 경기 결과 */}
+                    {data.ranking.lastMatch && (
+                      <div className="pt-2 mt-2 border-t border-white border-opacity-20">
+                        <p className="text-xs text-white text-opacity-70 mb-1.5">최근 경기</p>
+                        <div className="bg-white bg-opacity-10 rounded px-2.5 py-2">
+                          <p className="font-bold text-xs mb-1">
+                            {data.ranking.lastMatch.opponent}
+                          </p>
+                          <p className="text-xs text-white text-opacity-80">
+                            {data.ranking.lastMatch.score}
+                            {data.ranking.lastMatch.result === 'win' && 
+                              <span className="ml-2 text-green-400">승</span>
+                            }
+                          </p>
+                          <p className="text-xs text-white text-opacity-60 mt-0.5">
+                            {data.ranking.lastMatch.round}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* 다음 경기 */}
+                    {data.ranking.nextMatch && (
+                      <div className="pt-2 mt-2 border-t border-white border-opacity-20">
+                        <p className="text-xs text-white text-opacity-70 mb-1.5">다음 경기</p>
+                        <div className="bg-white bg-opacity-10 rounded px-2.5 py-2">
+                          <p className="font-bold text-xs mb-1">
+                            vs {data.ranking.nextMatch.opponent}
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-white text-opacity-80">
+                            <span>{data.ranking.nextMatch.date}</span>
+                            {data.ranking.nextMatch.time && (
+                              <>
+                                <span>•</span>
+                                <span>{data.ranking.nextMatch.time}</span>
+                              </>
+                            )}
+                          </div>
+                          <p className="text-xs text-white text-opacity-60 mt-0.5">
+                            {data.ranking.nextMatch.round}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 </div>
@@ -399,7 +444,10 @@
               data.anseyoung = {
                 ...data.anseyoung,
                 subtitle: `세계 ${liveRankings.badminton.rank}위`,
-                ranking: liveRankings.badminton
+                ranking: {
+                  ...data.anseyoung.ranking,
+                  ...liveRankings.badminton
+                }
               };
             }
             
