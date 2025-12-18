@@ -248,7 +248,11 @@
             }
             
             if (liveRankings?.volleyball) {
-              data.volleyball = { ...data.volleyball, ranking: liveRankings.volleyball };
+              data.volleyball = { 
+                ...data.volleyball, 
+                ranking: liveRankings.volleyball,
+                nextMatch: liveRankings.volleyball.nextMatch || data.volleyball.nextMatch
+              };
             }
             
             return data;
