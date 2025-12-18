@@ -50,14 +50,6 @@
             ranking: { rank: 2, wins: 8, losses: 6, points: 1, setRatio: 1.033 },
             nextMatch: { opponent: 'vs 대한항공', date: '12월 16일', time: '19:00', location: '천안유관순체육관' }
           },
-          worldcup: {
-            id: 'worldcup',
-            title: '2026 FIFA 월드컵',
-            subtitle: '개막 D-540',
-            route: '/event/worldcup',
-            emoji: '⚽',
-            bgColor: 'bg-gray-800'
-          },
           anseyoung: {
             id: 'anseyoung',
             type: SPORT_TYPES.BADMINTON,
@@ -117,7 +109,6 @@
                 <h2 className="text-2xl font-bold mb-2 flex-shrink-0">{data.title}</h2>
                 <p className="text-white text-opacity-90 text-sm mb-3 flex-shrink-0">{data.subtitle}</p>
                 
-                {/* 배드민턴 대회 정보 */}
                 {data.tournament && tournamentStatus?.status !== 'ongoing' && (
                   <div className="mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg w-full max-w-xs flex-shrink-0">
                     <div className="space-y-1.5 text-xs">
@@ -150,7 +141,6 @@
                   </div>
                 )}
                 
-                {/* 야구 순위 */}
                 {data.ranking && data.type === SPORT_TYPES.BASEBALL && (
                   <div className="mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0">
                     <div className="flex items-center gap-3">
@@ -174,7 +164,6 @@
                   </div>
                 )}
                 
-                {/* 배구 순위 */}
                 {data.ranking && data.type === SPORT_TYPES.VOLLEYBALL && (
                   <div className="mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0">
                     <div className="flex items-center gap-3 mb-2">
@@ -219,31 +208,122 @@
           const [currentPage, setCurrentPage] = useState('home');
           const [currentRoute, setCurrentRoute] = useState('');
           const [liveRankings, setLiveRankings] = useState(null);
+          const [majorEventsData, setMajorEventsData] = useState(null);
           const [isLoading, setIsLoading] = useState(true);
           
           useEffect(() => {
-            const fetchLiveRankings = async () => {
+            const fetchData = async () => {
               try {
-                const response = await fetch('./data/sports-rankings.json');
-                if (!response.ok) throw new Error('Failed to fetch');
-                const data = await response.json();
-                setLiveRankings(data);
-                console.log('✅ 실시간 순위 로딩 완료:', data);
+                const rankingsResponse = await fetch('./data/sports-rankings.json');
+                if (rankingsResponse.ok) {
+                  const rankingsData = await rankingsResponse.json();
+                  setLiveRankings(rankingsData);
+                  console.log('✅ 실시간 순위 로딩 완료:', rankingsData);
+                }
               } catch (error) {
                 console.warn('⚠️ 실시간 데이터를 불러올 수 없습니다. 기본 데이터를 사용합니다.');
-              } finally {
-                setIsLoading(false);
               }
+              
+              try {
+                const eventsResponse = await fetch('./data/major-events.json');
+                if (eventsResponse.ok) {
+                  const eventsData = await eventsResponse.json();
+                  setMajorEventsData(eventsData);
+                  console.log('✅ 국제 대회 일정 로딩 완료:', eventsData);
+                }
+              } catch (error) {
+                console.warn('⚠️ 국제 대회 데이터를 불러올 수 없습니다. 기본 데이터를 사용합니다.');
+              }
+              
+              setIsLoading(false);
             };
             
             const timeout = setTimeout(() => setIsLoading(false), 3000);
-            fetchLiveRankings().finally(() => clearTimeout(timeout));
+            fetchData().finally(() => clearTimeout(timeout));
           }, []);
+          
+          const getNearestMajorEvent = (majorEventsData) => {
+            const now = new Date();
+            
+            if (majorEventsData?.events) {
+              for (const event of majorEventsData.events) {
+                const start = new Date(event.startDate);
+                const diff = start - now;
+                
+                if (diff > 0) {
+                  const daysUntil = Math.ceil(diff / (24 * 60 * 60 * 1000));
+                  return {
+                    id: event.id,
+                    title: event.title,
+                    subtitle: `개막 D-${daysUntil}`,
+                    route: `/event/${event.type}`,
+                    emoji: event.emoji,
+                    bgColor: 'bg-gray-800'
+                  };
+                }
+              }
+            }
+            
+            const fallbackEvents = [
+              {
+                id: 'olympics-2026-winter',
+                title: '2026 밀라노-코르티나 동계올림픽',
+                emoji: '⛷️',
+                startDate: new Date('2026-02-06'),
+                route: '/event/olympics-2026-winter'
+              },
+              {
+                id: 'worldcup-2026',
+                title: '2026 FIFA 월드컵',
+                emoji: '⚽',
+                startDate: new Date('2026-06-11'),
+                route: '/event/worldcup-2026'
+              },
+              {
+                id: 'asian-games-2026',
+                title: '2026 나고야 아시안게임',
+                emoji: '🏅',
+                startDate: new Date('2026-09-19'),
+                route: '/event/asian-games-2026'
+              },
+              {
+                id: 'olympics-2028-summer',
+                title: '2028 LA 하계올림픽',
+                emoji: '🏃',
+                startDate: new Date('2028-07-21'),
+                route: '/event/olympics-2028-summer'
+              }
+            ];
+            
+            let nearestEvent = null;
+            let minDiff = Infinity;
+            
+            for (const event of fallbackEvents) {
+              const diff = event.startDate - now;
+              if (diff > 0 && diff < minDiff) {
+                minDiff = diff;
+                nearestEvent = event;
+              }
+            }
+            
+            if (nearestEvent) {
+              const daysUntil = Math.ceil(minDiff / (24 * 60 * 60 * 1000));
+              return {
+                id: nearestEvent.id,
+                title: nearestEvent.title,
+                subtitle: `개막 D-${daysUntil}`,
+                route: nearestEvent.route,
+                emoji: nearestEvent.emoji,
+                bgColor: 'bg-gray-800'
+              };
+            }
+            
+            return null;
+          };
           
           const updatedSportsData = useMemo(() => {
             const data = { ...sportsData };
             
-            // 시즌 날짜 가져오기
             const getSeasonDates = () => {
               if (liveRankings?.seasonDates) {
                 return liveRankings.seasonDates;
@@ -263,16 +343,13 @@
               return now >= start && now <= end;
             };
             
-            // 야구 데이터 업데이트
             if (liveRankings?.baseball) {
               data.baseball = { ...data.baseball, ranking: liveRankings.baseball };
             }
             
-            // 야구 subtitle 동적 변경
             const baseballActive = isSeasonActive(seasonDates.baseball.start, seasonDates.baseball.end);
             data.baseball.subtitle = baseballActive ? '2025 KBO 리그' : '2025 KBO 시즌 최종 순위';
             
-            // 배구 데이터 업데이트
             if (liveRankings?.volleyball) {
               data.volleyball = { 
                 ...data.volleyball, 
@@ -281,7 +358,6 @@
               };
             }
             
-            // 배구 subtitle 동적 변경
             const volleyballActive = isSeasonActive(seasonDates.volleyball.start, seasonDates.volleyball.end);
             data.volleyball.subtitle = volleyballActive ? 'V-리그 시즌 중' : 'V-리그 오프시즌';
             
@@ -289,12 +365,10 @@
           }, [liveRankings]);
 
           const layout = useMemo(() => {
-            // 시즌 날짜 가져오기 (실시간 데이터 or 기본값)
             const getSeasonDates = () => {
               if (liveRankings?.seasonDates) {
                 return liveRankings.seasonDates;
               }
-              // 기본값 (폴백)
               return {
                 baseball: { start: '2025-03-29', end: '2025-10-05' },
                 volleyball: { start: '2024-10-12', end: '2025-04-20' }
@@ -303,7 +377,6 @@
             
             const seasonDates = getSeasonDates();
             
-            // 시즌 상태 판단
             const isSeasonActive = (startDate, endDate) => {
               const now = new Date();
               const start = new Date(startDate);
@@ -320,10 +393,8 @@
               seasonDates.volleyball.end
             );
             
-            // 우선순위: 진행 중인 시즌 > 대기 중인 시즌
             const cards = [];
             
-            // 1순위: 진행 중인 스포츠
             if (volleyballActive) {
               cards.push(updatedSportsData.volleyball);
             }
@@ -331,10 +402,6 @@
               cards.push(updatedSportsData.baseball);
             }
             
-            // 2순위: 국제 이벤트
-            cards.push(updatedSportsData.worldcup);
-            
-            // 3순위: 대기 중인 스포츠
             if (!volleyballActive) {
               cards.push(updatedSportsData.volleyball);
             }
@@ -342,12 +409,15 @@
               cards.push(updatedSportsData.baseball);
             }
             
-            // 4순위: 고정 (안세영)
+            const nearestEvent = getNearestMajorEvent(majorEventsData);
+            if (cards.length < 3 && nearestEvent) {
+              cards.push(nearestEvent);
+            }
+            
             cards.push(updatedSportsData.anseyoung);
             
-            // 4개만 반환
             return cards.slice(0, 4);
-          }, [updatedSportsData, liveRankings]);
+          }, [updatedSportsData, liveRankings, majorEventsData]);
           
           const handleCardClick = (route) => {
             setCurrentRoute(route);
