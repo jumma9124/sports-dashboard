@@ -243,10 +243,36 @@
           const updatedSportsData = useMemo(() => {
             const data = { ...sportsData };
             
+            // 시즌 날짜 가져오기
+            const getSeasonDates = () => {
+              if (liveRankings?.seasonDates) {
+                return liveRankings.seasonDates;
+              }
+              return {
+                baseball: { start: '2025-03-29', end: '2025-10-05' },
+                volleyball: { start: '2024-10-12', end: '2025-04-20' }
+              };
+            };
+            
+            const seasonDates = getSeasonDates();
+            
+            const isSeasonActive = (startDate, endDate) => {
+              const now = new Date();
+              const start = new Date(startDate);
+              const end = new Date(endDate);
+              return now >= start && now <= end;
+            };
+            
+            // 야구 데이터 업데이트
             if (liveRankings?.baseball) {
               data.baseball = { ...data.baseball, ranking: liveRankings.baseball };
             }
             
+            // 야구 subtitle 동적 변경
+            const baseballActive = isSeasonActive(seasonDates.baseball.start, seasonDates.baseball.end);
+            data.baseball.subtitle = baseballActive ? '2025 KBO 리그' : '2025 KBO 시즌 최종 순위';
+            
+            // 배구 데이터 업데이트
             if (liveRankings?.volleyball) {
               data.volleyball = { 
                 ...data.volleyball, 
@@ -255,17 +281,73 @@
               };
             }
             
+            // 배구 subtitle 동적 변경
+            const volleyballActive = isSeasonActive(seasonDates.volleyball.start, seasonDates.volleyball.end);
+            data.volleyball.subtitle = volleyballActive ? 'V-리그 시즌 중' : 'V-리그 오프시즌';
+            
             return data;
           }, [liveRankings]);
 
           const layout = useMemo(() => {
-            return [
-              updatedSportsData.baseball,
-              updatedSportsData.volleyball,
-              updatedSportsData.worldcup,
-              updatedSportsData.anseyoung
-            ];
-          }, [updatedSportsData]);
+            // 시즌 날짜 가져오기 (실시간 데이터 or 기본값)
+            const getSeasonDates = () => {
+              if (liveRankings?.seasonDates) {
+                return liveRankings.seasonDates;
+              }
+              // 기본값 (폴백)
+              return {
+                baseball: { start: '2025-03-29', end: '2025-10-05' },
+                volleyball: { start: '2024-10-12', end: '2025-04-20' }
+              };
+            };
+            
+            const seasonDates = getSeasonDates();
+            
+            // 시즌 상태 판단
+            const isSeasonActive = (startDate, endDate) => {
+              const now = new Date();
+              const start = new Date(startDate);
+              const end = new Date(endDate);
+              return now >= start && now <= end;
+            };
+            
+            const baseballActive = isSeasonActive(
+              seasonDates.baseball.start, 
+              seasonDates.baseball.end
+            );
+            const volleyballActive = isSeasonActive(
+              seasonDates.volleyball.start, 
+              seasonDates.volleyball.end
+            );
+            
+            // 우선순위: 진행 중인 시즌 > 대기 중인 시즌
+            const cards = [];
+            
+            // 1순위: 진행 중인 스포츠
+            if (volleyballActive) {
+              cards.push(updatedSportsData.volleyball);
+            }
+            if (baseballActive) {
+              cards.push(updatedSportsData.baseball);
+            }
+            
+            // 2순위: 국제 이벤트
+            cards.push(updatedSportsData.worldcup);
+            
+            // 3순위: 대기 중인 스포츠
+            if (!volleyballActive) {
+              cards.push(updatedSportsData.volleyball);
+            }
+            if (!baseballActive) {
+              cards.push(updatedSportsData.baseball);
+            }
+            
+            // 4순위: 고정 (안세영)
+            cards.push(updatedSportsData.anseyoung);
+            
+            // 4개만 반환
+            return cards.slice(0, 4);
+          }, [updatedSportsData, liveRankings]);
           
           const handleCardClick = (route) => {
             setCurrentRoute(route);

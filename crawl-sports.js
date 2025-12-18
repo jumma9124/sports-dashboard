@@ -16,7 +16,19 @@ async function crawlSportsData() {
   const results = {
     lastUpdated: new Date().toISOString(),
     baseball: null,
-    volleyball: null
+    volleyball: null,
+    seasonDates: {
+      baseball: {
+        start: '2025-03-29',
+        end: '2025-10-05',
+        source: 'default'
+      },
+      volleyball: {
+        start: '2024-10-12',
+        end: '2025-04-20',
+        source: 'default'
+      }
+    }
   };
   
   try {
@@ -121,7 +133,68 @@ async function crawlSportsData() {
     
     if (volleyballData) {
       results.volleyball = volleyballData;
-      console.log('✅ 현대캐피탈:', volleyballData);
+      console.log('✅ 현대캐피탈 순위:', volleyballData);
+      
+      // ===== 다음 경기 크롤링 =====
+      try {
+        console.log('📅 현대캐피탈 다음 경기 크롤링 중...');
+        await page.goto('https://www.kovo.co.kr/game/v-league/11210_team-schedule.asp?s_part=1&s_team=11', {
+          waitUntil: 'networkidle2',
+          timeout: 30000
+        });
+        
+        await page.waitForTimeout(2000);
+        
+        const nextMatchData = await page.evaluate(() => {
+          // 경기 일정 테이블에서 다음 경기 찾기
+          const rows = document.querySelectorAll('table tbody tr');
+          const today = new Date();
+          
+          for (let row of rows) {
+            const dateCell = row.querySelector('td:nth-child(1)')?.textContent?.trim();
+            const timeCell = row.querySelector('td:nth-child(2)')?.textContent?.trim();
+            const homeTeam = row.querySelector('td:nth-child(3)')?.textContent?.trim();
+            const awayTeam = row.querySelector('td:nth-child(5)')?.textContent?.trim();
+            const location = row.querySelector('td:nth-child(6)')?.textContent?.trim();
+            
+            if (!dateCell || !timeCell) continue;
+            
+            // 날짜 파싱
+            const dateParts = dateCell.match(/(\d+)\.(\d+)\(.\)/);
+            if (!dateParts) continue;
+            
+            const month = parseInt(dateParts[1]);
+            const day = parseInt(dateParts[2]);
+            const gameDate = new Date(today.getFullYear(), month - 1, day);
+            
+            // 미래 경기만 선택
+            if (gameDate >= today) {
+              // 현대캐피탈이 포함된 경기인지 확인
+              if (homeTeam.includes('현대캐피탈') || awayTeam.includes('현대캐피탈')) {
+                const opponent = homeTeam.includes('현대캐피탈') ? awayTeam : homeTeam;
+                const isHome = homeTeam.includes('현대캐피탈');
+                
+                return {
+                  opponent: (isHome ? 'vs ' : '@ ') + opponent,
+                  date: `${month}월 ${day}일`,
+                  time: timeCell,
+                  location: location || '미정'
+                };
+              }
+            }
+          }
+          return null;
+        });
+        
+        if (nextMatchData) {
+          results.volleyball.nextMatch = nextMatchData;
+          console.log('✅ 다음 경기:', nextMatchData);
+        } else {
+          console.log('⚠️ 다음 경기를 찾지 못했습니다.');
+        }
+      } catch (error) {
+        console.error('❌ 다음 경기 크롤링 실패:', error.message);
+      }
     } else {
       console.log('❌ 현대캐피탈 데이터를 찾지 못했습니다. (동적 렌더링 가능성)');
       
