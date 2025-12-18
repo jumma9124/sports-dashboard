@@ -225,52 +225,57 @@
                           포인트 <span className="font-semibold">{data.ranking.points?.toLocaleString()}</span>
                         </p>
                         <p className="text-xs">
-                          참가 대회 <span className="font-semibold">{data.ranking.tournaments}</span>개
+                          참가 대회 <span className="font-semibold">{data.ranking.tournaments || 0}</span>개
                         </p>
                       </div>
                     </div>
-                    
-                    {/* 최근 경기 결과 */}
-                    {data.ranking.lastMatch && (
-                      <div className="pt-2 mt-2 border-t border-white border-opacity-20">
-                        <p className="text-xs text-white text-opacity-70 mb-1.5">최근 경기</p>
-                        <div className="bg-white bg-opacity-10 rounded px-2.5 py-2">
-                          <p className="font-bold text-xs mb-1">
-                            {data.ranking.lastMatch.opponent}
-                          </p>
-                          <p className="text-xs text-white text-opacity-80">
-                            {data.ranking.lastMatch.score}
-                            {data.ranking.lastMatch.result === 'win' && 
-                              <span className="ml-2 text-green-400">승</span>
-                            }
-                          </p>
-                          <p className="text-xs text-white text-opacity-60 mt-0.5">
-                            {data.ranking.lastMatch.round}
-                          </p>
-                        </div>
-                      </div>
-                    )}
                     
                     {/* 다음 경기 */}
                     {data.ranking.nextMatch && (
                       <div className="pt-2 mt-2 border-t border-white border-opacity-20">
                         <p className="text-xs text-white text-opacity-70 mb-1.5">다음 경기</p>
                         <div className="bg-white bg-opacity-10 rounded px-2.5 py-2">
+                          <p className="text-xs text-white text-opacity-60 mb-1">
+                            {data.ranking.nextMatch.tournament}
+                          </p>
                           <p className="font-bold text-xs mb-1">
                             vs {data.ranking.nextMatch.opponent}
                           </p>
                           <div className="flex items-center gap-2 text-xs text-white text-opacity-80">
                             <span>{data.ranking.nextMatch.date}</span>
-                            {data.ranking.nextMatch.time && (
-                              <>
-                                <span>•</span>
-                                <span>{data.ranking.nextMatch.time}</span>
-                              </>
-                            )}
                           </div>
                           <p className="text-xs text-white text-opacity-60 mt-0.5">
                             {data.ranking.nextMatch.round}
                           </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* 최근 경기 결과 */}
+                    {data.ranking.recentResults && data.ranking.recentResults.length > 0 && (
+                      <div className="pt-2 mt-2 border-t border-white border-opacity-20">
+                        <p className="text-xs text-white text-opacity-70 mb-1.5">최근 경기</p>
+                        <div className="space-y-1.5">
+                          {data.ranking.recentResults.slice(0, 2).map((match, idx) => (
+                            <div key={idx} className="bg-white bg-opacity-10 rounded px-2.5 py-2">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                                  match.result === '승' ? 'bg-green-500' : 'bg-red-500'
+                                }`}>
+                                  {match.result}
+                                </span>
+                                <span className="text-xs text-white text-opacity-60">{match.date}</span>
+                              </div>
+                              <p className="font-bold text-xs mb-0.5">
+                                vs {match.opponent}
+                              </p>
+                              {match.score && (
+                                <p className="text-xs text-white text-opacity-70">
+                                  {match.score}
+                                </p>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -286,6 +291,7 @@
           const [currentPage, setCurrentPage] = useState('home');
           const [currentRoute, setCurrentRoute] = useState('');
           const [liveRankings, setLiveRankings] = useState(null);
+          const [badmintonMatches, setBadmintonMatches] = useState(null);
           const [majorEventsData, setMajorEventsData] = useState(null);
           const [isLoading, setIsLoading] = useState(true);
           
@@ -300,6 +306,18 @@
                 }
               } catch (error) {
                 console.warn('⚠️ 실시간 데이터를 불러올 수 없습니다. 기본 데이터를 사용합니다.');
+              }
+              
+              // 안세영 경기 정보 불러오기 추가
+              try {
+                const badmintonResponse = await fetch('./public/data/ahn-seyoung-matches.json');
+                if (badmintonResponse.ok) {
+                  const badmintonData = await badmintonResponse.json();
+                  setBadmintonMatches(badmintonData);
+                  console.log('✅ 안세영 경기 정보 로딩 완료:', badmintonData);
+                }
+              } catch (error) {
+                console.warn('⚠️ 안세영 경기 데이터를 불러올 수 없습니다.');
               }
               
               try {
@@ -439,7 +457,7 @@
             const volleyballActive = isSeasonActive(seasonDates.volleyball.start, seasonDates.volleyball.end);
             data.volleyball.subtitle = volleyballActive ? 'V-리그 시즌 중' : 'V-리그 오프시즌';
             
-            // 안세영 배드민턴 랭킹 업데이트
+            // 안세영 배드민턴 랭킹 및 경기 정보 업데이트
             if (liveRankings?.badminton) {
               data.anseyoung = {
                 ...data.anseyoung,
@@ -451,8 +469,33 @@
               };
             }
             
+            // 안세영 경기 정보 추가
+            if (badmintonMatches) {
+              data.anseyoung.ranking = {
+                ...data.anseyoung.ranking,
+                recentResults: badmintonMatches.recentResults || [],
+                nextMatch: badmintonMatches.upcomingMatches?.[0] ? {
+                  tournament: badmintonMatches.upcomingMatches[0].tournament,
+                  opponent: badmintonMatches.upcomingMatches[0].opponent,
+                  date: badmintonMatches.upcomingMatches[0].date,
+                  round: badmintonMatches.upcomingMatches[0].round
+                } : null
+              };
+              
+              // 현재 토너먼트 정보 업데이트
+              if (badmintonMatches.currentTournament) {
+                data.anseyoung.tournament = {
+                  name: badmintonMatches.currentTournament,
+                  location: '중국 항저우',
+                  startDate: new Date('2025-12-17'),
+                  endDate: new Date('2025-12-21'),
+                  status: badmintonMatches.seasonActive ? 'ongoing' : 'upcoming'
+                };
+              }
+            }
+            
             return data;
-          }, [liveRankings]);
+          }, [liveRankings, badmintonMatches]);
 
           const layout = useMemo(() => {
             const getSeasonDates = () => {
