@@ -1,0 +1,120 @@
+name: Update Sports Data with Events
+
+on:
+  schedule:
+    # 배구 시즌 (10월-4월): 매일 21:00, 23:00 KST
+    - cron: '0 12,14 * 10-12,1-4 *'  # UTC 12:00, 14:00 = KST 21:00, 23:00
+    
+    # 야구 시즌 (3월-10월): 매주 화요일 03:00 KST
+    - cron: '0 18 * 3-10 1'  # UTC 18:00 월요일 = KST 03:00 화요일
+    
+    # 주요 이벤트 체크: 매주 월요일 00:00 KST
+    - cron: '0 15 * * 0'  # UTC 15:00 일요일 = KST 00:00 월요일
+    
+    # 주요 이벤트 진행 중: 매일 09:00, 21:00 KST (동적으로 활성화)
+    - cron: '0 0,12 * * *'  # UTC 00:00, 12:00 = KST 09:00, 21:00
+
+  workflow_dispatch:  # 수동 실행 가능
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Chromium dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libcups2 \
+            libdrm2 \
+            libxkbcommon0 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libgbm1 \
+            libasound2
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check if event is active
+        id: check_event
+        run: |
+          # major-events.json에서 현재 진행 중인 이벤트 확인
+          TODAY=$(date -u +%Y-%m-%d)
+          
+          # Node.js로 이벤트 체크
+          node -e "
+          const fs = require('fs');
+          const events = JSON.parse(fs.readFileSync('./public/data/major-events.json', 'utf-8'));
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          const activeEvents = events.filter(e => {
+            const start = new Date(e.date);
+            const end = new Date(e.endDate);
+            return today >= start && today <= end;
+          });
+          
+          console.log('ACTIVE_EVENTS=' + (activeEvents.length > 0 ? 'true' : 'false'));
+          " >> $GITHUB_OUTPUT
+
+      - name: Crawl major events
+        if: steps.check_event.outputs.ACTIVE_EVENTS == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          echo "주요 이벤트 크롤링 시작..."
+          node crawl-events.js
+          
+          # 크롤링 결과가 있으면 major-events.json 업데이트
+          if [ -f public/data/major-events-updated.json ]; then
+            mv public/data/major-events-updated.json public/data/major-events.json
+            echo "주요 이벤트 데이터 업데이트 완료"
+          fi
+
+      - name: Crawl sports data (volleyball, baseball)
+        run: |
+          echo "배구/야구 데이터 크롤링 시작..."
+          node crawl-sports.js
+
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          git add public/data/*.json
+          
+          if git diff --staged --quiet; then
+            echo "변경사항 없음"
+          else
+            COMMIT_MSG="Update sports data - $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+            
+            # 이벤트 진행 중이면 커밋 메시지에 표시
+            if [ "${{ steps.check_event.outputs.ACTIVE_EVENTS }}" == "true" ]; then
+              COMMIT_MSG="$COMMIT_MSG [Major Event Active]"
+            fi
+            
+            git commit -m "$COMMIT_MSG"
+            git push
+            
+            echo "✅ 데이터 업데이트 완료"
+          fi
+
+      - name: Send notification on failure
+        if: failure()
+        run: |
+          echo "❌ 크롤링 실패!"
+          echo "워크플로우를 확인하세요: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

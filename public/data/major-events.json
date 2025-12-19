@@ -1,20 +1,30 @@
 [
   {
+    "name": "2026 월드 베이스볼 클래식",
+    "date": "2026-03-05",
+    "endDate": "2026-03-17",
+    "icon": "⚾",
+    "naverUrl": "https://sports.naver.com/wbaseball/wbc/2026/"
+  },
+  {
     "name": "2026 밀라노-코르티나 동계올림픽",
     "date": "2026-02-06",
     "endDate": "2026-02-22",
-    "icon": "⛷️"
+    "icon": "⛷️",
+    "naverUrl": "https://sports.naver.com/olympics/2026/"
   },
   {
     "name": "2026 FIFA 월드컵",
     "date": "2026-06-11",
     "endDate": "2026-07-19",
-    "icon": "⚽"
+    "icon": "⚽",
+    "naverUrl": "https://sports.naver.com/wfootball/worldcup/2026/"
   },
   {
     "name": "2028 로스앤젤레스 하계올림픽",
     "date": "2028-07-21",
     "endDate": "2028-08-06",
-    "icon": "🏅"
+    "icon": "🏅",
+    "naverUrl": "https://sports.naver.com/olympics/2028/"
   }
 ]
