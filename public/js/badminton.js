@@ -7,8 +7,8 @@ async function loadBadmintonData() {
     const data = await response.json();
 
     updateBadmintonRanking();
-    updateRecentMatch(data.recent);
-    updateNextMatch(data.upcoming);
+    updateRecentMatch(data.recent || []);
+    updateNextMatch(data.upcoming || []);
     
   } catch (error) {
     console.error('안세영 데이터 로딩 실패:', error);
@@ -17,17 +17,18 @@ async function loadBadmintonData() {
 }
 
 function updateBadmintonRanking() {
-  const rankElement = document.getElementById('badminton-rank');
-  if (rankElement) {
-    rankElement.textContent = '세계 1위';
-  }
-
+  // 랭킹은 헤더에 이미 "세계 1위"로 표시되어 있음
+  
   const pointsElement = document.getElementById('badminton-points');
   if (pointsElement) {
     pointsElement.innerHTML = `
-      <div class="points-label">포인트</div>
-      <div class="points-value">111,490</div>
-      <div class="points-detail">최근 대회 17개</div>
+      <div class="stat-row">
+        <span class="stat-label">포인트</span>
+        <div style="text-align: right;">
+          <div class="stat-value">111,490</div>
+          <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">최근 대회 17개</div>
+        </div>
+      </div>
     `;
   }
 }
@@ -66,6 +67,17 @@ function updateNextMatch(upcomingMatches) {
   const nextMatchElement = document.getElementById('badminton-next-match');
   
   if (!nextMatchElement) return;
+
+  // upcomingMatches가 배열이 아니거나 비어있는 경우 처리
+  if (!Array.isArray(upcomingMatches) || upcomingMatches.length === 0) {
+    nextMatchElement.innerHTML = `
+      <div class="next-match-label">다음 경기</div>
+      <div class="next-match-info">
+        <div class="no-match">예정된 경기 없음</div>
+      </div>
+    `;
+    return;
+  }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
