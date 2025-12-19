@@ -31,7 +31,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
       
       - name: Check if update is needed
         id: season_check
@@ -96,11 +96,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
       
       - name: Install dependencies
         run: |
-          npm install axios cheerio
+          npm install axios@1.6.0 cheerio@1.0.0-rc.12
       
       - name: Create data directory
         run: mkdir -p public/data
