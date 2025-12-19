@@ -5,728 +5,480 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MY SPORT</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .last-updated {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 10px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: calc(100vh - 120px);
+            min-height: 600px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+            /* 모든 카드 크기 동일하게 고정 */
+            min-height: 0;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .icon {
+            font-size: 3rem;
+        }
+
+        .team-info h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .league {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 5px;
+        }
+
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .rank-big {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .next-match-info, .recent-match-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .next-match-label, .recent-match-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
+        }
+
+        .opponent {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .match-details {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .match-separator {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .no-match, .no-event, .no-data {
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .result {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .result.win {
+            background: rgba(76, 175, 80, 0.3);
+            color: #81c784;
+        }
+
+        .result.loss {
+            background: rgba(244, 67, 54, 0.3);
+            color: #e57373;
+        }
+
+        /* 반응형 디자인 - 항상 2x2 그리드, 모든 카드 크기 동일 */
+        @media (max-width: 1024px) {
+            .dashboard {
+                gap: 15px;
+                /* 그리드 크기는 유지 */
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .rank-big {
+                font-size: 2.5rem;
+            }
+            
+            .icon {
+                font-size: 2.5rem;
+            }
+            
+            .team-info h2 {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .last-updated {
+                font-size: 0.75rem;
+            }
+            
+            .dashboard {
+                gap: 10px;
+                /* 그리드 크기는 유지 */
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .icon {
+                font-size: 2rem;
+            }
+            
+            .team-info h2 {
+                font-size: 1rem;
+            }
+            
+            .league {
+                font-size: 0.75rem;
+            }
+            
+            .rank-big {
+                font-size: 2rem;
+                margin: 10px 0;
+            }
+            
+            .stat-row {
+                padding: 10px;
+            }
+            
+            .stat-label {
+                font-size: 0.75rem;
+            }
+            
+            .stat-value {
+                font-size: 1rem;
+            }
+            
+            .opponent {
+                font-size: 1rem;
+            }
+            
+            .match-details {
+                font-size: 0.75rem;
+            }
+            
+            .next-match-info, .recent-match-info {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .dashboard {
+                gap: 8px;
+                /* 그리드 크기는 유지 */
+            }
+            
+            .card {
+                padding: 12px;
+            }
+            
+            .card-header {
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .icon {
+                font-size: 1.5rem;
+            }
+            
+            .team-info h2 {
+                font-size: 0.85rem;
+            }
+            
+            .league {
+                font-size: 0.65rem;
+            }
+            
+            .rank-big {
+                font-size: 1.5rem;
+                margin: 8px 0;
+            }
+            
+            .stat-row {
+                padding: 8px;
+                gap: 8px;
+            }
+            
+            .stat-label {
+                font-size: 0.65rem;
+            }
+            
+            .stat-value {
+                font-size: 0.85rem;
+            }
+            
+            .opponent {
+                font-size: 0.85rem;
+            }
+            
+            .match-details {
+                font-size: 0.65rem;
+            }
+            
+            .next-match-label, .recent-match-label {
+                font-size: 0.7rem;
+            }
+            
+            .next-match-info, .recent-match-info {
+                padding: 8px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-    
-    <script type="text/babel">
-        const { useState, useMemo, useEffect } = React;
+    <div class="header">
+        <h1>MY SPORT</h1>
+        <div class="last-updated" id="last-updated">최신 업데이트: 로딩 중...</div>
+    </div>
 
-        const SPORT_TYPES = {
-          BASEBALL: 'baseball',
-          VOLLEYBALL: 'volleyball',
-          BADMINTON: 'badminton'
-        };
-
-        const sportsData = {
-          baseball: {
-            id: 'baseball',
-            type: SPORT_TYPES.BASEBALL,
-            title: '한화 이글스',
-            subtitle: '2025 KBO 시즌 최종 순위',
-            route: '/baseball/hanwha',
-            emoji: '⚾',
-            bgColor: 'bg-gray-800',
-            ranking: { rank: 2, wins: 83, losses: 57, draws: 4, winRate: 0.593, gameDiff: 1.5 }
-          },
-          volleyball: {
-            id: 'volleyball',
-            type: SPORT_TYPES.VOLLEYBALL,
-            title: '현대캐피탈 스카이워커스',
-            subtitle: 'V-리그 시즌 중',
-            route: '/volleyball/hyundai-capital',
-            emoji: '🏐',
-            bgColor: 'bg-gray-800',
-            ranking: { rank: 2, wins: 8, losses: 6, points: 1, setRatio: 1.033 },
-            nextMatch: { opponent: 'vs 대한항공', date: '12월 16일', time: '19:00', location: '천안유관순체육관' }
-          },
-          anseyoung: {
-            id: 'anseyoung',
-            type: SPORT_TYPES.BADMINTON,
-            title: '안세영',
-            subtitle: '세계 1위',
-            route: '/player/anseyoung',
-            emoji: '🏸',
-            bgColor: 'bg-gray-800',
-            ranking: {
-              rank: 1,
-              player: 'AN Se Young',
-              country: 'KOR',
-              points: 111490,
-              tournaments: 17
-            },
-            tournament: {
-              name: 'BWF 월드투어 파이널스',
-              location: '중국 항저우',
-              startDate: new Date('2025-12-17'),
-              endDate: new Date('2025-12-21'),
-              status: 'upcoming'
-            }
-          }
-        };
-
-        const SportCard = ({ data, onClick }) => {
-          if (!data) {
-            return (
-              <div className="bg-gray-800 border border-gray-700 flex items-center justify-center">
-                <p className="text-gray-500 text-lg">시즌 대기 중</p>
-              </div>
-            );
-          }
-
-          const getTournamentStatus = (tournament) => {
-            if (!tournament) return null;
-            const today = new Date();
-            const start = tournament.startDate;
-            const end = tournament.endDate;
-            
-            if (today < start) {
-              const daysUntil = Math.ceil((start - today) / (24 * 60 * 60 * 1000));
-              return { status: 'upcoming', text: `D-${daysUntil}` };
-            } else if (today >= start && today <= end) {
-              return { status: 'ongoing', text: '경기 중' };
-            } else {
-              return { status: 'completed', text: '대회 종료' };
-            }
-          };
-          
-          const tournamentStatus = data.tournament ? getTournamentStatus(data.tournament) : null;
-          
-          const formatDate = (date) => {
-            return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
-          };
-          
-          return (
-            <div
-              onClick={onClick}
-              className={`${data.bgColor} border border-gray-700 cursor-pointer transform transition-all duration-300 hover:brightness-110 flex items-center justify-center p-4 md:p-6 relative overflow-y-auto custom-scrollbar h-full`}
-            >
-              <div className="flex flex-col items-center justify-center text-white text-center w-full h-full">
-                
-                {/* 모바일 (< 768px): 이모지 + 핵심 정보 */}
-                <div className="md:hidden flex flex-col items-center w-full">
-                  <div className="text-6xl mb-2">{data.emoji}</div>
-                  <h2 className="text-lg font-bold mb-1">{data.title}</h2>
-                  {data.ranking && (
-                    <div className="text-2xl font-bold mt-1">
-                      {data.ranking.rank}위
-                    </div>
-                  )}
+    <div class="dashboard">
+        <!-- 배구 카드 -->
+        <div class="card volleyball-card">
+            <div class="card-header">
+                <div class="icon">🏐</div>
+                <div class="team-info">
+                    <h2>현대캐피탈 스카이워커스</h2>
+                    <div class="league">V-리그 오프시즌</div>
                 </div>
-                
-                {/* 태블릿 (768px ~ 1024px): 간략한 정보 */}
-                <div className="hidden md:flex lg:hidden flex-col items-center w-full">
-                  <div className="text-5xl mb-3">{data.emoji}</div>
-                  <h2 className="text-xl font-bold mb-1">{data.title}</h2>
-                  <p className="text-white text-opacity-80 text-xs mb-2">{data.subtitle}</p>
-                  
-                  {data.ranking && (
-                    <div className="bg-black bg-opacity-30 px-3 py-2 rounded-lg w-full max-w-xs">
-                      <div className="flex items-center justify-center gap-3">
-                        <div className="text-center">
-                          <p className="text-3xl font-bold">{data.ranking.rank}</p>
-                          <p className="text-xs text-white text-opacity-70 mt-0.5">순위</p>
-                        </div>
-                        {data.type === SPORT_TYPES.BASEBALL && (
-                          <>
-                            <div className="h-8 w-px bg-white bg-opacity-30" />
-                            <div className="text-left text-xs space-y-0.5">
-                              <p><span className="font-semibold">{data.ranking.wins}</span>승 <span className="font-semibold">{data.ranking.losses}</span>패</p>
-                              <p>승률 <span className="font-semibold">{data.ranking.winRate.toFixed(3)}</span></p>
-                            </div>
-                          </>
-                        )}
-                        {data.type === SPORT_TYPES.VOLLEYBALL && (
-                          <>
-                            <div className="h-8 w-px bg-white bg-opacity-30" />
-                            <div className="text-left text-xs space-y-0.5">
-                              <p><span className="font-semibold">{data.ranking.wins}</span>승 <span className="font-semibold">{data.ranking.losses}</span>패</p>
-                              <p>승점 <span className="font-semibold">{data.ranking.points}</span></p>
-                            </div>
-                          </>
-                        )}
-                        {data.type === SPORT_TYPES.BADMINTON && (
-                          <>
-                            <div className="h-8 w-px bg-white bg-opacity-30" />
-                            <div className="text-left text-xs space-y-0.5">
-                              <p>포인트 {data.ranking.points?.toLocaleString()}</p>
-                              {data.ranking.nextMatch && (
-                                <p className="text-white text-opacity-70">다음: {data.ranking.nextMatch.date}</p>
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* 데스크톱 (1024px+): 상세 정보 */}
-                <div className="hidden lg:flex lg:flex-col lg:items-center lg:justify-start w-full">
-                  <div className="text-6xl mb-4">{data.emoji}</div>
-                  <h2 className="text-2xl font-bold mb-2 flex-shrink-0">{data.title}</h2>
-                  <p className="text-white text-opacity-90 text-sm mb-3 flex-shrink-0">{data.subtitle}</p>
-                
-                {data.tournament && tournamentStatus?.status !== 'ongoing' && (
-                  <div className="mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg w-full max-w-xs flex-shrink-0">
-                    <div className="space-y-1.5 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="text-white text-opacity-70">대회</span>
-                        <span className="font-semibold text-right">{data.tournament.name}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-white text-opacity-70">장소</span>
-                        <span className="font-semibold">{data.tournament.location}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-white text-opacity-70">기간</span>
-                        <span className="font-semibold text-xs">
-                          {formatDate(data.tournament.startDate)} ~ {formatDate(data.tournament.endDate)}
-                        </span>
-                      </div>
-                      {tournamentStatus && (
-                        <div className="pt-2 mt-2 border-t border-white border-opacity-20 text-center">
-                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                            tournamentStatus.status === 'ongoing' ? 'bg-green-500 text-white animate-pulse' :
-                            tournamentStatus.status === 'upcoming' ? 'bg-blue-500 text-white' :
-                            'bg-gray-500 text-white'
-                          }`}>
-                            {tournamentStatus.text}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-                
-                {data.ranking && data.type === SPORT_TYPES.BASEBALL && (
-                  <div className="mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="text-center">
-                        <p className="text-3xl sm:text-4xl font-bold">{data.ranking.rank}</p>
-                        <p className="text-xs text-white text-opacity-70 mt-1">순위</p>
-                      </div>
-                      <div className="h-10 w-px bg-white bg-opacity-30" />
-                      <div className="text-left space-y-0.5">
-                        <p className="text-xs">
-                          <span className="font-semibold">{data.ranking.wins}</span> 승 · 
-                          <span className="font-semibold">{data.ranking.losses}</span> 패 · 
-                          <span className="font-semibold">{data.ranking.draws}</span> 무
-                        </p>
-                        <p className="text-xs">
-                          승률 <span className="font-semibold">{data.ranking.winRate.toFixed(3)}</span> · 
-                          <span className="text-xs">게임차 {data.ranking.gameDiff}</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {data.ranking && data.type === SPORT_TYPES.VOLLEYBALL && (
-                  <div className="mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0">
-                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                      <div className="text-center">
-                        <p className="text-3xl sm:text-4xl font-bold">{data.ranking.rank}</p>
-                        <p className="text-xs text-white text-opacity-70 mt-1">순위</p>
-                      </div>
-                      <div className="h-10 w-px bg-white bg-opacity-30" />
-                      <div className="text-left space-y-0.5">
-                        <p className="text-xs">
-                          <span className="font-semibold">{data.ranking.wins}</span> 승 · 
-                          <span className="font-semibold">{data.ranking.losses}</span> 패
-                        </p>
-                        <p className="text-xs">
-                          승점 <span className="font-semibold">{data.ranking.points}</span> 점 · 
-                          <span className="text-xs">세트득실 {data.ranking.setRatio.toFixed(3)}</span>
-                        </p>
-                      </div>
-                    </div>
-                    {data.nextMatch && (
-                      <div className="pt-2 mt-2 border-t border-white border-opacity-20">
-                        <p className="text-xs text-white text-opacity-70 mb-1.5">다음 경기</p>
-                        <div className="bg-white bg-opacity-10 rounded px-2.5 py-2">
-                          <p className="font-bold text-xs mb-1">{data.nextMatch.opponent}</p>
-                          <div className="flex items-center gap-2 text-xs text-white text-opacity-80">
-                            <span>{data.nextMatch.date}</span>
-                            <span>•</span>
-                            <span>{data.nextMatch.time}</span>
-                          </div>
-                          <p className="text-xs text-white text-opacity-60 mt-0.5">{data.nextMatch.location}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {data.ranking && data.type === SPORT_TYPES.BADMINTON && (
-                  <div className="mt-3 bg-black bg-opacity-30 px-4 py-3 rounded-lg flex-shrink-0 w-full max-w-xs">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="text-center">
-                        <p className="text-4xl font-bold">{data.ranking.rank}</p>
-                        <p className="text-xs text-white text-opacity-70 mt-1">세계 순위</p>
-                      </div>
-                      <div className="h-10 w-px bg-white bg-opacity-30" />
-                      <div className="text-left space-y-0.5">
-                        <p className="text-xs">
-                          포인트 <span className="font-semibold">{data.ranking.points?.toLocaleString()}</span>
-                        </p>
-                        <p className="text-xs">
-                          참가 대회 <span className="font-semibold">{data.ranking.tournaments || 0}</span>개
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* 다음 경기 */}
-                    {data.ranking.nextMatch && (
-                      <div className="pt-2 mt-2 border-t border-white border-opacity-20">
-                        <p className="text-xs text-white text-opacity-70 mb-1.5">다음 경기</p>
-                        <div className="bg-white bg-opacity-10 rounded px-2.5 py-2">
-                          <p className="text-xs text-white text-opacity-60 mb-1">
-                            {data.ranking.nextMatch.tournament}
-                          </p>
-                          <p className="font-bold text-xs mb-1">
-                            vs {data.ranking.nextMatch.opponent}
-                          </p>
-                          <div className="flex items-center gap-2 text-xs text-white text-opacity-80">
-                            <span>{data.ranking.nextMatch.date}</span>
-                          </div>
-                          <p className="text-xs text-white text-opacity-60 mt-0.5">
-                            {data.ranking.nextMatch.round}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* 최근 경기 결과 */}
-                    {data.ranking.recentResults && data.ranking.recentResults.length > 0 && (
-                      <div className="pt-2 mt-2 border-t border-white border-opacity-20">
-                        <p className="text-xs text-white text-opacity-70 mb-1.5">최근 경기</p>
-                        <div className="space-y-1.5">
-                          {data.ranking.recentResults.slice(0, 2).map((match, idx) => (
-                            <div key={idx} className="bg-white bg-opacity-10 rounded px-2.5 py-2">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                                  match.result === '승' ? 'bg-green-500' : 'bg-red-500'
-                                }`}>
-                                  {match.result}
-                                </span>
-                                <span className="text-xs text-white text-opacity-60">{match.date}</span>
-                              </div>
-                              <p className="font-bold text-xs mb-0.5">
-                                vs {match.opponent}
-                              </p>
-                              {match.score && (
-                                <p className="text-xs text-white text-opacity-70">
-                                  {match.score}
-                                </p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                </div>
-              </div>
             </div>
-          );
-        };
-
-        const SportsDashboard = () => {
-          const [currentPage, setCurrentPage] = useState('home');
-          const [currentRoute, setCurrentRoute] = useState('');
-          const [liveRankings, setLiveRankings] = useState(null);
-          const [badmintonMatches, setBadmintonMatches] = useState(null);
-          const [majorEventsData, setMajorEventsData] = useState(null);
-          const [isLoading, setIsLoading] = useState(true);
-          
-          useEffect(() => {
-            const fetchData = async () => {
-              try {
-                const rankingsResponse = await fetch('./data/sports-rankings.json');
-                if (rankingsResponse.ok) {
-                  const rankingsData = await rankingsResponse.json();
-                  setLiveRankings(rankingsData);
-                  console.log('✅ 실시간 순위 로딩 완료:', rankingsData);
-                }
-              } catch (error) {
-                console.warn('⚠️ 실시간 데이터를 불러올 수 없습니다. 기본 데이터를 사용합니다.');
-              }
-              
-              // 안세영 경기 정보 불러오기 추가
-              try {
-                const badmintonResponse = await fetch('./public/data/ahn-seyoung-matches.json');
-                if (badmintonResponse.ok) {
-                  const badmintonData = await badmintonResponse.json();
-                  setBadmintonMatches(badmintonData);
-                  console.log('✅ 안세영 경기 정보 로딩 완료:', badmintonData);
-                }
-              } catch (error) {
-                console.warn('⚠️ 안세영 경기 데이터를 불러올 수 없습니다.');
-              }
-              
-              try {
-                const eventsResponse = await fetch('./data/major-events.json');
-                if (eventsResponse.ok) {
-                  const eventsData = await eventsResponse.json();
-                  setMajorEventsData(eventsData);
-                  console.log('✅ 국제 대회 일정 로딩 완료:', eventsData);
-                }
-              } catch (error) {
-                console.warn('⚠️ 국제 대회 데이터를 불러올 수 없습니다. 기본 데이터를 사용합니다.');
-              }
-              
-              setIsLoading(false);
-            };
             
-            const timeout = setTimeout(() => setIsLoading(false), 3000);
-            fetchData().finally(() => clearTimeout(timeout));
-          }, []);
-          
-          const getNearestMajorEvent = (majorEventsData) => {
-            const now = new Date();
-            
-            if (majorEventsData?.events) {
-              for (const event of majorEventsData.events) {
-                const start = new Date(event.startDate);
-                const diff = start - now;
+            <div class="stats">
+                <div class="rank-big" id="volleyball-rank">-</div>
                 
-                if (diff > 0) {
-                  const daysUntil = Math.ceil(diff / (24 * 60 * 60 * 1000));
-                  return {
-                    id: event.id,
-                    title: event.title,
-                    subtitle: `개막 D-${daysUntil}`,
-                    route: `/event/${event.type}`,
-                    emoji: event.emoji,
-                    bgColor: 'bg-gray-800'
-                  };
-                }
-              }
-            }
-            
-            const fallbackEvents = [
-              {
-                id: 'olympics-2026-winter',
-                title: '2026 밀라노-코르티나 동계올림픽',
-                emoji: '⛷️',
-                startDate: new Date('2026-02-06'),
-                route: '/event/olympics-2026-winter'
-              },
-              {
-                id: 'worldcup-2026',
-                title: '2026 FIFA 월드컵',
-                emoji: '⚽',
-                startDate: new Date('2026-06-11'),
-                route: '/event/worldcup-2026'
-              },
-              {
-                id: 'asian-games-2026',
-                title: '2026 나고야 아시안게임',
-                emoji: '🏅',
-                startDate: new Date('2026-09-19'),
-                route: '/event/asian-games-2026'
-              },
-              {
-                id: 'olympics-2028-summer',
-                title: '2028 LA 하계올림픽',
-                emoji: '🏃',
-                startDate: new Date('2028-07-21'),
-                route: '/event/olympics-2028-summer'
-              }
-            ];
-            
-            let nearestEvent = null;
-            let minDiff = Infinity;
-            
-            for (const event of fallbackEvents) {
-              const diff = event.startDate - now;
-              if (diff > 0 && diff < minDiff) {
-                minDiff = diff;
-                nearestEvent = event;
-              }
-            }
-            
-            if (nearestEvent) {
-              const daysUntil = Math.ceil(minDiff / (24 * 60 * 60 * 1000));
-              return {
-                id: nearestEvent.id,
-                title: nearestEvent.title,
-                subtitle: `개막 D-${daysUntil}`,
-                route: nearestEvent.route,
-                emoji: nearestEvent.emoji,
-                bgColor: 'bg-gray-800'
-              };
-            }
-            
-            return null;
-          };
-          
-          const updatedSportsData = useMemo(() => {
-            const data = { ...sportsData };
-            
-            const getSeasonDates = () => {
-              if (liveRankings?.seasonDates) {
-                return liveRankings.seasonDates;
-              }
-              return {
-                baseball: { start: '2025-03-29', end: '2025-10-05' },
-                volleyball: { start: '2024-10-12', end: '2025-04-20' }
-              };
-            };
-            
-            const seasonDates = getSeasonDates();
-            
-            const isSeasonActive = (startDate, endDate) => {
-              const now = new Date();
-              const start = new Date(startDate);
-              const end = new Date(endDate);
-              return now >= start && now <= end;
-            };
-            
-            if (liveRankings?.baseball) {
-              data.baseball = { ...data.baseball, ranking: liveRankings.baseball };
-            }
-            
-            const baseballActive = isSeasonActive(seasonDates.baseball.start, seasonDates.baseball.end);
-            data.baseball.subtitle = baseballActive ? '2025 KBO 리그' : '2025 KBO 시즌 최종 순위';
-            
-            if (liveRankings?.volleyball) {
-              data.volleyball = { 
-                ...data.volleyball, 
-                ranking: liveRankings.volleyball,
-                nextMatch: liveRankings.volleyball.nextMatch || data.volleyball.nextMatch
-              };
-            }
-            
-            const volleyballActive = isSeasonActive(seasonDates.volleyball.start, seasonDates.volleyball.end);
-            data.volleyball.subtitle = volleyballActive ? 'V-리그 시즌 중' : 'V-리그 오프시즌';
-            
-            // 안세영 배드민턴 랭킹 및 경기 정보 업데이트
-            if (liveRankings?.badminton) {
-              data.anseyoung = {
-                ...data.anseyoung,
-                subtitle: `세계 ${liveRankings.badminton.rank}위`,
-                ranking: {
-                  ...data.anseyoung.ranking,
-                  ...liveRankings.badminton
-                }
-              };
-            }
-            
-            // 안세영 경기 정보 추가
-            if (badmintonMatches) {
-              data.anseyoung.ranking = {
-                ...data.anseyoung.ranking,
-                recentResults: badmintonMatches.recentResults || [],
-                nextMatch: badmintonMatches.upcomingMatches?.[0] ? {
-                  tournament: badmintonMatches.upcomingMatches[0].tournament,
-                  opponent: badmintonMatches.upcomingMatches[0].opponent,
-                  date: badmintonMatches.upcomingMatches[0].date,
-                  round: badmintonMatches.upcomingMatches[0].round
-                } : null
-              };
-              
-              // 현재 토너먼트 정보 업데이트
-              if (badmintonMatches.currentTournament) {
-                data.anseyoung.tournament = {
-                  name: badmintonMatches.currentTournament,
-                  location: '중국 항저우',
-                  startDate: new Date('2025-12-17'),
-                  endDate: new Date('2025-12-21'),
-                  status: badmintonMatches.seasonActive ? 'ongoing' : 'upcoming'
-                };
-              }
-            }
-            
-            return data;
-          }, [liveRankings, badmintonMatches]);
-
-          const layout = useMemo(() => {
-            const getSeasonDates = () => {
-              if (liveRankings?.seasonDates) {
-                return liveRankings.seasonDates;
-              }
-              return {
-                baseball: { start: '2025-03-29', end: '2025-10-05' },
-                volleyball: { start: '2024-10-12', end: '2025-04-20' }
-              };
-            };
-            
-            const seasonDates = getSeasonDates();
-            
-            const isSeasonActive = (startDate, endDate) => {
-              const now = new Date();
-              const start = new Date(startDate);
-              const end = new Date(endDate);
-              return now >= start && now <= end;
-            };
-            
-            const baseballActive = isSeasonActive(
-              seasonDates.baseball.start, 
-              seasonDates.baseball.end
-            );
-            const volleyballActive = isSeasonActive(
-              seasonDates.volleyball.start, 
-              seasonDates.volleyball.end
-            );
-            
-            const cards = [];
-            
-            if (volleyballActive) {
-              cards.push(updatedSportsData.volleyball);
-            }
-            if (baseballActive) {
-              cards.push(updatedSportsData.baseball);
-            }
-            
-            if (!volleyballActive) {
-              cards.push(updatedSportsData.volleyball);
-            }
-            if (!baseballActive) {
-              cards.push(updatedSportsData.baseball);
-            }
-            
-            const nearestEvent = getNearestMajorEvent(majorEventsData);
-            if (cards.length < 3 && nearestEvent) {
-              cards.push(nearestEvent);
-            }
-            
-            cards.push(updatedSportsData.anseyoung);
-            
-            return cards.slice(0, 4);
-          }, [updatedSportsData, liveRankings, majorEventsData]);
-          
-          const handleCardClick = (route) => {
-            setCurrentRoute(route);
-            setCurrentPage('detail');
-            // 브라우저 히스토리에 추가
-            window.history.pushState({ page: 'detail', route }, '', '#detail');
-          };
-          
-          const handleBackToHome = () => {
-            setCurrentPage('home');
-            setCurrentRoute('');
-            // 브라우저 히스토리에 추가
-            window.history.pushState({ page: 'home' }, '', '#home');
-          };
-          
-          // 브라우저 뒤로가기 버튼 처리
-          useEffect(() => {
-            const handlePopState = (event) => {
-              if (event.state) {
-                if (event.state.page === 'home') {
-                  setCurrentPage('home');
-                  setCurrentRoute('');
-                } else if (event.state.page === 'detail') {
-                  setCurrentPage('detail');
-                  setCurrentRoute(event.state.route);
-                }
-              } else {
-                // 히스토리 상태가 없으면 홈으로
-                setCurrentPage('home');
-                setCurrentRoute('');
-              }
-            };
-            
-            window.addEventListener('popstate', handlePopState);
-            
-            // 초기 상태 설정
-            window.history.replaceState({ page: 'home' }, '', '#home');
-            
-            return () => {
-              window.removeEventListener('popstate', handlePopState);
-            };
-          }, []);
-          
-          const formatUpdateTime = (dateString) => {
-            const date = new Date(dateString);
-            return date.toLocaleString('ko-KR', {
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            });
-          };
-          
-          if (isLoading) {
-            return (
-              <div className="h-screen bg-gray-900 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto mb-4" />
-                  <p className="text-white text-xl">실시간 순위 불러오는 중...</p>
+                <div class="stat-row">
+                    <span class="stat-label">전적</span>
+                    <span class="stat-value" id="volleyball-record">- 승 - 패</span>
                 </div>
-              </div>
-            );
-          }
-          
-          if (currentPage === 'detail') {
-            return (
-              <div className="min-h-screen bg-gray-100 p-8">
-                <div className="max-w-4xl mx-auto">
-                  <button
-                    onClick={handleBackToHome}
-                    className="mb-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    ← 대시보드로 돌아가기
-                  </button>
-                  <div className="bg-white rounded-2xl p-12 shadow-lg">
-                    <h1 className="text-4xl font-bold mb-4">상세 페이지</h1>
-                    <p className="text-gray-600 text-xl mb-8">라우트: {currentRoute}</p>
-                    <div className="bg-gray-50 p-8 rounded-xl">
-                      <p className="text-gray-700 leading-relaxed">여기에 실제 데이터가 표시됩니다.</p>
+                
+                <div class="stat-row">
+                    <span class="stat-label">승률 & 세트득실률</span>
+                    <div>
+                        <div class="stat-value" id="volleyball-winrate">-</div>
+                        <div class="stat-value" id="volleyball-setratio" style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">-</div>
                     </div>
-                  </div>
                 </div>
-              </div>
-            );
-          }
-          
-          return (
-            <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
-              <header className="px-4 lg:px-6 py-3 bg-gray-800 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2 lg:gap-0">
-                <div>
-                  <h1 className="text-lg lg:text-xl font-bold text-white">MY SPORT</h1>
-                  <p className="text-gray-400 text-xs">
-                    {liveRankings ? (
-                      <span className="text-green-400">
-                        실시간 업데이트 ({formatUpdateTime(liveRankings.lastUpdated)})
-                      </span>
-                    ) : (
-                      <span className="text-yellow-400">
-                        실시간 데이터 준비 중...
-                      </span>
-                    )}
-                  </p>
+                
+                <div id="volleyball-next-match">
+                    <div class="next-match-label">다음 경기</div>
+                    <div class="next-match-info">
+                        <div class="no-match">로딩 중...</div>
+                    </div>
                 </div>
-                <p className="text-gray-500 text-xs hidden lg:block">나만 보는 페이지</p>
-              </header>
-              <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-0" style={{ height: 'calc(100vh - 60px)' }}>
-                {layout.map((card, index) => (
-                  <SportCard
-                    key={card?.id || `empty-${index}`}
-                    data={card}
-                    onClick={() => card && handleCardClick(card.route)}
-                  />
-                ))}
-              </div>
             </div>
-          );
-        };
+        </div>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<SportsDashboard />);
+        <!-- 야구 카드 -->
+        <div class="card baseball-card">
+            <div class="card-header">
+                <div class="icon">⚾</div>
+                <div class="team-info">
+                    <h2>한화 이글스</h2>
+                    <div class="league">2025 KBO 시즌 최종 순위</div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="rank-big" id="baseball-rank">-</div>
+                
+                <div class="stat-row">
+                    <span class="stat-label">전적</span>
+                    <span class="stat-value" id="baseball-record">시즌 종료</span>
+                </div>
+                
+                <div class="stat-row">
+                    <span class="stat-label">승률</span>
+                    <span class="stat-value" id="baseball-winrate">-</span>
+                </div>
+                
+                <div id="baseball-season-info"></div>
+            </div>
+        </div>
+
+        <!-- 안세영 카드 -->
+        <div class="card badminton-card">
+            <div class="card-header">
+                <div class="icon">🏸</div>
+                <div class="team-info">
+                    <h2>안세영</h2>
+                    <div class="league">세계 배드민턴 연맹</div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="rank-big" id="badminton-rank">-</div>
+                
+                <div id="badminton-points"></div>
+                
+                <div id="badminton-recent-match">
+                    <div class="recent-match-label">최근 경기</div>
+                    <div class="recent-match-info">
+                        <div class="no-data">로딩 중...</div>
+                    </div>
+                </div>
+                
+                <div id="badminton-next-match">
+                    <div class="next-match-label">다음 경기</div>
+                    <div class="next-match-info">
+                        <div class="no-match">로딩 중...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 주요 이벤트 카드 -->
+        <div class="card events-card">
+            <div class="card-header">
+                <div class="team-info">
+                    <h2>주요 스포츠 이벤트</h2>
+                    <div class="league">다가오는 대회</div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div id="major-event" style="display: flex; align-items: center; gap: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                    <div class="event-icon" style="font-size: 3rem;">📅</div>
+                    <div class="event-info">
+                        <div class="no-event">로딩 중...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 외부 JavaScript 파일 로드 -->
+    <script src="./public/js/volleyball.js"></script>
+    <script src="./public/js/baseball.js"></script>
+    <script src="./public/js/badminton.js"></script>
+    <script src="./public/js/events.js"></script>
+
+    <!-- 최종 업데이트 시간 표시 -->
+    <script>
+        async function updateLastUpdatedTime() {
+            try {
+                const response = await fetch('./public/data/sports.json');
+                const data = await response.json();
+                
+                if (data.lastUpdated) {
+                    const date = new Date(data.lastUpdated);
+                    const formatted = `${date.getMonth() + 1}월 ${date.getDate()}일 오후 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                    document.getElementById('last-updated').textContent = `최신 업데이트: ${formatted}`;
+                }
+            } catch (error) {
+                console.error('업데이트 시간 로딩 실패:', error);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateLastUpdatedTime);
+        } else {
+            updateLastUpdatedTime();
+        }
     </script>
 </body>
 </html>
