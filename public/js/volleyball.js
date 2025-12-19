@@ -41,7 +41,7 @@ function updateVolleyballTeamInfo(volleyball) {
   // 세트득실률
   const setRatioElement = document.getElementById('volleyball-setratio');
   if (setRatioElement && volleyball.setRatio) {
-    setRatioElement.textContent = `세트득실률 ${volleyball.setRatio}`;
+    setRatioElement.textContent = volleyball.setRatio;
   }
 }
 

@@ -166,17 +166,36 @@
             body { padding: 10px; }
             .header h1 { font-size: 1.5rem; }
             .dashboard { gap: 10px; }
-            .card { padding: 15px; }
-            .icon { font-size: 2rem; }
-            .team-info h2 { font-size: 1rem; }
-            .rank-big { font-size: 2rem; }
+            .card { 
+                padding: 15px;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            /* 아이콘만 크게 표시 */
+            .card-header {
+                flex-direction: column;
+                margin-bottom: 0;
+            }
+            .icon { 
+                font-size: 4rem;
+            }
+            
+            /* 나머지 내용 숨김 */
+            .team-info,
+            .stats,
+            .rank-big,
+            .stat-row,
+            .next-match-info,
+            .recent-match-info {
+                display: none;
+            }
         }
 
         @media (max-width: 480px) {
-            .icon { font-size: 1.5rem; }
-            .team-info h2 { font-size: 0.85rem; }
-            .rank-big { font-size: 1.5rem; }
-            .stat-value { font-size: 0.9rem; }
+            .icon { 
+                font-size: 3.5rem;
+            }
         }
     </style>
 </head>
@@ -208,10 +227,11 @@
                 </div>
                 <div class="stat-row">
                     <span class="stat-label">승률 & 세트득실률</span>
-                    <div>
-                        <div class="stat-value" id="volleyball-winrate">-</div>
-                        <div class="stat-value" id="volleyball-setratio" style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">-</div>
-                    </div>
+                    <span class="stat-value">
+                        <span id="volleyball-winrate">-</span>
+                        <span style="margin: 0 8px; color: rgba(255,255,255,0.4);">|</span>
+                        <span id="volleyball-setratio" style="color: rgba(255,255,255,0.8);">-</span>
+                    </span>
                 </div>
                 <div id="volleyball-next-match">
                     <div class="next-match-label">다음 경기</div>
@@ -248,6 +268,7 @@
         <!-- 주요 이벤트 카드 -->
         <div class="card events-card" data-card-type="events">
             <div class="card-header">
+                <div class="icon">📅</div>
                 <div class="team-info">
                     <h2>주요 스포츠 이벤트</h2>
                     <div class="league">다가오는 대회</div>
