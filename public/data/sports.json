@@ -9,17 +9,17 @@
     "games": "14",
     "points": "26",
     "setRatio": "1.292",
-    "lastUpdated": "2025-12-19T05:21:57.975Z"
+    "lastUpdated": "2025-12-19T06:17:58.315Z"
   },
   "baseball": {
     "sport": "야구",
-    "team": "SSG 랜더스",
+    "team": "한화 이글스",
     "league": "KBO",
-    "rank": "6위",
-    "record": "시즌 종료",
-    "winRate": ".471",
-    "lastUpdated": "2025-12-19T05:21:49.815Z",
-    "note": "2024 시즌 종료 (2025년 3월 재개)"
+    "rank": "2위",
+    "record": "83승 57패 4무",
+    "winRate": ".593",
+    "lastUpdated": "2025-12-19T06:17:50.846Z",
+    "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
   },
-  "lastUpdated": "2025-12-19T05:21:58.206Z"
+  "lastUpdated": "2025-12-19T06:17:58.570Z"
 }
