@@ -1,381 +1,211 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
-// 시즌 매니저 import
-const seasonManager = require('./season-manager.js');
+// API URLs
+const KOVO_API = {
+  teamRecords: 'https://api.kovo.co.kr/team-records',
+  gameSchedule: 'https://api.kovo.co.kr/game-schedule'
+};
 
-// 데이터 디렉토리 확인/생성
-const dataDir = path.join(__dirname, 'public', 'data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
+const NAVER_URLS = {
+  baseball: {
+    standings: 'https://sports.news.naver.com/kbaseball/record/index?category=kbo'
+  },
+  badminton: {
+    rankings: 'https://bwf.tournamentsoftware.com/ranking/category.aspx?id=40222&category=472'
+  }
+};
 
-// ========================================
-// 1. 한화 이글스 야구 순위 크롤링
-// ========================================
-async function crawlBaseballStandings() {
+const HYUNDAI_CAPITAL_CODE = '1005';
+const HANWHA_TEAM_NAME = '한화';
+
+// 배구 크롤링 (KOVO API)
+async function crawlVolleyball() {
+  console.log('[배구] 현대캐피탈 순위 및 일정 크롤링 시작...');
+  
   try {
-    console.log('\n[야구] 한화 이글스 순위 크롤링 시작...');
-    const url = 'https://sports.news.naver.com/kbaseball/record/index?category=kbo';
-    
-    const response = await axios.get(url, {
+    // 1. 순위 정보 가져오기
+    const recordsResponse = await axios.get(KOVO_API.teamRecords, {
+      params: {
+        page: 0,
+        size: 30,
+        sort: 'atsp,desc',
+        season: '022',
+        gender: '1',
+        league: '201',
+        round: 'all'
+      },
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       }
     });
 
-    const $ = cheerio.load(response.data);
-    const standings = [];
-
-    $('#regularTeamRecordList_table tbody tr').each((index, element) => {
-      const $row = $(element);
-      const rank = $row.find('th strong').text().trim();
-      const team = $row.find('td').eq(0).find('span').text().trim();
-      const games = $row.find('td').eq(1).text().trim();
-      const wins = $row.find('td').eq(2).text().trim();
-      const losses = $row.find('td').eq(3).text().trim();
-      const draws = $row.find('td').eq(4).text().trim();
-      const winRate = $row.find('td').eq(5).text().trim();
-
-      if (rank && team) {
-        standings.push({
-          rank: parseInt(rank) || 0,
-          team,
-          games: parseInt(games) || 0,
-          wins: parseInt(wins) || 0,
-          losses: parseInt(losses) || 0,
-          draws: parseInt(draws) || 0,
-          winRate: parseFloat(winRate) || 0
-        });
-      }
-    });
-
-    const hanwha = standings.find(team => team.team === '한화');
-    const output = {
-      lastUpdated: new Date().toISOString(),
-      season: new Date().getFullYear(),
-      hanwha: hanwha || null,
-      allStandings: standings
-    };
-
-    const outputPath = path.join(dataDir, 'baseball-standings.json');
-    fs.writeFileSync(outputPath, JSON.stringify(output, null, 2), 'utf8');
-    console.log(`✓ 야구 순위 저장 완료 (한화: ${hanwha?.rank || 'N/A'}위)`);
-
-    return output;
-  } catch (error) {
-    console.error('✗ 야구 크롤링 오류:', error.message);
-    return null;
-  }
-}
-
-// ========================================
-// 2. 현대캐피탈 배구 순위 + 일정 크롤링
-// ========================================
-async function crawlVolleyballData() {
-  try {
-    console.log('\n[배구] 현대캐피탈 순위 및 일정 크롤링 시작...');
+    const teams = recordsResponse.data.content || [];
+    const hyundaiCapital = teams.find(team => team.tcode === HYUNDAI_CAPITAL_CODE);
     
-    // 순위 크롤링
-    const standingsUrl = 'https://sports.news.naver.com/kvolleyball/record/index?category=v-league&gender=m';
-    const standingsResponse = await axios.get(standingsUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
+    if (!hyundaiCapital) {
+      throw new Error('현대캐피탈 순위 정보를 찾을 수 없습니다');
+    }
 
-    const $standings = cheerio.load(standingsResponse.data);
-    const standings = [];
-
-    $('#regularTeamRecordList_table tbody tr').each((index, element) => {
-      const $row = $standings(element);
-      const rank = $row.find('th strong').text().trim();
-      const team = $row.find('td').eq(0).find('span').text().trim();
-      const games = $row.find('td').eq(1).text().trim();
-      const wins = $row.find('td').eq(2).text().trim();
-      const losses = $row.find('td').eq(3).text().trim();
-      const sets = $row.find('td').eq(4).text().trim();
-      const winRate = $row.find('td').eq(5).text().trim();
-
-      if (rank && team) {
-        standings.push({
-          rank: parseInt(rank) || 0,
-          team,
-          games: parseInt(games) || 0,
-          wins: parseInt(wins) || 0,
-          losses: parseInt(losses) || 0,
-          sets,
-          winRate: parseFloat(winRate) || 0
-        });
-      }
-    });
-
-    // 일정 크롤링
-    const scheduleUrl = 'https://sports.news.naver.com/kvolleyball/schedule/index?date=&category=v-league&gender=m';
-    const scheduleResponse = await axios.get(scheduleUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
-
-    const $schedule = cheerio.load(scheduleResponse.data);
-    const matches = [];
-
-    $schedule('.sch_list li').each((index, element) => {
-      const $match = $schedule(element);
-      const dateText = $match.find('.td_date').text().trim();
-      const teams = $match.find('.td_team span').map((i, el) => $schedule(el).text().trim()).get();
-      const time = $match.find('.td_time').text().trim();
-
-      if (teams.length === 2 && (teams[0].includes('현대캐피탈') || teams[1].includes('현대캐피탈'))) {
-        matches.push({
-          date: dateText,
-          homeTeam: teams[0],
-          awayTeam: teams[1],
-          time,
-          timestamp: new Date().toISOString()
-        });
-      }
-    });
-
-    const hyundaiCapital = standings.find(team => team.team.includes('현대캐피탈'));
-    const nextMatch = matches[0] || null;
-
-    const output = {
-      lastUpdated: new Date().toISOString(),
-      season: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
-      hyundaiCapital: hyundaiCapital || null,
-      nextMatch,
-      allStandings: standings,
-      upcomingMatches: matches.slice(0, 5)
+    const volleyballData = {
+      rank: hyundaiCapital.rank || 0,
+      wins: hyundaiCapital.wCnt || 0,
+      losses: hyundaiCapital.lCnt || 0,
+      points: hyundaiCapital.gameScore || 0,
+      setRatio: hyundaiCapital.sRt ? parseFloat(hyundaiCapital.sRt) : 0
     };
 
-    const outputPath = path.join(dataDir, 'volleyball-data.json');
-    fs.writeFileSync(outputPath, JSON.stringify(output, null, 2), 'utf8');
-    console.log(`✓ 배구 데이터 저장 완료 (현대캐피탈: ${hyundaiCapital?.rank || 'N/A'}위)`);
+    // 2. 다음 경기 정보 가져오기
+    const scheduleResponse = await axios.get(KOVO_API.gameSchedule, {
+      params: {
+        gcode: '001',
+        seasonCode: '022',
+        leagueCode: '201'
+      },
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
 
-    return output;
+    const games = scheduleResponse.data || [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 현대캐피탈의 미래 경기 찾기
+    const upcomingGame = games.find(game => {
+      const gameDate = new Date(game.gameDate);
+      gameDate.setHours(0, 0, 0, 0);
+      
+      return gameDate >= today && 
+             (game.home?.tcode === HYUNDAI_CAPITAL_CODE || game.away?.tcode === HYUNDAI_CAPITAL_CODE);
+    });
+
+    if (upcomingGame) {
+      const isHome = upcomingGame.home?.tcode === HYUNDAI_CAPITAL_CODE;
+      const opponent = isHome ? upcomingGame.away : upcomingGame.home;
+      const gameDate = new Date(upcomingGame.gameDate);
+      
+      volleyballData.nextMatch = {
+        opponent: `${isHome ? 'vs' : '@'} ${opponent?.translations?.[0]?.shortName || opponent?.name || '상대팀'}`,
+        date: `${gameDate.getMonth() + 1}월 ${gameDate.getDate()}일`,
+        time: upcomingGame.gameTime || '미정',
+        location: upcomingGame.gymName || '미정'
+      };
+    }
+
+    console.log('✓ 배구 크롤링 완료:', volleyballData);
+    return volleyballData;
+
   } catch (error) {
     console.error('✗ 배구 크롤링 오류:', error.message);
     return null;
   }
 }
 
-// ========================================
-// 3. 안세영 세계 랭킹
-// ========================================
-async function crawlBadmintonRankings() {
+// 야구 크롤링 (네이버 스포츠)
+async function crawlBaseball() {
+  console.log('[야구] 한화 이글스 순위 크롤링 시작...');
+  
   try {
-    console.log('\n[배드민턴] 안세영 세계 랭킹 생성 중...');
+    const response = await axios.get(NAVER_URLS.baseball.standings, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+
+    const $ = cheerio.load(response.data);
+    const rows = $('#regularTeamRecordList_table tbody tr');
     
-    const ahnSeYoung = {
-      rank: 1,
-      name: '안세영',
-      country: 'KOR',
-      points: 102895
-    };
+    let baseballData = null;
 
-    const output = {
-      lastUpdated: new Date().toISOString(),
-      ahnSeYoung,
-      topRankings: [
-        ahnSeYoung,
-        { rank: 2, name: '왕즈이', country: 'CHN', points: 95000 },
-        { rank: 3, name: '야마구치 아카네', country: 'JPN', points: 88000 },
-        { rank: 4, name: '한웨', country: 'CHN', points: 82000 },
-        { rank: 5, name: '천위페이', country: 'CHN', points: 78000 }
-      ]
-    };
+    rows.each((_, row) => {
+      const teamName = $(row).find('td:nth-child(2) span').text().trim();
+      
+      if (teamName.includes(HANWHA_TEAM_NAME)) {
+        baseballData = {
+          rank: parseInt($(row).find('td:nth-child(1) strong').text()) || 0,
+          wins: parseInt($(row).find('td:nth-child(3)').text()) || 0,
+          losses: parseInt($(row).find('td:nth-child(4)').text()) || 0,
+          draws: parseInt($(row).find('td:nth-child(5)').text()) || 0,
+          winRate: parseFloat($(row).find('td:nth-child(6)').text()) || 0,
+          gameDiff: parseFloat($(row).find('td:nth-child(7)').text()) || 0
+        };
+      }
+    });
 
-    const outputPath = path.join(dataDir, 'badminton-rankings.json');
-    fs.writeFileSync(outputPath, JSON.stringify(output, null, 2), 'utf8');
-    console.log(`✓ 배드민턴 랭킹 저장 완료 (안세영: 1위)`);
+    if (baseballData) {
+      console.log('✓ 야구 크롤링 완료:', baseballData);
+    } else {
+      console.log('✗ 한화 이글스 순위를 찾을 수 없습니다');
+    }
 
-    return output;
+    return baseballData;
+
   } catch (error) {
-    console.error('✗ 배드민턴 랭킹 생성 오류:', error.message);
+    console.error('✗ 야구 크롤링 오류:', error.message);
     return null;
   }
 }
 
-// ========================================
-// 4. 안세영 경기 정보
-// ========================================
-async function crawlAhnSeYoungMatches() {
-  try {
-    console.log('\n[배드민턴] 안세영 경기 정보 생성 중...');
-    
-    // 시즌 설정 읽기
-    const seasonConfig = seasonManager.readSeasonConfig();
-    const currentTournament = seasonConfig.badminton.currentTournament;
-    
-    // 최근 경기 결과
-    const recentResults = [
-      {
-        date: '2025.12.17',
-        tournament: '2025 BWF 월드투어 파이널스',
-        round: '조별리그 A조 1차전',
-        opponent: '푸트리 쿠수마 와르다니 (인도네시아)',
-        result: '승',
-        score: '2-1 (21-16, 8-21, 21-8)'
-      },
-      {
-        date: '2025.10.26',
-        tournament: '2025 프랑스오픈',
-        round: '결승',
-        opponent: '왕즈이 (중국)',
-        result: '승',
-        score: '2-0 (21-13, 21-7)'
-      },
-      {
-        date: '2025.10.19',
-        tournament: '2025 덴마크오픈',
-        round: '결승',
-        opponent: '야마구치 아카네 (일본)',
-        result: '승',
-        score: '2-0'
-      },
-      {
-        date: '2025.08.30',
-        tournament: '2025 세계선수권대회',
-        round: '4강',
-        opponent: '천위페이 (중국)',
-        result: '패',
-        score: '0-2 (15-21, 17-21)'
-      },
-      {
-        date: '2025.06.08',
-        tournament: '인도네시아오픈',
-        round: '결승',
-        opponent: '왕즈이 (중국)',
-        result: '승',
-        score: '2-1 (13-21, 21-19, 21-15)'
-      }
-    ];
-
-    // 예정된 경기
-    const upcomingMatches = [
-      {
-        date: '2025.12.18',
-        tournament: '2025 BWF 월드투어 파이널스',
-        round: '조별리그 A조 2차전',
-        opponent: '미야자키 토모카 (일본)',
-        result: '',
-        score: ''
-      },
-      {
-        date: '2025.12.19',
-        tournament: '2025 BWF 월드투어 파이널스',
-        round: '조별리그 A조 3차전',
-        opponent: '야마구치 아카네 (일본)',
-        result: '',
-        score: ''
-      }
-    ];
-
-    const output = {
-      player: '안세영',
-      lastUpdated: new Date().toISOString(),
-      currentTournament: currentTournament ? currentTournament.name : null,
-      status: currentTournament ? 
-        `진행 중 (${currentTournament.startDate} ~ ${currentTournament.endDate})` : 
-        '비시즌',
-      seasonActive: seasonConfig.badminton.seasonActive,
-      updateFrequency: seasonConfig.badminton.seasonActive ? 
-        '매일 3회 (6시, 12시, 18시)' : 
-        '2주마다 (일요일 9시)',
-      recentResults: recentResults.slice(0, 5),
-      upcomingMatches: upcomingMatches.slice(0, 3),
-      seasonRecord: {
-        wins: 10,
-        tournaments: 14,
-        winRate: '95%'
-      },
-      allMatches: [...recentResults, ...upcomingMatches]
-    };
-
-    const outputPath = path.join(dataDir, 'ahn-seyoung-matches.json');
-    fs.writeFileSync(outputPath, JSON.stringify(output, null, 2), 'utf8');
-    console.log(`✓ 안세영 경기 정보 저장 완료`);
-    console.log(`  시즌 상태: ${output.seasonActive ? '활성' : '비활성'}`);
-    console.log(`  업데이트 주기: ${output.updateFrequency}`);
-
-    return output;
-  } catch (error) {
-    console.error('✗ 안세영 경기 정보 생성 오류:', error.message);
-    
-    const fallback = {
-      player: '안세영',
-      lastUpdated: new Date().toISOString(),
-      recentResults: [],
-      upcomingMatches: [],
-      allMatches: [],
-      error: error.message
-    };
-    
-    const outputPath = path.join(dataDir, 'ahn-seyoung-matches.json');
-    fs.writeFileSync(outputPath, JSON.stringify(fallback, null, 2), 'utf8');
-    
-    return fallback;
-  }
-}
-
-// ========================================
-// 메인 실행 함수
-// ========================================
-async function crawlAllSports() {
-  console.log('========================================');
-  console.log('스포츠 데이터 크롤링 시작');
-  console.log('시간:', new Date().toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'}));
-  console.log('========================================');
-
-  // 자동 시즌 체크
-  console.log('\n[시즌 체크] 자동 시즌 상태 확인 중...');
-  seasonManager.autoCheckSeason();
-
-  const results = {
-    baseball: await crawlBaseballStandings(),
-    volleyball: await crawlVolleyballData(),
-    badmintonRankings: await crawlBadmintonRankings(),
-    badmintonMatches: await crawlAhnSeYoungMatches()
+// 배드민턴 크롤링 (수동 데이터 - 안세영)
+async function crawlBadminton() {
+  console.log('[배드민턴] 안세영 랭킹 정보 (수동 데이터)...');
+  
+  // BWF 공식 랭킹은 수동으로 업데이트
+  const badmintonData = {
+    rank: 1,
+    player: 'AN Se Young',
+    country: 'KOR',
+    points: 111490,
+    tournaments: 17
   };
 
-  console.log('\n========================================');
-  console.log('크롤링 완료!');
-  console.log('========================================\n');
+  console.log('✓ 배드민턴 데이터 로드 완료:', badmintonData);
+  return badmintonData;
+}
 
-  // 전체 결과 요약 저장
-  const summary = {
-    lastCrawled: new Date().toISOString(),
-    status: {
-      baseball: results.baseball ? 'success' : 'failed',
-      volleyball: results.volleyball ? 'success' : 'failed',
-      badmintonRankings: results.badmintonRankings ? 'success' : 'failed',
-      badmintonMatches: results.badmintonMatches ? 'success' : 'failed'
+// 메인 실행
+async function main() {
+  console.log('=== 스포츠 데이터 크롤링 시작 ===\n');
+  
+  const [volleyball, baseball, badminton] = await Promise.all([
+    crawlVolleyball(),
+    crawlBaseball(),
+    crawlBadminton()
+  ]);
+
+  const sportsRankings = {
+    volleyball,
+    baseball,
+    badminton,
+    lastUpdated: new Date().toISOString(),
+    seasonDates: {
+      baseball: {
+        start: '2025-03-29',
+        end: '2025-10-05'
+      },
+      volleyball: {
+        start: '2024-10-12',
+        end: '2025-04-20'
+      }
     }
   };
 
-  const summaryPath = path.join(dataDir, 'crawl-summary.json');
-  fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2), 'utf8');
+  // 데이터 저장
+  const dataDir = path.join(__dirname, 'public', 'data');
+  await fs.mkdir(dataDir, { recursive: true });
+  
+  const outputPath = path.join(dataDir, 'sports-rankings.json');
+  await fs.writeFile(
+    outputPath,
+    JSON.stringify(sportsRankings, null, 2),
+    'utf-8'
+  );
 
-  return results;
+  console.log(`\n✓ 크롤링 완료! 데이터 저장됨: ${outputPath}`);
+  console.log('=== 크롤링 종료 ===');
 }
 
-// 직접 실행 시
-if (require.main === module) {
-  crawlAllSports()
-    .then(() => {
-      console.log('모든 크롤링이 완료되었습니다!');
-      process.exit(0);
-    })
-    .catch(error => {
-      console.error('크롤링 중 오류 발생:', error);
-      process.exit(1);
-    });
-}
-
-module.exports = {
-  crawlAllSports,
-  crawlBaseballStandings,
-  crawlVolleyballData,
-  crawlBadmintonRankings,
-  crawlAhnSeYoungMatches
-};
+main().catch(console.error);
