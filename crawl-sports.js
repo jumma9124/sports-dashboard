@@ -130,7 +130,7 @@ async function getBaseballData() {
     record: '83승 57패 4무',
     winRate: '.593',
     lastUpdated: new Date().toISOString(),
-    note: '2025 KBO 시즌 최종 순위'
+    note: '2025 시즌 최종 순위 (2026년 3월 재개)'
   };
 
   console.log('[야구] 완료:', baseball);

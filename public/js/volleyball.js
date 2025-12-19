@@ -50,10 +50,10 @@ async function loadVolleyballNextMatch() {
     // 배구 일정은 별도 JSON 파일이나 크롤링으로 가져올 수 있음
     // 현재는 하드코딩된 예시
     const nextMatch = {
-      date: '2024-12-21',
-      time: '19:00',
-      opponent: '대한항공',
-      location: '천안유관순체육관'
+      date: '2025-12-21',
+      time: '14:00',
+      opponent: 'OK저축은행',
+      location: '안산상록수체육관'
     };
 
     displayVolleyballNextMatch(nextMatch);
