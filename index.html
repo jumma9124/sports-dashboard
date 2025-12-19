@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -14,13 +13,12 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #1a1a2e;
             color: #ffffff;
-            min-height: 100vh;
-            max-height: 100vh;
-            padding: 15px;
+            height: 100vh;
             overflow: hidden;
+            padding: 15px;
         }
 
         .header {
@@ -32,12 +30,6 @@
             font-size: 2rem;
             font-weight: 700;
             letter-spacing: 2px;
-            margin-bottom: 5px;
-        }
-
-        .last-updated {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.7);
         }
 
         .dashboard {
@@ -45,9 +37,7 @@
             grid-template-columns: repeat(2, 1fr);
             grid-template-rows: repeat(2, 1fr);
             gap: 15px;
-            max-width: 1400px;
-            margin: 0 auto;
-            height: calc(100vh - 100px);
+            height: calc(100vh - 80px);
         }
 
         .card {
@@ -59,7 +49,6 @@
             display: flex;
             flex-direction: column;
             overflow: auto;
-            min-height: 0;
         }
 
         .card-header {
@@ -92,6 +81,13 @@
             flex: 1;
         }
 
+        .rank-big {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 10px 0;
+        }
+
         .stat-row {
             display: flex;
             justify-content: space-between;
@@ -109,13 +105,6 @@
         .stat-value {
             font-size: 1.1rem;
             font-weight: 600;
-        }
-
-        .rank-big {
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin: 10px 0;
         }
 
         .next-match-info, .recent-match-info {
@@ -154,12 +143,6 @@
             font-style: italic;
         }
 
-        .error-message {
-            color: #ff6b6b;
-            font-size: 0.9rem;
-            margin-top: 10px;
-        }
-
         .result {
             display: inline-block;
             padding: 4px 12px;
@@ -178,158 +161,22 @@
             color: #e57373;
         }
 
-        /* 반응형 디자인 - 항상 2x2 그리드, 모든 카드 크기 동일 */
-        @media (max-width: 1024px) {
-            .dashboard {
-                gap: 15px;
-                /* 그리드 크기는 유지 */
-            }
-            
-            .card {
-                padding: 20px;
-            }
-            
-            .rank-big {
-                font-size: 2.5rem;
-            }
-            
-            .icon {
-                font-size: 2.5rem;
-            }
-            
-            .team-info h2 {
-                font-size: 1.2rem;
-            }
-        }
-
+        /* 반응형 */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            
-            .header h1 {
-                font-size: 1.5rem;
-            }
-            
-            .last-updated {
-                font-size: 0.75rem;
-            }
-            
-            .dashboard {
-                gap: 10px;
-                /* 그리드 크기는 유지 */
-            }
-            
-            .card {
-                padding: 15px;
-            }
-            
-            .icon {
-                font-size: 2rem;
-            }
-            
-            .team-info h2 {
-                font-size: 1rem;
-            }
-            
-            .league {
-                font-size: 0.75rem;
-            }
-            
-            .rank-big {
-                font-size: 2rem;
-                margin: 10px 0;
-            }
-            
-            .stat-row {
-                padding: 10px;
-            }
-            
-            .stat-label {
-                font-size: 0.75rem;
-            }
-            
-            .stat-value {
-                font-size: 1rem;
-            }
-            
-            .opponent {
-                font-size: 1rem;
-            }
-            
-            .match-details {
-                font-size: 0.75rem;
-            }
-            
-            .next-match-info, .recent-match-info {
-                padding: 10px;
-            }
+            body { padding: 10px; }
+            .header h1 { font-size: 1.5rem; }
+            .dashboard { gap: 10px; }
+            .card { padding: 15px; }
+            .icon { font-size: 2rem; }
+            .team-info h2 { font-size: 1rem; }
+            .rank-big { font-size: 2rem; }
         }
 
         @media (max-width: 480px) {
-            .header h1 {
-                font-size: 1.2rem;
-            }
-            
-            .dashboard {
-                gap: 8px;
-                /* 그리드 크기는 유지 */
-            }
-            
-            .card {
-                padding: 12px;
-            }
-            
-            .card-header {
-                gap: 10px;
-                margin-bottom: 15px;
-            }
-            
-            .icon {
-                font-size: 1.5rem;
-            }
-            
-            .team-info h2 {
-                font-size: 0.85rem;
-            }
-            
-            .league {
-                font-size: 0.65rem;
-            }
-            
-            .rank-big {
-                font-size: 1.5rem;
-                margin: 8px 0;
-            }
-            
-            .stat-row {
-                padding: 8px;
-                gap: 8px;
-            }
-            
-            .stat-label {
-                font-size: 0.65rem;
-            }
-            
-            .stat-value {
-                font-size: 0.85rem;
-            }
-            
-            .opponent {
-                font-size: 0.85rem;
-            }
-            
-            .match-details {
-                font-size: 0.65rem;
-            }
-            
-            .next-match-label, .recent-match-label {
-                font-size: 0.7rem;
-            }
-            
-            .next-match-info, .recent-match-info {
-                padding: 8px;
-            }
+            .icon { font-size: 1.5rem; }
+            .team-info h2 { font-size: 0.85rem; }
+            .rank-big { font-size: 1.5rem; }
+            .stat-value { font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -338,9 +185,14 @@
         <h1>MY SPORT</h1>
     </div>
 
-    <div class="dashboard">
+    <div class="dashboard" id="dashboard">
+        <!-- 카드 순서는 JavaScript가 동적으로 결정 -->
+    </div>
+
+    <!-- 카드 템플릿들 (숨김) -->
+    <div id="card-templates" style="display: none;">
         <!-- 배구 카드 -->
-        <div class="card volleyball-card">
+        <div class="card volleyball-card" data-card-type="volleyball">
             <div class="card-header">
                 <div class="icon">🏐</div>
                 <div class="team-info">
@@ -348,15 +200,12 @@
                     <div class="league">V-리그</div>
                 </div>
             </div>
-            
             <div class="stats">
                 <div class="rank-big" id="volleyball-rank">-</div>
-                
                 <div class="stat-row">
                     <span class="stat-label">전적</span>
                     <span class="stat-value" id="volleyball-record">- 승 - 패</span>
                 </div>
-                
                 <div class="stat-row">
                     <span class="stat-label">승률 & 세트득실률</span>
                     <div>
@@ -364,7 +213,6 @@
                         <div class="stat-value" id="volleyball-setratio" style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">-</div>
                     </div>
                 </div>
-                
                 <div id="volleyball-next-match">
                     <div class="next-match-label">다음 경기</div>
                     <div class="next-match-info">
@@ -375,7 +223,7 @@
         </div>
 
         <!-- 야구 카드 -->
-        <div class="card baseball-card">
+        <div class="card baseball-card" data-card-type="baseball">
             <div class="card-header">
                 <div class="icon">⚾</div>
                 <div class="team-info">
@@ -383,33 +231,28 @@
                     <div class="league">KBO 리그</div>
                 </div>
             </div>
-            
             <div class="stats">
                 <div class="rank-big" id="baseball-rank">-</div>
-                
                 <div class="stat-row">
                     <span class="stat-label">전적</span>
                     <span class="stat-value" id="baseball-record">시즌 종료</span>
                 </div>
-                
                 <div class="stat-row">
                     <span class="stat-label">승률</span>
                     <span class="stat-value" id="baseball-winrate">-</span>
                 </div>
-                
                 <div id="baseball-season-info"></div>
             </div>
         </div>
 
         <!-- 주요 이벤트 카드 -->
-        <div class="card events-card">
+        <div class="card events-card" data-card-type="events">
             <div class="card-header">
                 <div class="team-info">
                     <h2>주요 스포츠 이벤트</h2>
                     <div class="league">다가오는 대회</div>
                 </div>
             </div>
-            
             <div class="stats">
                 <div id="major-event" style="display: flex; align-items: center; gap: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 10px;">
                     <div class="event-icon" style="font-size: 3rem;">📅</div>
@@ -421,7 +264,7 @@
         </div>
 
         <!-- 안세영 카드 -->
-        <div class="card badminton-card">
+        <div class="card badminton-card" data-card-type="badminton">
             <div class="card-header">
                 <div class="icon">🏸</div>
                 <div class="team-info">
@@ -429,17 +272,14 @@
                     <div class="league">세계 1위</div>
                 </div>
             </div>
-            
             <div class="stats">
                 <div id="badminton-points"></div>
-                
                 <div id="badminton-recent-match">
                     <div class="recent-match-label">최근 경기</div>
                     <div class="recent-match-info">
                         <div class="no-data">로딩 중...</div>
                     </div>
                 </div>
-                
                 <div id="badminton-next-match">
                     <div class="next-match-label">다음 경기</div>
                     <div class="next-match-info">
@@ -449,6 +289,109 @@
             </div>
         </div>
     </div>
+
+    <!-- 카드 배치 로직 -->
+    <script>
+        let eventsChecked = false;
+        let hasUpcomingEvent = false;
+
+        // 주요 이벤트 체크 함수
+        async function checkUpcomingEvents() {
+            try {
+                const response = await fetch('./public/data/major-events.json');
+                const events = await response.json();
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                // 이벤트가 오늘 시작하거나 진행 중인지 확인
+                const ongoingEvents = events.filter(e => {
+                    const eventDate = new Date(e.date);
+                    eventDate.setHours(0, 0, 0, 0);
+                    
+                    // 종료일이 있으면 그 범위 체크, 없으면 시작일만 체크
+                    if (e.endDate) {
+                        const endDate = new Date(e.endDate);
+                        endDate.setHours(0, 0, 0, 0);
+                        return today >= eventDate && today <= endDate;
+                    } else {
+                        // 종료일 없으면 시작일부터 +14일 동안 진행중으로 간주
+                        const estimatedEnd = new Date(eventDate);
+                        estimatedEnd.setDate(estimatedEnd.getDate() + 14);
+                        return today >= eventDate && today <= estimatedEnd;
+                    }
+                });
+                
+                hasUpcomingEvent = ongoingEvents.length > 0;
+                
+                eventsChecked = true;
+                arrangeCards();
+            } catch (error) {
+                console.error('이벤트 데이터 로딩 실패:', error);
+                eventsChecked = true;
+                arrangeCards();
+            }
+        }
+
+        // 시즌별 우선순위 계산
+        function calculateCardOrder() {
+            const now = new Date();
+            const month = now.getMonth() + 1; // 1-12
+            
+            const order = [];
+            
+            // 1. 주요 이벤트가 진행 중이면 최우선
+            if (hasUpcomingEvent) {
+                order.push('events');
+            }
+            
+            // 2. 시즌별 우선순위
+            const isVolleyballSeason = month >= 10 || month <= 4; // 10-4월
+            const isBaseballSeason = month >= 3 && month <= 10;   // 3-10월
+            
+            if (isVolleyballSeason && !isBaseballSeason) {
+                // 배구 시즌만 (11-12월, 1-2월)
+                order.push('volleyball', 'baseball');
+            } else if (isBaseballSeason && !isVolleyballSeason) {
+                // 야구 시즌만 (5-9월)
+                order.push('baseball', 'volleyball');
+            } else {
+                // 겹치는 시즌 (3-4월, 10월) - 배구 우선
+                order.push('volleyball', 'baseball');
+            }
+            
+            // 3. 이벤트가 아직 추가 안됐으면 추가
+            if (!hasUpcomingEvent) {
+                order.push('events');
+            }
+            
+            // 4. 안세영은 항상 4번(마지막) 고정
+            order.push('badminton');
+            
+            return order;
+        }
+
+        // 카드 배치
+        function arrangeCards() {
+            if (!eventsChecked) return; // 이벤트 체크 완료될 때까지 대기
+            
+            const order = calculateCardOrder();
+            const dashboard = document.getElementById('dashboard');
+            const templates = document.getElementById('card-templates');
+            
+            dashboard.innerHTML = '';
+            
+            order.forEach(cardType => {
+                const card = templates.querySelector(`[data-card-type="${cardType}"]`);
+                if (card) {
+                    dashboard.appendChild(card.cloneNode(true));
+                }
+            });
+        }
+
+        // 페이지 로드 시 이벤트 체크 후 카드 배치
+        checkUpcomingEvents();
+    </script>
 
     <!-- 외부 JavaScript 파일 로드 -->
     <script src="./public/js/volleyball.js"></script>
