@@ -1,0 +1,22 @@
+{
+  "volleyball": null,
+  "baseball": null,
+  "badminton": {
+    "rank": 1,
+    "player": "AN Se Young",
+    "country": "KOR",
+    "points": 111490,
+    "tournaments": 17
+  },
+  "lastUpdated": "2025-12-19T01:31:10.875Z",
+  "seasonDates": {
+    "baseball": {
+      "start": "2025-03-29",
+      "end": "2025-10-05"
+    },
+    "volleyball": {
+      "start": "2024-10-12",
+      "end": "2025-04-20"
+    }
+  }
+}

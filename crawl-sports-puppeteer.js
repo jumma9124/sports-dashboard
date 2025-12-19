@@ -6,13 +6,14 @@ const path = require('path');
 const DATA_DIR = path.join(__dirname, 'public', 'data');
 
 /**
- * 네이버 스포츠에서 배구 순위 크롤링
+ * 네이버 스포츠에서 배구 순위 크롤링 (Puppeteer)
  */
 async function crawlVolleyball() {
   let browser;
   try {
-    console.log('[배구] 크롤링 시작...');
+    console.log('🏐 배구 데이터 크롤링 시작...');
     
+    // Puppeteer 브라우저 실행
     browser = await puppeteer.launch({
       headless: 'new',
       args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -20,59 +21,44 @@ async function crawlVolleyball() {
 
     const page = await browser.newPage();
     
+    // 네이버 스포츠 배구 순위 페이지
     const url = 'https://m.sports.naver.com/volleyball/record/kovo?seasonCode=022&tab=teamRank';
-    console.log('[배구] URL:', url);
+    console.log('📍 URL:', url);
     
     await page.goto(url, { 
       waitUntil: 'networkidle2',
       timeout: 30000 
     });
 
-    await page.waitForTimeout(5000);
+    // 페이지가 로드될 때까지 대기
+    await page.waitForTimeout(3000);
 
+    // HTML 구조 파악을 위한 스크린샷 (디버깅용)
+    // await page.screenshot({ path: 'volleyball-ranking.png' });
+
+    // 순위 테이블에서 현대캐피탈 데이터 추출
     const volleyball = await page.evaluate(() => {
-      const teamItems = document.querySelectorAll('.TableBody_item__eCenH');
+      // 순위 테이블 찾기
+      const rows = document.querySelectorAll('table tbody tr');
       
-      for (let item of teamItems) {
-        const teamNameEl = item.querySelector('.TeamInfo_team_name__dni7F');
-        const teamName = teamNameEl ? teamNameEl.textContent.trim() : '';
+      for (let row of rows) {
+        const teamName = row.querySelector('td:nth-child(2)')?.textContent.trim();
         
-        if (teamName.includes('현대캐피탈')) {
-          const cells = item.querySelectorAll('.TableBody_cell__rFrpm');
-          const rankText = cells[0] ? cells[0].textContent.trim() : '';
-          const rankMatch = rankText.match(/(\d+)위/);
-          const rank = rankMatch ? rankMatch[1] + '위' : '-';
-          
-          const fullText = item.textContent;
-          
-          const pointsMatch = fullText.match(/승점(\d+)/);
-          const points = pointsMatch ? pointsMatch[1] : '-';
-          
-          const gamesMatch = fullText.match(/경기(\d+)/);
-          const games = gamesMatch ? gamesMatch[1] : '-';
-          
-          const winsMatch = fullText.match(/승(\d+)/);
-          const lossesMatch = fullText.match(/패(\d+)/);
-          const wins = winsMatch ? winsMatch[1] : '-';
-          const losses = lossesMatch ? lossesMatch[1] : '-';
-          
-          const setRatioMatch = fullText.match(/세트득실률([\d.]+)/);
-          const setRatio = setRatioMatch ? setRatioMatch[1] : '-';
-          
-          const winRate = (wins !== '-' && games !== '-') 
-            ? (parseInt(wins) / parseInt(games)).toFixed(3)
-            : '-';
+        if (teamName && teamName.includes('현대캐피탈')) {
+          const rank = row.querySelector('td:nth-child(1)')?.textContent.trim() || '-';
+          const games = row.querySelector('td:nth-child(3)')?.textContent.trim() || '-';
+          const wins = row.querySelector('td:nth-child(4)')?.textContent.trim() || '-';
+          const losses = row.querySelector('td:nth-child(5)')?.textContent.trim() || '-';
+          const winRate = row.querySelector('td:nth-child(6)')?.textContent.trim() || '-';
           
           return {
             sport: '배구',
             team: '현대캐피탈 스카이워커스',
             league: 'V-리그',
             rank: rank,
-            record: wins + '승 ' + losses + '패',
+            record: `${wins}승 ${losses}패`,
             winRate: winRate,
             games: games,
-            points: points,
-            setRatio: setRatio,
             lastUpdated: new Date().toISOString()
           };
         }
@@ -84,7 +70,7 @@ async function crawlVolleyball() {
     await browser.close();
 
     if (!volleyball) {
-      console.log('[배구] 경고: 현대캐피탈 데이터를 찾을 수 없습니다');
+      console.warn('⚠️ 현대캐피탈 데이터를 찾을 수 없습니다');
       return {
         sport: '배구',
         team: '현대캐피탈 스카이워커스',
@@ -97,12 +83,12 @@ async function crawlVolleyball() {
       };
     }
 
-    console.log('[배구] 성공:', volleyball);
+    console.log('✅ 배구:', volleyball);
     return volleyball;
 
   } catch (error) {
     if (browser) await browser.close();
-    console.error('[배구] 실패:', error.message);
+    console.error('❌ 배구 크롤링 실패:', error.message);
     return {
       sport: '배구',
       team: '현대캐피탈 스카이워커스',
@@ -117,10 +103,10 @@ async function crawlVolleyball() {
 }
 
 /**
- * 야구 데이터
+ * 야구 데이터 (시즌 종료)
  */
 async function getBaseballData() {
-  console.log('[야구] 데이터 생성...');
+  console.log('⚾ 야구 데이터 생성...');
   
   const baseball = {
     sport: '야구',
@@ -133,26 +119,29 @@ async function getBaseballData() {
     note: '2024 시즌 종료 (2025년 3월 재개)'
   };
 
-  console.log('[야구] 완료:', baseball);
+  console.log('✅ 야구:', baseball);
   return baseball;
 }
 
 /**
- * 메인 함수
+ * 모든 스포츠 데이터 수집 및 저장
  */
 async function main() {
   try {
-    console.log('\n================================================================================');
-    console.log('스포츠 데이터 크롤링 시작');
-    console.log('================================================================================\n');
+    console.log('\n' + '='.repeat(80));
+    console.log('🚀 스포츠 데이터 크롤링 시작 (Puppeteer)');
+    console.log('='.repeat(80) + '\n');
 
+    // 데이터 디렉토리 확인
     await fs.mkdir(DATA_DIR, { recursive: true });
 
+    // 배구 & 야구 데이터 수집
     const [volleyball, baseball] = await Promise.all([
       crawlVolleyball(),
       getBaseballData()
     ]);
 
+    // sports.json 저장
     const sportsData = {
       volleyball,
       baseball,
@@ -166,17 +155,18 @@ async function main() {
       'utf8'
     );
 
-    console.log('\n================================================================================');
-    console.log('크롤링 완료!');
+    console.log('\n' + '='.repeat(80));
+    console.log('✅ 크롤링 완료!');
     console.log('파일:', filePath);
-    console.log('================================================================================\n');
+    console.log('='.repeat(80) + '\n');
 
   } catch (error) {
-    console.error('\n에러 발생:', error);
+    console.error('\n❌ 크롤링 실패:', error);
     process.exit(1);
   }
 }
 
+// 스크립트 실행
 if (require.main === module) {
   main();
 }

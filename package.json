@@ -1,13 +1,17 @@
 {
-  "name": "sports-crawler",
+  "name": "sports-dashboard",
   "version": "1.0.0",
-  "description": "자동 스포츠 순위 크롤러",
+  "description": "Real-time Sports Dashboard with Puppeteer crawling",
+  "main": "crawl-sports.js",
   "scripts": {
-    "crawl": "node crawl-sports.js"
+    "crawl": "node crawl-sports.js",
+    "debug": "node debug-kovo.js"
   },
   "dependencies": {
-    "axios": "^1.13.2",
-    "cheerio": "^1.1.2",
-    "puppeteer": "^21.0.0"
-  }
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "puppeteer": "^21.11.0"
+  },
+  "author": "",
+  "license": "ISC"
 }
