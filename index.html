@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -95,16 +96,23 @@
             padding: 10px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .stat-label {
             font-size: 0.8rem;
             color: rgba(255, 255, 255, 0.7);
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .stat-value {
             font-size: 1.1rem;
             font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .next-match-info, .recent-match-info {
@@ -197,6 +205,16 @@
                 font-size: 3.5rem;
             }
         }
+        
+        /* 데스크톱 작은 화면에서 폰트 크기 조정 */
+        @media (min-width: 769px) and (max-width: 1200px) {
+            .stat-label {
+                font-size: 0.7rem;
+            }
+            .stat-value {
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -222,15 +240,13 @@
             <div class="stats">
                 <div class="rank-big" id="volleyball-rank">-</div>
                 <div class="stat-row">
-                    <span class="stat-label">전적</span>
-                    <span class="stat-value" id="volleyball-record">- 승 - 패</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">승률 & 세트득실률</span>
+                    <span class="stat-label">전적 / 승률 / 세트득실률</span>
                     <span class="stat-value">
+                        <span id="volleyball-record">- 승 - 패</span>
+                        <span style="margin: 0 8px; color: rgba(255,255,255,0.4);">/</span>
                         <span id="volleyball-winrate">-</span>
-                        <span style="margin: 0 8px; color: rgba(255,255,255,0.4);">|</span>
-                        <span id="volleyball-setratio" style="color: rgba(255,255,255,0.8);">-</span>
+                        <span style="margin: 0 8px; color: rgba(255,255,255,0.4);">/</span>
+                        <span id="volleyball-setratio">-</span>
                     </span>
                 </div>
                 <div id="volleyball-next-match">
@@ -254,12 +270,12 @@
             <div class="stats">
                 <div class="rank-big" id="baseball-rank">-</div>
                 <div class="stat-row">
-                    <span class="stat-label">전적</span>
-                    <span class="stat-value" id="baseball-record">시즌 종료</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">승률</span>
-                    <span class="stat-value" id="baseball-winrate">-</span>
+                    <span class="stat-label">전적 / 승률</span>
+                    <span class="stat-value">
+                        <span id="baseball-record">시즌 종료</span>
+                        <span style="margin: 0 8px; color: rgba(255,255,255,0.4);">/</span>
+                        <span id="baseball-winrate">-</span>
+                    </span>
                 </div>
                 <div id="baseball-season-info"></div>
             </div>
