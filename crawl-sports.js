@@ -124,13 +124,13 @@ async function getBaseballData() {
   
   const baseball = {
     sport: '야구',
-    team: 'SSG 랜더스',
+    team: '한화 이글스',
     league: 'KBO',
-    rank: '6위',
-    record: '시즌 종료',
-    winRate: '.471',
+    rank: '2위',
+    record: '83승 57패 4무',
+    winRate: '.593',
     lastUpdated: new Date().toISOString(),
-    note: '2024 시즌 종료 (2025년 3월 재개)'
+    note: '2025 KBO 시즌 최종 순위'
   };
 
   console.log('[야구] 완료:', baseball);
