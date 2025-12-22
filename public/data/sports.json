@@ -7,9 +7,15 @@
     "record": "8승 6패",
     "winRate": "0.571",
     "games": "14",
-    "points": "26",
+    "points": "22",
     "setRatio": "1.292",
-    "lastUpdated": "2025-12-19T06:17:58.315Z"
+    "nextMatch": {
+      "date": "2025-12-26",
+      "time": "19:00",
+      "opponent": "OK저축은행",
+      "location": "천안유관순체육관"
+    },
+    "lastUpdated": "2025-12-22T12:00:00.000Z"
   },
   "baseball": {
     "sport": "야구",
@@ -18,8 +24,8 @@
     "rank": "2위",
     "record": "83승 57패 4무",
     "winRate": ".593",
-    "lastUpdated": "2025-12-19T06:17:50.846Z",
-    "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
+    "note": "2025 시즌 최종 순위 (2026년 3월 재개)",
+    "lastUpdated": "2025-12-22T12:00:00.000Z"
   },
-  "lastUpdated": "2025-12-19T06:17:58.570Z"
+  "lastUpdated": "2025-12-22T12:00:00.000Z"
 }
