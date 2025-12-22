@@ -63,10 +63,6 @@ function displayUpcomingEvent(events) {
     const padding = isFirst ? '15px' : '10px';
     const marginTop = index > 0 ? '8px' : '0';
     
-    // 순위별 색상
-    const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32']; // 금, 은, 동
-    const rankColor = rankColors[index] || 'rgba(255,255,255,0.5)';
-    
     return `
       <div style="display: flex; align-items: center; gap: 12px; padding: ${padding}; background: rgba(255,255,255,0.05); border-radius: 10px; margin-top: ${marginTop}; border-left: 3px solid ${isFirst ? '#4CAF50' : 'transparent'};">
         <div style="font-size: ${iconSize}; flex-shrink: 0;">${icon}</div>
@@ -74,7 +70,6 @@ function displayUpcomingEvent(events) {
           <div style="font-size: ${fontSize}; font-weight: ${isFirst ? '600' : '500'}; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${event.name}</div>
           <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7);">개막 ${dDayText}</div>
         </div>
-        <div style="font-size: 0.7rem; font-weight: 700; color: ${rankColor}; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 12px; flex-shrink: 0;">${index + 1}위</div>
       </div>
     `;
   }).join('');
