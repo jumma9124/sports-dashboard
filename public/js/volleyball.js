@@ -47,19 +47,20 @@ function updateVolleyballTeamInfo(volleyball) {
 
 async function loadVolleyballNextMatch() {
   try {
-    // 배구 일정은 별도 JSON 파일이나 크롤링으로 가져올 수 있음
-    // 현재는 하드코딩된 예시
-    const nextMatch = {
-      date: '2025-12-21',
-      time: '14:00',
-      opponent: 'OK저축은행',
-      location: '안산상록수체육관'
-    };
-
-    displayVolleyballNextMatch(nextMatch);
+    // sports.json에서 다음 경기 정보 가져오기
+    const response = await fetch('./public/data/sports.json');
+    const data = await response.json();
+    
+    if (data.volleyball && data.volleyball.nextMatch) {
+      displayVolleyballNextMatch(data.volleyball.nextMatch);
+    } else {
+      // 크롤링된 데이터가 없으면 기본 메시지 표시
+      displayVolleyballNextMatch(null);
+    }
     
   } catch (error) {
     console.error('배구 다음 경기 로딩 실패:', error);
+    displayVolleyballNextMatch(null);
   }
 }
 
@@ -68,10 +69,12 @@ function displayVolleyballNextMatch(match) {
   if (!nextMatchElement || !match) return;
 
   const matchDate = new Date(match.date);
+  matchDate.setHours(0, 0, 0, 0);
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // 오늘 이후 경기만 표시
+  // 오늘 이후 경기만 표시 (오늘 포함)
   if (matchDate >= today) {
     const formattedDate = `${matchDate.getMonth() + 1}월 ${matchDate.getDate()}일`;
     const formattedTime = match.time || '19:00';

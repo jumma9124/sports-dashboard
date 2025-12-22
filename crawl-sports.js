@@ -98,6 +98,14 @@ async function crawlVolleyball() {
     }
 
     console.log('[배구] 성공:', volleyball);
+    
+    // 다음 경기 크롤링
+    const nextMatch = await crawlVolleyballNextMatch(browser);
+    if (nextMatch) {
+      volleyball.nextMatch = nextMatch;
+    }
+    
+    await browser.close();
     return volleyball;
 
   } catch (error) {
@@ -113,6 +121,95 @@ async function crawlVolleyball() {
       error: error.message,
       lastUpdated: new Date().toISOString()
     };
+  }
+}
+
+/**
+ * 배구 다음 경기 크롤링
+ */
+async function crawlVolleyballNextMatch(browser) {
+  try {
+    console.log('[배구 다음 경기] 크롤링 시작...');
+    
+    const page = await browser.newPage();
+    const url = 'https://m.sports.naver.com/volleyball/schedule/index?date=&teamCode=2003';
+    console.log('[배구 다음 경기] URL:', url);
+    
+    await page.goto(url, { 
+      waitUntil: 'networkidle2',
+      timeout: 30000 
+    });
+
+    await page.waitForTimeout(3000);
+
+    const nextMatch = await page.evaluate(() => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // 경기 목록에서 미래 경기 찾기
+      const matchItems = document.querySelectorAll('.ScheduleAllListItem_match_item__1jros');
+      
+      for (let item of matchItems) {
+        const dateEl = item.querySelector('.ScheduleAllListItem_game_date__3_0_u');
+        if (!dateEl) continue;
+        
+        const dateText = dateEl.textContent.trim();
+        const dateMatch = dateText.match(/(\d+)\.(\d+)/);
+        if (!dateMatch) continue;
+        
+        const month = parseInt(dateMatch[1]);
+        const day = parseInt(dateMatch[2]);
+        const year = new Date().getFullYear();
+        
+        const matchDate = new Date(year, month - 1, day);
+        matchDate.setHours(0, 0, 0, 0);
+        
+        // 오늘 이후 경기만
+        if (matchDate >= today) {
+          const timeEl = item.querySelector('.ScheduleAllListItem_game_time__26pq6');
+          const time = timeEl ? timeEl.textContent.trim() : '19:00';
+          
+          // 상대팀 찾기
+          const teamEls = item.querySelectorAll('.TeamInfo_team_name__dni7F');
+          let opponent = '';
+          
+          for (let teamEl of teamEls) {
+            const teamName = teamEl.textContent.trim();
+            if (!teamName.includes('현대캐피탈')) {
+              opponent = teamName;
+              break;
+            }
+          }
+          
+          // 경기장
+          const locationEl = item.querySelector('.ScheduleAllListItem_stadium__3kOcW');
+          const location = locationEl ? locationEl.textContent.trim() : '장소 미정';
+          
+          return {
+            date: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+            time: time,
+            opponent: opponent || '상대 미정',
+            location: location
+          };
+        }
+      }
+      
+      return null;
+    });
+
+    await page.close();
+    
+    if (nextMatch) {
+      console.log('[배구 다음 경기] 성공:', nextMatch);
+    } else {
+      console.log('[배구 다음 경기] 예정된 경기 없음');
+    }
+    
+    return nextMatch;
+    
+  } catch (error) {
+    console.error('[배구 다음 경기] 실패:', error.message);
+    return null;
   }
 }
 
