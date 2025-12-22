@@ -1,37 +1,35 @@
 {
+  "player": "안세영",
+  "ranking": 1,
+  "points": 111490,
   "recent": [
     {
+      "date": "2025-12-21",
+      "tournament": "BWF 투어 파이널",
+      "opponent": "왕즈이",
+      "result": "승",
+      "score": "2-0",
+      "round": "결승"
+    },
+    {
+      "date": "2025-12-20",
+      "tournament": "BWF 투어 파이널",
+      "opponent": "야마구치 아카네",
+      "result": "승",
+      "score": "2-0",
+      "round": "준결승"
+    },
+    {
       "date": "2025-12-19",
-      "tournament": "2025 BWF 투어 파이널",
-      "round": "예선 3차전",
-      "opponent": "캐롤리나 마린 (스페인)",
-      "result": "WIN",
-      "score": "2-1 (21-18, 19-21, 21-8)"
-    },
-    {
-      "date": "2025-12-18",
-      "tournament": "2025 BWF 투어 파이널",
-      "round": "예선 2차전",
-      "opponent": "그레고리아 마리스카 툰중 (인도네시아)",
-      "result": "WIN",
-      "score": "2-0 (21-13, 21-8)"
-    },
-    {
-      "date": "2025-12-17",
-      "tournament": "2025 BWF 투어 파이널",
-      "round": "예선 1차전",
-      "opponent": "푸사르라 베누고팔 신두 (인도)",
-      "result": "WIN",
-      "score": "2-1 (21-16, 8-21, 21-8)"
+      "tournament": "BWF 투어 파이널",
+      "opponent": "라차녹 인타논",
+      "result": "승",
+      "score": "2-1",
+      "round": "조별리그"
     }
   ],
-  "upcoming": [
-    {
-      "date": "2025-12-21",
-      "tournament": "2025 BWF 투어 파이널",
-      "round": "준결승",
-      "opponent": "미정",
-      "time": "19:00"
-    }
-  ]
+  "upcoming": [],
+  "lastUpdated": "2025-12-22T07:13:54.573Z",
+  "error": "Could not find Chrome (ver. 121.0.6167.85). This can occur if either\n 1. you did not perform an installation before running the script (e.g. `npx puppeteer browsers install chrome`) or\n 2. your cache path is incorrectly configured (which is: /home/runner/.cache/puppeteer).\nFor (2), check out our guide on configuring puppeteer at https://pptr.dev/guides/configuration.",
+  "note": "BWF 크롤링 실패 - 기본 데이터 사용 (2025 투어 파이널 우승)"
 }
