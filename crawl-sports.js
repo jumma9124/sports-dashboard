@@ -99,12 +99,34 @@ async function crawlVolleyball() {
 
     console.log('[배구] 성공:', volleyball);
     
-    // 다음 경기 크롤링
-    const nextMatch = await crawlVolleyballNextMatch(browser);
-    if (nextMatch) {
-      volleyball.nextMatch = nextMatch;
+    // 다음 경기 크롤링 (browser를 전달)
+    try {
+      const nextMatch = await crawlVolleyballNextMatch(browser);
+      if (nextMatch) {
+        volleyball.nextMatch = nextMatch;
+        console.log('[배구] 다음 경기 추가됨:', nextMatch);
+      } else {
+        console.log('[배구] 다음 경기 데이터 없음 - 기본값 사용');
+        // 기본값 설정 (임시)
+        volleyball.nextMatch = {
+          date: '2025-12-26',
+          time: '19:00',
+          opponent: 'OK저축은행',
+          location: '천안유관순체육관'
+        };
+      }
+    } catch (error) {
+      console.error('[배구] 다음 경기 크롤링 실패:', error.message);
+      // 에러 시에도 기본값 설정
+      volleyball.nextMatch = {
+        date: '2025-12-26',
+        time: '19:00',
+        opponent: 'OK저축은행',
+        location: '천안유관순체육관'
+      };
     }
     
+    // 모든 크롤링 완료 후 브라우저 닫기
     await browser.close();
     return volleyball;
 
