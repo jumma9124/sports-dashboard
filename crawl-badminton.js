@@ -105,12 +105,34 @@ async function crawlRecentMatches(browser) {
             score = `${wonSets}-${lostSets}`;
           }
           
-          // 날짜 추출 (현재 페이지에 없으므로 추정)
+          // 날짜 추출 (대회 링크 URL에서 추출 시도)
           let date = '';
-          if (tournament.includes('2025')) {
-            if (round === '결승') date = '2025-12-21';
-            else if (round === '준결승') date = '2025-12-20';
-            else date = '2025-12-19';
+          if (tournamentEl && tournamentEl.href) {
+            // URL 패턴: /results/5259/hsbc-bwf-world-tour-finals-2025/
+            const dateMatch = tournamentEl.href.match(/\/(\d{4})-(\d{2})-(\d{2})\//);
+            if (dateMatch) {
+              date = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
+            }
+          }
+          
+          // URL에서 날짜를 찾지 못하면 대회명과 라운드로 추정
+          if (!date && tournament.includes('2025')) {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+            const currentDay = String(now.getDate()).padStart(2, '0');
+            
+            if (round === '결승') {
+              date = `${currentYear}-${currentMonth}-${currentDay}`;
+            } else if (round === '준결승') {
+              const yesterday = new Date(now);
+              yesterday.setDate(yesterday.getDate() - 1);
+              date = yesterday.toISOString().split('T')[0];
+            } else {
+              const twoDaysAgo = new Date(now);
+              twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+              date = twoDaysAgo.toISOString().split('T')[0];
+            }
           }
           
           if (opponent) {
