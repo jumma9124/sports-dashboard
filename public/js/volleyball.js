@@ -2,10 +2,16 @@
 // 배구팀 (현대캐피탈) 데이터 로딩 및 표시
 
 async function loadVolleyballData() {
+  console.log('🏐 [배구] 데이터 로딩 시작...');
+  
   try {
     const response = await fetch('./public/data/sports.json');
+    console.log('🏐 [배구] API 응답:', response.status);
+    
     const data = await response.json();
     const volleyball = data.volleyball;
+    
+    console.log('🏐 [배구] 데이터:', volleyball);
 
     // 팀 정보 표시
     updateVolleyballTeamInfo(volleyball);
@@ -13,8 +19,10 @@ async function loadVolleyballData() {
     // 다음 경기 로딩
     await loadVolleyballNextMatch();
     
+    console.log('🏐 [배구] 데이터 로딩 완료!');
+    
   } catch (error) {
-    console.error('배구 데이터 로딩 실패:', error);
+    console.error('❌ [배구] 데이터 로딩 실패:', error);
     displayVolleyballError();
   }
 }
@@ -46,20 +54,25 @@ function updateVolleyballTeamInfo(volleyball) {
 }
 
 async function loadVolleyballNextMatch() {
+  console.log('🏐 [배구 다음 경기] 로딩 시작...');
+  
   try {
     // sports.json에서 다음 경기 정보 가져오기
     const response = await fetch('./public/data/sports.json');
     const data = await response.json();
     
     if (data.volleyball && data.volleyball.nextMatch) {
+      console.log('🏐 [배구 다음 경기] 데이터:', data.volleyball.nextMatch);
       displayVolleyballNextMatch(data.volleyball.nextMatch);
     } else {
-      // 크롤링된 데이터가 없으면 기본 메시지 표시
+      console.log('⚠️ [배구 다음 경기] 크롤링된 데이터 없음');
       displayVolleyballNextMatch(null);
     }
     
+    console.log('🏐 [배구 다음 경기] 로딩 완료!');
+    
   } catch (error) {
-    console.error('배구 다음 경기 로딩 실패:', error);
+    console.error('❌ [배구 다음 경기] 로딩 실패:', error);
     displayVolleyballNextMatch(null);
   }
 }

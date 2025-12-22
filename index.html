@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -220,6 +219,7 @@
 <body>
     <div class="header">
         <h1>MY SPORT</h1>
+        <div id="last-update" style="font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 5px;"></div>
     </div>
 
     <div class="dashboard" id="dashboard">
@@ -428,6 +428,33 @@
 
         // 페이지 로드 시 이벤트 체크 후 카드 배치
         checkUpcomingEvents();
+        
+        // 마지막 업데이트 시간 표시
+        async function displayLastUpdate() {
+            console.log('🕐 [마지막 업데이트] 시간 로딩...');
+            
+            try {
+                const response = await fetch('./public/data/sports.json');
+                const data = await response.json();
+                
+                if (data.lastUpdated) {
+                    const updateTime = new Date(data.lastUpdated);
+                    const formatted = `마지막 업데이트: ${updateTime.toLocaleString('ko-KR')}`;
+                    
+                    const updateElement = document.getElementById('last-update');
+                    if (updateElement) {
+                        updateElement.textContent = formatted;
+                    }
+                    
+                    console.log('🕐 [마지막 업데이트]', formatted);
+                }
+            } catch (error) {
+                console.error('❌ [마지막 업데이트] 로딩 실패:', error);
+            }
+        }
+        
+        // 2초 후 업데이트 시간 표시 (모든 데이터 로딩 후)
+        setTimeout(displayLastUpdate, 2000);
     </script>
 
     <!-- 외부 JavaScript 파일 로드 -->

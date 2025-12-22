@@ -1,16 +1,24 @@
 // public/js/baseball.js
-// 야구팀 (SSG 랜더스) 데이터 로딩 및 표시
+// 야구팀 (한화 이글스) 데이터 로딩 및 표시
 
 async function loadBaseballData() {
+  console.log('⚾ [야구] 데이터 로딩 시작...');
+  
   try {
     const response = await fetch('./public/data/sports.json');
+    console.log('⚾ [야구] API 응답:', response.status);
+    
     const data = await response.json();
     const baseball = data.baseball;
+    
+    console.log('⚾ [야구] 데이터:', baseball);
 
     updateBaseballTeamInfo(baseball);
     
+    console.log('⚾ [야구] 데이터 로딩 완료!');
+    
   } catch (error) {
-    console.error('야구 데이터 로딩 실패:', error);
+    console.error('❌ [야구] 데이터 로딩 실패:', error);
     displayBaseballError();
   }
 }

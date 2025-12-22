@@ -2,16 +2,23 @@
 // 안세영 선수 데이터 로딩 및 표시
 
 async function loadBadmintonData() {
+  console.log('🏸 [안세영] 데이터 로딩 시작...');
+  
   try {
     const response = await fetch('./public/data/ahn-seyoung-matches.json');
+    console.log('🏸 [안세영] API 응답:', response.status);
+    
     const data = await response.json();
+    console.log('🏸 [안세영] 데이터:', data);
 
     updateBadmintonRanking();
     updateRecentMatch(data.recent || []);
     updateNextMatch(data.upcoming || []);
     
+    console.log('🏸 [안세영] 데이터 로딩 완료!');
+    
   } catch (error) {
-    console.error('안세영 데이터 로딩 실패:', error);
+    console.error('❌ [안세영] 데이터 로딩 실패:', error);
     displayBadmintonError();
   }
 }
