@@ -10,23 +10,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+      
       - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libasound2t64 \
-            libpango-1.0-0 \
-            libcairo2 \
-            fonts-liberation \
-            libappindicator3-1 \
-            xdg-utils
-          npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth
+        run: npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth
+      
+      - name: Install Chrome for Puppeteer
+        run: npx puppeteer browsers install chrome
+      
       - name: Run badminton crawler
         run: node crawl-badminton.js
+      
       - name: Commit and push if changed
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
