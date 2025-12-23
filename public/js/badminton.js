@@ -1,140 +1,74 @@
-// public/js/badminton.js
-// 안세영 선수 데이터 로딩 및 표시
-
+// 안세영 배드민턴 데이터 로딩
 async function loadBadmintonData() {
-  console.log('🏸 [안세영] 데이터 로딩 시작...');
-  
-  try {
-    const response = await fetch('./public/data/ahn-seyoung-matches.json');
-    console.log('🏸 [안세영] API 응답:', response.status);
+    console.log('🏸 [안세영] 데이터 로딩 시작...');
     
-    const data = await response.json();
-    console.log('🏸 [안세영] 데이터:', data);
-
-    updateBadmintonRanking();
-    updateRecentMatch(data.recent || []);
-    updateNextMatch(data.upcoming || []);
-    
-    console.log('🏸 [안세영] 데이터 로딩 완료!');
-    
-  } catch (error) {
-    console.error('❌ [안세영] 데이터 로딩 실패:', error);
-    displayBadmintonError();
-  }
-}
-
-function updateBadmintonRanking() {
-  // 랭킹은 헤더에 이미 "세계 1위"로 표시되어 있음
-  
-  const pointsElement = document.getElementById('badminton-points');
-  if (pointsElement) {
-    pointsElement.innerHTML = `
-      <div class="stat-row">
-        <span class="stat-label">포인트</span>
-        <div style="text-align: right;">
-          <div class="stat-value">111,490</div>
-          <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">최근 대회 17개</div>
-        </div>
-      </div>
-    `;
-  }
-}
-
-function updateRecentMatch(recentMatches) {
-  const recentMatchElement = document.getElementById('badminton-recent-match');
-  
-  if (!recentMatches || recentMatches.length === 0) {
-    if (recentMatchElement) {
-      recentMatchElement.innerHTML = '<div class="no-data">최근 경기 없음</div>';
+    try {
+        const response = await fetch('./public/data/ahn-seyoung-matches.json');
+        const data = await response.json();
+        
+        console.log('🏸 [안세영] 데이터:', data);
+        
+        // 포인트 표시
+        const pointsHtml = `
+            <div class="stat-row">
+                <span class="stat-label">포인트</span>
+                <span class="stat-value">${data.points ? data.points.toLocaleString() : '111,490'}</span>
+            </div>
+            <div style="font-size: 0.7rem; color: rgba(255,255,255,0.5); text-align: right; margin-top: 3px;">
+                최근 대회 17개
+            </div>
+        `;
+        document.getElementById('badminton-points').innerHTML = pointsHtml;
+        
+        // 최근 경기
+        if (data.recent && data.recent.length > 0) {
+            const match = data.recent[0];
+            const recentHtml = `
+                <div class="recent-match-label">최근 경기</div>
+                <div class="recent-match-info">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="result ${match.result === '승' ? 'win' : 'loss'}">${match.result}</span>
+                        <span style="font-size: 0.9rem; font-weight: 600;">vs ${match.opponent}</span>
+                    </div>
+                    <div class="match-details">
+                        <span>${match.score}</span>
+                        <span class="match-separator">·</span>
+                        <span>${match.date}</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('badminton-recent-match').innerHTML = recentHtml;
+        }
+        
+        // 다음 경기
+        if (data.upcoming && data.upcoming.length > 0) {
+            const match = data.upcoming[0];
+            const upcomingHtml = `
+                <div class="next-match-label">다음 경기</div>
+                <div class="next-match-info">
+                    <div class="opponent">${match.tournament}</div>
+                    <div class="match-details">
+                        <span>${match.date}</span>
+                        ${match.opponent ? `<span class="match-separator">·</span><span>vs ${match.opponent}</span>` : ''}
+                    </div>
+                </div>
+            `;
+            document.getElementById('badminton-next-match').innerHTML = upcomingHtml;
+        } else {
+            const noMatchHtml = `
+                <div class="next-match-label">다음 경기</div>
+                <div class="next-match-info">
+                    <div class="no-match">예정된 경기 없음</div>
+                </div>
+            `;
+            document.getElementById('badminton-next-match').innerHTML = noMatchHtml;
+        }
+        
+        console.log('✅ [안세영] 데이터 로딩 완료');
+    } catch (error) {
+        console.error('❌ [안세영] 데이터 로딩 실패:', error);
     }
-    return;
-  }
-
-  const lastMatch = recentMatches[0];
-  const matchDate = new Date(lastMatch.date);
-  const formattedDate = `${matchDate.getMonth() + 1}.${matchDate.getDate()}`;
-  
-  if (recentMatchElement) {
-    const resultClass = lastMatch.result === 'WIN' ? 'win' : 'loss';
-    const resultText = lastMatch.result === 'WIN' ? '승' : '패';
-    
-    recentMatchElement.innerHTML = `
-      <div class="recent-match-label">최근 경기</div>
-      <div class="recent-match-info">
-        <div class="result ${resultClass}">${resultText}</div>
-        <div class="opponent">vs ${lastMatch.opponent}</div>
-        <div class="score">${lastMatch.score}</div>
-        <div class="match-date">${formattedDate}</div>
-      </div>
-    `;
-  }
 }
 
-function updateNextMatch(upcomingMatches) {
-  const nextMatchElement = document.getElementById('badminton-next-match');
-  
-  if (!nextMatchElement) return;
-
-  // upcomingMatches가 배열이 아니거나 비어있는 경우 처리
-  if (!Array.isArray(upcomingMatches) || upcomingMatches.length === 0) {
-    nextMatchElement.innerHTML = `
-      <div class="next-match-label">다음 경기</div>
-      <div class="next-match-info">
-        <div class="no-match">예정된 경기 없음</div>
-      </div>
-    `;
-    return;
-  }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  // 오늘 이후 경기만 필터링
-  const futureMatches = upcomingMatches
-    .map(match => ({
-      ...match,
-      dateObj: new Date(match.date)
-    }))
-    .filter(match => match.dateObj >= today)
-    .sort((a, b) => a.dateObj - b.dateObj);
-  
-  if (futureMatches.length === 0) {
-    nextMatchElement.innerHTML = `
-      <div class="next-match-label">다음 경기</div>
-      <div class="next-match-info">
-        <div class="no-match">예정된 경기 없음</div>
-      </div>
-    `;
-    return;
-  }
-
-  const nextMatch = futureMatches[0];
-  const matchDate = nextMatch.dateObj;
-  const formattedDate = `${matchDate.getFullYear()}.${matchDate.getMonth() + 1}.${matchDate.getDate()}`;
-  
-  nextMatchElement.innerHTML = `
-    <div class="next-match-label">다음 경기</div>
-    <div class="next-match-info">
-      <div class="tournament-name">${nextMatch.tournament}</div>
-      <div class="opponent">vs ${nextMatch.opponent}</div>
-      <div class="match-details">
-        <span class="match-date">${formattedDate}</span>
-        ${nextMatch.time ? `<span class="match-separator">•</span><span class="match-time">${nextMatch.time}</span>` : ''}
-      </div>
-    </div>
-  `;
-}
-
-function displayBadmintonError() {
-  const container = document.querySelector('.badminton-card');
-  if (container) {
-    container.innerHTML += '<div class="error-message">데이터를 불러올 수 없습니다</div>';
-  }
-}
-
-// 페이지 로드 시 자동 실행
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', loadBadmintonData);
-} else {
-  loadBadmintonData();
-}
+// 페이지 로드 시 실행
+loadBadmintonData();
