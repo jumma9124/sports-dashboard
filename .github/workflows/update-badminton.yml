@@ -1,24 +1,19 @@
 name: Update Ahn Se-young Data
-
 on:
   schedule:
-    # 매주 월요일, 목요일 오전 9시 KST (00:00 UTC)
-    - cron: '0 0 * * 1,4'
+    # 매일 오전 9시, 오후 6시 KST (00:00, 09:00 UTC)
+    - cron: '0 0,9 * * *'
   workflow_dispatch:
-
 jobs:
   update-badminton:
     runs-on: ubuntu-24.04
-    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -29,11 +24,9 @@ jobs:
             fonts-liberation \
             libappindicator3-1 \
             xdg-utils
-          npm install puppeteer
-
+          npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth
       - name: Run badminton crawler
         run: node crawl-badminton.js
-
       - name: Commit and push if changed
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
