@@ -2,12 +2,8 @@ const puppeteer = require('puppeteer');
 const fs = require('fs').promises;
 const path = require('path');
 
-// 데이터 저장 경로
 const DATA_DIR = path.join(__dirname, 'public', 'data');
 
-/**
- * 네이버 스포츠에서 배구 순위 크롤링
- */
 async function crawlVolleyball() {
   let browser;
   try {
@@ -19,15 +15,9 @@ async function crawlVolleyball() {
     });
 
     const page = await browser.newPage();
-    
     const url = 'https://m.sports.naver.com/volleyball/record/kovo?seasonCode=022&tab=teamRank';
-    console.log('[배구] URL:', url);
     
-    await page.goto(url, { 
-      waitUntil: 'networkidle2',
-      timeout: 30000 
-    });
-
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
     await page.waitForTimeout(5000);
 
     const volleyball = await page.evaluate(() => {
@@ -44,24 +34,19 @@ async function crawlVolleyball() {
           const rank = rankMatch ? rankMatch[1] + '위' : '-';
           
           const fullText = item.textContent;
-          
           const pointsMatch = fullText.match(/승점(\d+)/);
           const points = pointsMatch ? pointsMatch[1] : '-';
-          
           const gamesMatch = fullText.match(/경기(\d+)/);
           const games = gamesMatch ? gamesMatch[1] : '-';
-          
           const winsMatch = fullText.match(/승(\d+)/);
           const lossesMatch = fullText.match(/패(\d+)/);
           const wins = winsMatch ? winsMatch[1] : '-';
           const losses = lossesMatch ? lossesMatch[1] : '-';
-          
           const setRatioMatch = fullText.match(/세트득실률([\d.]+)/);
           const setRatio = setRatioMatch ? setRatioMatch[1] : '-';
           
           const winRate = (wins !== '-' && games !== '-') 
-            ? (parseInt(wins) / parseInt(games)).toFixed(3)
-            : '-';
+            ? (parseInt(wins) / parseInt(games)).toFixed(3) : '-';
           
           return {
             sport: '배구',
@@ -77,14 +62,11 @@ async function crawlVolleyball() {
           };
         }
       }
-      
       return null;
     });
 
-    await browser.close();
-
     if (!volleyball) {
-      console.log('[배구] 경고: 현대캐피탈 데이터를 찾을 수 없습니다');
+      await browser.close();
       return {
         sport: '배구',
         team: '현대캐피탈 스카이워커스',
@@ -99,34 +81,16 @@ async function crawlVolleyball() {
 
     console.log('[배구] 성공:', volleyball);
     
-    // 다음 경기 크롤링 (browser를 전달)
     try {
       const nextMatch = await crawlVolleyballNextMatch(browser);
       if (nextMatch) {
         volleyball.nextMatch = nextMatch;
-        console.log('[배구] 다음 경기 추가됨:', nextMatch);
-      } else {
-        console.log('[배구] 다음 경기 데이터 없음 - 기본값 사용');
-        // 기본값 설정 (임시)
-        volleyball.nextMatch = {
-          date: '2025-12-26',
-          time: '19:00',
-          opponent: 'OK저축은행',
-          location: '천안유관순체육관'
-        };
+        console.log('[배구] 다음 경기 추가:', nextMatch);
       }
     } catch (error) {
-      console.error('[배구] 다음 경기 크롤링 실패:', error.message);
-      // 에러 시에도 기본값 설정
-      volleyball.nextMatch = {
-        date: '2025-12-26',
-        time: '19:00',
-        opponent: 'OK저축은행',
-        location: '천안유관순체육관'
-      };
+      console.error('[배구] 다음 경기 실패:', error.message);
     }
     
-    // 모든 크롤링 완료 후 브라우저 닫기
     await browser.close();
     return volleyball;
 
@@ -146,88 +110,86 @@ async function crawlVolleyball() {
   }
 }
 
-/**
- * 배구 다음 경기 크롤링
- */
 async function crawlVolleyballNextMatch(browser) {
   try {
     console.log('[배구 다음 경기] 크롤링 시작...');
     
     const page = await browser.newPage();
-    const url = 'https://m.sports.naver.com/volleyball/schedule/index?date=&teamCode=2003';
-    console.log('[배구 다음 경기] URL:', url);
+    const today = new Date();
     
-    await page.goto(url, { 
-      waitUntil: 'networkidle2',
-      timeout: 30000 
-    });
-
-    await page.waitForTimeout(3000);
-
-    const nextMatch = await page.evaluate(() => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    for (let i = 0; i < 14; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(checkDate.getDate() + i);
+      const dateStr = checkDate.toISOString().split('T')[0];
       
-      // 경기 목록에서 미래 경기 찾기
-      const matchItems = document.querySelectorAll('.ScheduleAllListItem_match_item__1jros');
+      const url = `https://m.sports.naver.com/volleyball/schedule/index?date=${dateStr}&teamCode=2003`;
+      console.log('[배구 다음 경기] 확인:', dateStr);
       
-      for (let item of matchItems) {
-        const dateEl = item.querySelector('.ScheduleAllListItem_game_date__3_0_u');
-        if (!dateEl) continue;
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+      await page.waitForTimeout(3000);
+
+      // 페이지 전체 텍스트 가져오기
+      const pageText = await page.evaluate(() => document.body.textContent);
+      
+      // 현대캐피탈 또는 천안유관순이 있는지 확인
+      if (pageText.includes('현대캐피탈') || pageText.includes('천안유관순')) {
+        console.log('[배구 다음 경기] 매치 발견!');
         
-        const dateText = dateEl.textContent.trim();
-        const dateMatch = dateText.match(/(\d+)\.(\d+)/);
-        if (!dateMatch) continue;
-        
-        const month = parseInt(dateMatch[1]);
-        const day = parseInt(dateMatch[2]);
-        const year = new Date().getFullYear();
-        
-        const matchDate = new Date(year, month - 1, day);
-        matchDate.setHours(0, 0, 0, 0);
-        
-        // 오늘 이후 경기만
-        if (matchDate >= today) {
-          const timeEl = item.querySelector('.ScheduleAllListItem_game_time__26pq6');
-          const time = timeEl ? timeEl.textContent.trim() : '19:00';
+        const matchData = await page.evaluate(() => {
+          const bodyText = document.body.textContent;
+          
+          // 시간 찾기
+          const timeMatch = bodyText.match(/(\d{2}:\d{2})/);
+          const time = timeMatch ? timeMatch[1] : '19:00';
           
           // 상대팀 찾기
-          const teamEls = item.querySelectorAll('.TeamInfo_team_name__dni7F');
+          const teams = ['우리카드', 'OK저축은행', '대한항공', '한국전력', '삼성화재', 'KB손해보험'];
           let opponent = '';
-          
-          for (let teamEl of teamEls) {
-            const teamName = teamEl.textContent.trim();
-            if (!teamName.includes('현대캐피탈')) {
-              opponent = teamName;
+          for (let team of teams) {
+            if (bodyText.includes(team)) {
+              opponent = team;
               break;
             }
           }
           
-          // 경기장
-          const locationEl = item.querySelector('.ScheduleAllListItem_stadium__3kOcW');
-          const location = locationEl ? locationEl.textContent.trim() : '장소 미정';
+          // 경기장 찾기
+          let location = '';
+          if (bodyText.includes('천안유관순')) {
+            location = '천안유관순체육관';
+          } else {
+            const stadiums = ['수원체육관', '의정부체육관', '장충체육관', '김천실내체육관', '대전충무체육관'];
+            for (let stadium of stadiums) {
+              if (bodyText.includes(stadium)) {
+                location = stadium;
+                break;
+              }
+            }
+          }
           
           return {
-            date: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
             time: time,
-            opponent: opponent || '상대 미정',
-            location: location
+            opponent: opponent,
+            location: location || '장소 미정'
           };
+        });
+        
+        if (matchData.opponent) {
+          await page.close();
+          const result = {
+            date: dateStr,
+            time: matchData.time,
+            opponent: matchData.opponent,
+            location: matchData.location
+          };
+          console.log('[배구 다음 경기] 성공:', result);
+          return result;
         }
       }
-      
-      return null;
-    });
+    }
 
     await page.close();
-    
-    if (nextMatch) {
-      console.log('[배구 다음 경기] 성공:', nextMatch);
-    } else {
-      console.log('[배구 다음 경기] 예정된 경기 없음');
-    }
-    
-    return nextMatch;
+    console.log('[배구 다음 경기] 14일 이내 경기 없음');
+    return null;
     
   } catch (error) {
     console.error('[배구 다음 경기] 실패:', error.message);
@@ -235,9 +197,6 @@ async function crawlVolleyballNextMatch(browser) {
   }
 }
 
-/**
- * 야구 데이터
- */
 async function getBaseballData() {
   console.log('[야구] 데이터 생성...');
   
@@ -256,14 +215,11 @@ async function getBaseballData() {
   return baseball;
 }
 
-/**
- * 메인 함수
- */
 async function main() {
   try {
-    console.log('\n================================================================================');
+    console.log('\n' + '='.repeat(80));
     console.log('스포츠 데이터 크롤링 시작');
-    console.log('================================================================================\n');
+    console.log('='.repeat(80) + '\n');
 
     await fs.mkdir(DATA_DIR, { recursive: true });
 
@@ -279,16 +235,12 @@ async function main() {
     };
 
     const filePath = path.join(DATA_DIR, 'sports.json');
-    await fs.writeFile(
-      filePath,
-      JSON.stringify(sportsData, null, 2),
-      'utf8'
-    );
+    await fs.writeFile(filePath, JSON.stringify(sportsData, null, 2), 'utf8');
 
-    console.log('\n================================================================================');
+    console.log('\n' + '='.repeat(80));
     console.log('크롤링 완료!');
     console.log('파일:', filePath);
-    console.log('================================================================================\n');
+    console.log('='.repeat(80) + '\n');
 
   } catch (error) {
     console.error('\n에러 발생:', error);
