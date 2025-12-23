@@ -5,31 +5,23 @@
   "recent": [
     {
       "date": "2025-12-21",
-      "tournament": "BWF 투어 파이널",
-      "opponent": "왕즈이",
+      "tournament": "HSBC BWF World Tour Finals 2025",
+      "opponent": "WANG Zhi Yi",
       "result": "승",
-      "score": "2-0",
+      "score": "2-1",
       "round": "결승"
     },
     {
       "date": "2025-12-20",
-      "tournament": "BWF 투어 파이널",
-      "opponent": "야마구치 아카네",
+      "tournament": "HSBC BWF World Tour Finals 2025",
+      "opponent": "Akane YAMAGUCHI",
       "result": "승",
       "score": "2-0",
       "round": "준결승"
-    },
-    {
-      "date": "2025-12-19",
-      "tournament": "BWF 투어 파이널",
-      "opponent": "라차녹 인타논",
-      "result": "승",
-      "score": "2-1",
-      "round": "조별리그"
     }
   ],
   "upcoming": [],
-  "lastUpdated": "2025-12-22T07:13:54.573Z",
-  "error": "Could not find Chrome (ver. 121.0.6167.85). This can occur if either\n 1. you did not perform an installation before running the script (e.g. `npx puppeteer browsers install chrome`) or\n 2. your cache path is incorrectly configured (which is: /home/runner/.cache/puppeteer).\nFor (2), check out our guide on configuring puppeteer at https://pptr.dev/guides/configuration.",
-  "note": "BWF 크롤링 실패 - 기본 데이터 사용 (2025 투어 파이널 우승)"
+  "lastUpdated": "2025-12-23T01:16:48.718Z",
+  "note": "다음 대회: 2026년 1월 말레이시아 오픈",
+  "source": "BWF World Tour (bwfbadminton.com)"
 }
