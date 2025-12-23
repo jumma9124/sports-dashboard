@@ -1,4 +1,7 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+puppeteer.use(StealthPlugin());
+
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -17,11 +20,35 @@ async function crawlRecentMatches(browser) {
     console.log('[최근 경기] URL:', url);
     
     await page.goto(url, { 
-      waitUntil: 'networkidle2',
-      timeout: 30000 
+      waitUntil: 'networkidle0',
+      timeout: 60000 
     });
 
-    await page.waitForTimeout(5000);
+    console.log('[최근 경기] 페이지 로드 완료, 렌더링 대기 중...');
+
+    // 긴 대기 시간
+    await page.waitForTimeout(10000);
+
+    // 스크린샷 저장 (디버깅용)
+    await page.screenshot({ path: 'debug-screenshot.png', fullPage: true });
+    console.log('[최근 경기] 스크린샷 저장: debug-screenshot.png');
+
+    // HTML 저장
+    const html = await page.content();
+    require('fs').writeFileSync('debug-page.html', html);
+    console.log('[최근 경기] HTML 저장: debug-page.html');
+
+    // 경기 카드 확인
+    const hasCards = await page.evaluate(() => {
+      const cards = document.querySelectorAll('.result-match-single-card');
+      console.log('브라우저 내부: 경기 카드 수 =', cards.length);
+      return cards.length;
+    });
+    
+    console.log('[최근 경기] 발견한 경기 카드:', hasCards, '개');
+
+    // 브라우저 콘솔 로그를 Node.js로 전달
+    page.on('console', msg => console.log('[브라우저]', msg.text()));
 
     const matches = await page.evaluate(() => {
       const recent = [];
@@ -89,48 +116,68 @@ async function crawlRecentMatches(browser) {
           // 첫 번째 팀
           const team1 = teams[0];
           const team1PlayerWrap = team1.querySelector('.player-detail-wrap');
-          const team1Player = team1.querySelector('.player1 a, .player1');
+          const team1Player = team1.querySelector('.player1-wrap .player1 a') || team1.querySelector('.player1-wrap .player1');
           const team1IsWinner = team1PlayerWrap && team1PlayerWrap.classList.contains('team-win');
-          const team1ScoreDiv = team1.querySelector('.score div');
+          const team1ScoreWrap = team1.querySelector('.score');
           
           // 두 번째 팀
           const team2 = teams[1];
           const team2PlayerWrap = team2.querySelector('.player-detail-wrap');
-          const team2Player = team2.querySelector('.player3 a, .player3');
+          const team2Player = team2.querySelector('.player3-wrap .player3 a') || team2.querySelector('.player3-wrap .player3');
           const team2IsWinner = team2PlayerWrap && team2PlayerWrap.classList.contains('team-win');
-          const team2ScoreDiv = team2.querySelector('.score div');
+          const team2ScoreWrap = team2.querySelector('.score');
+          
+          console.log('Team1 player:', team1Player ? team1Player.textContent.trim() : 'null');
+          console.log('Team2 player:', team2Player ? team2Player.textContent.trim() : 'null');
+          console.log('Team1 winner:', team1IsWinner);
+          console.log('Team2 winner:', team2IsWinner);
           
           // 안세영이 어느 팀인지 확인
           const team1IsAn = team1Player && team1Player.textContent.includes('AN Se Young');
-          const team2IsAn = team2Player && team2Player.textContent.includes('AN Se Young');
           
           if (team1IsAn) {
             // 안세영이 팀1
             result = team1IsWinner ? '승' : '패';
-            opponent = team2Player ? team2Player.textContent.trim() : '';
+            opponent = team2Player ? team2Player.textContent.trim().replace(/\s+/g, ' ') : '';
             
-            // 스코어 추출
-            if (team1ScoreDiv && team2ScoreDiv) {
-              const team1Spans = team1ScoreDiv.querySelectorAll('span');
-              const team2Spans = team2ScoreDiv.querySelectorAll('span');
+            // 스코어 추출 - .score 안의 모든 span 직접 선택
+            if (team1ScoreWrap && team2ScoreWrap) {
+              const team1Spans = team1ScoreWrap.querySelectorAll('span');
+              const team2Spans = team2ScoreWrap.querySelectorAll('span');
               
-              anSeYoungScore = Array.from(team1Spans).map(s => parseInt(s.textContent.trim())).filter(n => !isNaN(n));
-              opponentScore = Array.from(team2Spans).map(s => parseInt(s.textContent.trim())).filter(n => !isNaN(n));
+              console.log('Team1 스코어 span 개수:', team1Spans.length);
+              console.log('Team2 스코어 span 개수:', team2Spans.length);
+              
+              anSeYoungScore = Array.from(team1Spans).map(s => {
+                const val = parseInt(s.textContent.trim());
+                console.log('안세영 점수:', s.textContent.trim(), '→', val);
+                return val;
+              }).filter(n => !isNaN(n));
+              
+              opponentScore = Array.from(team2Spans).map(s => {
+                const val = parseInt(s.textContent.trim());
+                console.log('상대 점수:', s.textContent.trim(), '→', val);
+                return val;
+              }).filter(n => !isNaN(n));
             }
-          } else if (team2IsAn) {
-            // 안세영이 팀2
+          } else {
+            // 안세영이 팀2일 수도 있음
             result = team2IsWinner ? '승' : '패';
-            opponent = team1Player ? team1Player.textContent.trim() : '';
+            opponent = team1Player ? team1Player.textContent.trim().replace(/\s+/g, ' ') : '';
             
             // 스코어 추출
-            if (team1ScoreDiv && team2ScoreDiv) {
-              const team1Spans = team1ScoreDiv.querySelectorAll('span');
-              const team2Spans = team2ScoreDiv.querySelectorAll('span');
+            if (team1ScoreWrap && team2ScoreWrap) {
+              const team1Spans = team1ScoreWrap.querySelectorAll('span');
+              const team2Spans = team2ScoreWrap.querySelectorAll('span');
               
               anSeYoungScore = Array.from(team2Spans).map(s => parseInt(s.textContent.trim())).filter(n => !isNaN(n));
               opponentScore = Array.from(team1Spans).map(s => parseInt(s.textContent.trim())).filter(n => !isNaN(n));
             }
           }
+          
+          console.log('Opponent:', opponent);
+          console.log('안세영 점수 배열:', anSeYoungScore);
+          console.log('상대 점수 배열:', opponentScore);
           
           // 세트 스코어 계산 (2-0, 2-1 등)
           let setsWon = 0;
@@ -351,7 +398,7 @@ async function main() {
     await fs.writeFile(
       filePath,
       JSON.stringify(ahnSeyoungData, null, 2),
-      'utf8'
+      { encoding: 'utf8' }
     );
 
     console.log('\n================================================================================');
