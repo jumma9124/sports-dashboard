@@ -14,20 +14,28 @@ async function crawlBWFSchedule(browser) {
       timeout: 30000
     });
     
-    await page.waitForTimeout(5000); // 3초 → 5초로 증가
+    // Vue.js 렌더링 충분히 대기
+    await page.waitForTimeout(8000);
     
-    // 디버깅: 스크린샷 및 HTML 저장
-    await page.screenshot({ path: 'debug-bwf-calendar.png', fullPage: true });
-    const html = await page.content();
-    require('fs').writeFileSync('debug-bwf-calendar.html', html);
-    console.log('[DEBUG] Screenshot saved: debug-bwf-calendar.png');
-    console.log('[DEBUG] HTML saved: debug-bwf-calendar.html');
+    // 여러 셀렉터 시도 (디버깅)
+    const selectorTest = await page.evaluate(() => {
+      const results = {};
+      results.timeline = document.querySelectorAll('.timeline__item').length;
+      results.tournament = document.querySelectorAll('[class*="tournament"]').length;
+      results.event = document.querySelectorAll('[class*="event"]').length;
+      results.card = document.querySelectorAll('.card, .item').length;
+      
+      // body 전체 HTML 길이
+      results.bodyLength = document.body.innerHTML.length;
+      
+      return results;
+    });
+    
+    console.log('[DEBUG] Selector test results:', JSON.stringify(selectorTest, null, 2));
     
     const tournaments = await page.evaluate(() => {
       const items = document.querySelectorAll('.timeline__item');
       const currentYear = new Date().getFullYear();
-      
-      console.log('[DEBUG] Found timeline items:', items.length);
       
       const monthMap = {
         'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
