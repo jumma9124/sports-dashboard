@@ -1,5 +1,4 @@
-const puppeteer = require('puppeteer-core');
-const chromium = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer');
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -10,10 +9,18 @@ async function crawlVolleyball() {
   try {
     console.log('[배구] 크롤링 시작...');
     
-    browser = await puppeteer.launch({
+    // Chrome 실행 옵션 설정
+    const launchOptions = {
       headless: 'new',
       args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    };
+    
+    // GitHub Actions에서 Chromium 경로 사용
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    }
+    
+    browser = await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
     const url = 'https://m.sports.naver.com/volleyball/record/kovo?seasonCode=022&tab=teamRank';
@@ -127,23 +134,19 @@ async function crawlVolleyballNextMatch(browser) {
       console.log('[배구 다음 경기] 확인:', dateStr);
       
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(2000);
 
-      // 페이지 전체 텍스트 가져오기
       const pageText = await page.evaluate(() => document.body.textContent);
       
-      // 현대캐피탈 또는 천안유관순이 있는지 확인
       if (pageText.includes('현대캐피탈') || pageText.includes('천안유관순')) {
         console.log('[배구 다음 경기] 매치 발견!');
         
         const matchData = await page.evaluate(() => {
           const bodyText = document.body.textContent;
           
-          // 시간 찾기
           const timeMatch = bodyText.match(/(\d{2}:\d{2})/);
           const time = timeMatch ? timeMatch[1] : '19:00';
           
-          // 상대팀 찾기
           const teams = ['우리카드', 'OK저축은행', '대한항공', '한국전력', '삼성화재', 'KB손해보험'];
           let opponent = '';
           for (let team of teams) {
@@ -153,7 +156,6 @@ async function crawlVolleyballNextMatch(browser) {
             }
           }
           
-          // 경기장 찾기
           let location = '';
           if (bodyText.includes('천안유관순')) {
             location = '천안유관순체육관';
