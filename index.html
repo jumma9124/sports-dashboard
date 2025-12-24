@@ -464,5 +464,41 @@
     <script src="./public/js/baseball.js"></script>
     <script src="./public/js/badminton.js"></script>
     <script src="./public/js/events.js"></script>
+    
+    <!-- 카드 클릭 이벤트 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 잠시 대기 후 카드에 클릭 이벤트 추가 (카드가 배치된 후)
+            setTimeout(() => {
+                const cards = document.querySelectorAll('.card');
+                
+                cards.forEach(card => {
+                    const cardType = card.getAttribute('data-card-type');
+                    
+                    if (cardType) {
+                        // 클릭 가능하도록 스타일 추가
+                        card.style.cursor = 'pointer';
+                        card.style.transition = 'transform 0.2s, opacity 0.2s';
+                        
+                        // 호버 효과
+                        card.addEventListener('mouseenter', () => {
+                            card.style.transform = 'translateY(-2px)';
+                            card.style.opacity = '0.95';
+                        });
+                        
+                        card.addEventListener('mouseleave', () => {
+                            card.style.transform = 'translateY(0)';
+                            card.style.opacity = '1';
+                        });
+                        
+                        // 클릭 이벤트 - 상세 페이지로 이동
+                        card.addEventListener('click', () => {
+                            window.location.href = `./${cardType}-detail.html`;
+                        });
+                    }
+                });
+            }, 500); // 카드 배치 후 0.5초 대기
+        });
+    </script>
 </body>
 </html>
