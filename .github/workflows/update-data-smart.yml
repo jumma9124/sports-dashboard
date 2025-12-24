@@ -2,12 +2,12 @@ name: Update Sports Data (Smart Schedule)
 on:
   schedule:
     # 배구 시즌 (10월-4월): 매일 21:00, 23:00 KST
-    - cron: '0 12,14 * 10-12,1-4 *'  # UTC 12:00, 14:00 = KST 21:00, 23:00
+    - cron: '0 12,14 * 10-12,1-4 *'
     # 야구 오프시즌 (11월-2월): 월 1회
-    - cron: '0 15 1 11-12,1-2 *'  # 매월 1일 00:00 KST
+    - cron: '0 15 1 11-12,1-2 *'
     # 야구 시즌 (3월-10월): 주 1회
-    - cron: '0 18 * 3-10 1'  # 매주 화요일 03:00 KST
-  workflow_dispatch:  # 수동 실행
+    - cron: '0 18 * 3-10 1'
+  workflow_dispatch:
 jobs:
   update-data:
     runs-on: ubuntu-latest
@@ -22,13 +22,18 @@ jobs:
         with:
           node-version: '20'
       
+      - name: Install Chromium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+      
       - name: Install dependencies
         run: npm install
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: 'false'
       
       - name: Run sports data crawler
         run: node crawl-sports.js
+        env:
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
       
       - name: Commit and push if changed
         run: |
