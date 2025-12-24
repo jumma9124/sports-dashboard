@@ -28,6 +28,11 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install Chromium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+
       - name: Install Chromium dependencies
         run: |
           sudo apt-get update
@@ -55,9 +60,13 @@ jobs:
 
       - name: Run sports data crawler
         run: node crawl-sports.js
+        env:
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
 
       - name: Run badminton data crawler
         run: node crawl-badminton.js
+        env:
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
 
       - name: Commit and push if changed
         run: |
