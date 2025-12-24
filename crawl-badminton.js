@@ -133,7 +133,7 @@ async function crawlBWFSchedule(browser) {
 
 async function crawlAhnSeYoungData() {
   console.log('==========================================');
-  console.log('🏸 안세영 데이터 크롤링 시작...');
+  console.log('[BADMINTON] 안세영 데이터 크롤링 시작...');
   console.log('==========================================');
 
   const launchOptions = {
@@ -154,7 +154,7 @@ async function crawlAhnSeYoungData() {
 
     // BWF 안세영 선수 페이지
     const url = 'https://bwfbadminton.com/player/87442/an-se-young';
-    console.log(`📍 URL: ${url}`);
+    console.log(`[URL] URL: ${url}`);
 
     await page.goto(url, { 
       waitUntil: 'networkidle2',
@@ -301,13 +301,13 @@ async function crawlAhnSeYoungData() {
       return result;
     });
 
-    console.log('✅ 크롤링 완료!');
+    console.log('[SUCCESS] 크롤링 완료!');
     console.log(`랭킹: ${data.ranking}위`);
     console.log(`최근 경기: ${data.recentMatches.length}개`);
 
     // 데이터 검증 및 폴백
     if (data.recentMatches.length === 0) {
-      console.log(⚠️ 크롤링된 경기 데이터가 없습니다. 폴백 데이터 사용...');
+      console.log('[WARNING] 크롤링된 경기 데이터가 없습니다. 폴백 데이터 사용...');
       
       // 2025 BWF 투어 파이널 우승 기록 (폴백)
       data.recentMatches = [
@@ -341,12 +341,12 @@ async function crawlAhnSeYoungData() {
     // ranking이 없으면 기본값 1위
     if (!data.ranking) {
       data.ranking = 1;
-      console.log('⚠️ 랭킹 정보 없음. 기본값 1위 사용');
+      console.log('[WARNING] 랭킹 정보 없음. 기본값 1위 사용');
     }
 
     // BWF 대회 일정 크롤링
     console.log('\n==========================================');
-    console.log('🗓️  BWF 대회 일정 크롤링 시작...');
+    console.log('[SCHEDULE]  BWF 대회 일정 크롤링 시작...');
     console.log('==========================================');
     
     const schedule = await crawlBWFSchedule(browser);
@@ -373,12 +373,12 @@ async function crawlAhnSeYoungData() {
     fs.writeFileSync(outputPath, JSON.stringify(outputData, null, 2), 'utf-8');
     
     console.log('\n==========================================');
-    console.log(`✅ 파일 저장 완료: ${outputPath}`);
+    console.log(`[SUCCESS] 파일 저장 완료: ${outputPath}`);
     if (schedule.displayTournament) {
-      console.log(`📅 다음 대회: ${schedule.displayTournament.name}`);
-      console.log(`🏆 등급: ${schedule.displayTournament.category}`);
-      console.log(`📍 장소: ${schedule.displayTournament.country}`);
-      console.log(`⏰ D-day: ${schedule.daysInfo.text}`);
+      console.log(`[NEXT] 다음 대회: ${schedule.displayTournament.name}`);
+      console.log(`[CATEGORY] 등급: ${schedule.displayTournament.category}`);
+      console.log(`[URL] 장소: ${schedule.displayTournament.country}`);
+      console.log(`[D-DAY] D-day: ${schedule.daysInfo.text}`);
     }
     console.log('==========================================');
 
@@ -386,7 +386,7 @@ async function crawlAhnSeYoungData() {
     return outputData;
 
   } catch (error) {
-    console.error('❌ 크롤링 중 오류 발생:', error.message);
+    console.error('[ERROR] 크롤링 중 오류 발생:', error.message);
     await browser.close();
 
     // 에러 발생 시 폴백 데이터
@@ -432,7 +432,7 @@ async function crawlAhnSeYoungData() {
     }
     fs.writeFileSync(outputPath, JSON.stringify(fallbackData, null, 2), 'utf-8');
     
-    console.log('⚠️ 폴백 데이터로 파일 생성됨');
+    console.log('[WARNING] 폴백 데이터로 파일 생성됨');
     return fallbackData;
   }
 }
