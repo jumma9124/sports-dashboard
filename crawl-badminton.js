@@ -14,11 +14,20 @@ async function crawlBWFSchedule(browser) {
       timeout: 30000
     });
     
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(5000); // 3초 → 5초로 증가
+    
+    // 디버깅: 스크린샷 및 HTML 저장
+    await page.screenshot({ path: 'debug-bwf-calendar.png', fullPage: true });
+    const html = await page.content();
+    require('fs').writeFileSync('debug-bwf-calendar.html', html);
+    console.log('[DEBUG] Screenshot saved: debug-bwf-calendar.png');
+    console.log('[DEBUG] HTML saved: debug-bwf-calendar.html');
     
     const tournaments = await page.evaluate(() => {
       const items = document.querySelectorAll('.timeline__item');
       const currentYear = new Date().getFullYear();
+      
+      console.log('[DEBUG] Found timeline items:', items.length);
       
       const monthMap = {
         'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
@@ -27,11 +36,13 @@ async function crawlBWFSchedule(browser) {
         'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11
       };
       
-      return Array.from(items).map(item => {
+      return Array.from(items).map((item, index) => {
         const dateText = item.querySelector('.date span')?.textContent.trim();
         const name = item.querySelector('.name')?.textContent.trim();
         const category = item.querySelector('.label-category')?.textContent.trim();
         const country = item.querySelector('.country')?.textContent.trim();
+        
+        console.log(`[DEBUG] Item ${index}:`, { dateText, name, category, country });
         
         if (!dateText || !name) return null;
         
