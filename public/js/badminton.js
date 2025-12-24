@@ -40,8 +40,32 @@ async function loadBadmintonData() {
             document.getElementById('badminton-recent-match').innerHTML = recentHtml;
         }
         
-        // 다음 경기
-        if (data.upcoming && data.upcoming.length > 0) {
+        // 다음 경기/대회
+        if (data.nextTournament) {
+            // BWF 대회 일정이 있는 경우
+            const tournament = data.nextTournament;
+            const daysInfo = data.tournamentDays;
+            
+            const statusClass = daysInfo.type === 'ongoing' ? 'ongoing' : 'upcoming';
+            const statusText = daysInfo.type === 'ongoing' ? '진행중' : '예정';
+            
+            const upcomingHtml = `
+                <div class="next-match-label">다음 대회</div>
+                <div class="next-match-info">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: 600; font-size: 0.95rem;">${tournament.name}</span>
+                        <span class="dday ${statusClass}">${daysInfo.text}</span>
+                    </div>
+                    <div class="match-details">
+                        <span>${tournament.category}</span>
+                        <span class="match-separator">·</span>
+                        <span>${tournament.country}</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('badminton-next-match').innerHTML = upcomingHtml;
+        } else if (data.upcoming && data.upcoming.length > 0) {
+            // 기존 upcoming 경기 표시
             const match = data.upcoming[0];
             const upcomingHtml = `
                 <div class="next-match-label">다음 경기</div>
@@ -56,9 +80,9 @@ async function loadBadmintonData() {
             document.getElementById('badminton-next-match').innerHTML = upcomingHtml;
         } else {
             const noMatchHtml = `
-                <div class="next-match-label">다음 경기</div>
+                <div class="next-match-label">다음 대회</div>
                 <div class="next-match-info">
-                    <div class="no-match">예정된 경기 없음</div>
+                    <div class="no-match">예정된 대회 없음</div>
                 </div>
             `;
             document.getElementById('badminton-next-match').innerHTML = noMatchHtml;
