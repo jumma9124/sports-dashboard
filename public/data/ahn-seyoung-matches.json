@@ -28,7 +28,18 @@
     }
   ],
   "upcoming": [],
-  "nextTournament": null,
-  "tournamentDays": null,
-  "lastUpdated": "2025-12-24T07:00:20.477Z"
+  "nextTournament": {
+    "name": "PETRONAS Malaysia Open 2026",
+    "category": "HSBC BWF World Tour Super 1000",
+    "country": "Kuala Lumpur, Malaysia",
+    "startDate": "2026-01-06",
+    "endDate": "2026-01-11",
+    "dateText": "06 - 11 Jan"
+  },
+  "tournamentDays": {
+    "type": "upcoming",
+    "days": 12,
+    "text": "D-12"
+  },
+  "lastUpdated": "2025-12-24T07:05:08.840Z"
 }
