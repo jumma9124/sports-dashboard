@@ -26,7 +26,9 @@ jobs:
         run: npm install
       
       - name: Install Chrome for Puppeteer
-        run: npx puppeteer browsers install chrome
+        run: node node_modules/puppeteer/install.js
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: false
       
       - name: Run sports data crawler
         run: node crawl-sports.js
