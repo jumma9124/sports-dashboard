@@ -3,19 +3,11 @@
     "sport": "배구",
     "team": "현대캐피탈 스카이워커스",
     "league": "V-리그",
-    "rank": "2위",
-    "record": "10승 6패",
-    "winRate": "0.625",
-    "games": "16",
-    "points": "32",
-    "setRatio": "1.480",
-    "lastUpdated": "2025-12-25T14:15:29.257Z",
-    "nextMatch": {
-      "date": "2025-12-27",
-      "time": "14:00",
-      "opponent": "한국전력",
-      "location": "장소 미정"
-    }
+    "rank": "-",
+    "record": "크롤링 실패",
+    "winRate": "-",
+    "error": "Could not find Chrome (ver. 121.0.6167.85). This can occur if either\n 1. you did not perform an installation before running the script (e.g. `npx puppeteer browsers install chrome`) or\n 2. your cache path is incorrectly configured (which is: /home/runner/.cache/puppeteer).\nFor (2), check out our guide on configuring puppeteer at https://pptr.dev/guides/configuration.",
+    "lastUpdated": "2025-12-26T02:00:41.062Z"
   },
   "baseball": {
     "sport": "야구",
@@ -24,8 +16,8 @@
     "rank": "2위",
     "record": "83승 57패 4무",
     "winRate": ".593",
-    "lastUpdated": "2025-12-25T14:15:17.754Z",
+    "lastUpdated": "2025-12-26T02:00:41.059Z",
     "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
   },
-  "lastUpdated": "2025-12-25T14:15:42.871Z"
+  "lastUpdated": "2025-12-26T02:00:41.062Z"
 }
