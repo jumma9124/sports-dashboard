@@ -7,7 +7,7 @@
     "record": "크롤링 실패",
     "winRate": "-",
     "error": "Could not find Chrome (ver. 121.0.6167.85). This can occur if either\n 1. you did not perform an installation before running the script (e.g. `npx puppeteer browsers install chrome`) or\n 2. your cache path is incorrectly configured (which is: /home/runner/.cache/puppeteer).\nFor (2), check out our guide on configuring puppeteer at https://pptr.dev/guides/configuration.",
-    "lastUpdated": "2025-12-26T12:51:52.135Z"
+    "lastUpdated": "2025-12-26T14:13:40.673Z"
   },
   "baseball": {
     "sport": "야구",
@@ -16,8 +16,8 @@
     "rank": "2위",
     "record": "83승 57패 4무",
     "winRate": ".593",
-    "lastUpdated": "2025-12-26T12:51:52.132Z",
+    "lastUpdated": "2025-12-26T14:13:40.670Z",
     "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
   },
-  "lastUpdated": "2025-12-26T12:51:52.135Z"
+  "lastUpdated": "2025-12-26T14:13:40.673Z"
 }
