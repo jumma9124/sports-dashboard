@@ -73,11 +73,16 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
+          # package-lock.json은 무시 (자동 생성 파일)
+          git restore --staged node_modules/.package-lock.json package-lock.json 2>/dev/null || true
+          
+          # 데이터 파일만 커밋
           git add public/data/sports.json
           git add public/data/ahn-seyoung-matches.json
           
           if git diff --staged --quiet; then
             echo "No changes to commit"
+            exit 0
           else
             git commit -m "Update sports data - $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
             git push

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 jobs:
   update-badminton:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -16,19 +16,55 @@ jobs:
         with:
           node-version: '20'
       
-      - name: Install dependencies
-        run: npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth
+      - name: Install Chromium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
       
-      - name: Install Chrome for Puppeteer
-        run: npx puppeteer browsers install chrome
+      - name: Install Chromium dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libcups2 \
+            libdrm2 \
+            libxkbcommon0 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libgbm1 \
+            libpango-1.0-0 \
+            libcairo2 \
+            libasound2t64 \
+            fonts-liberation \
+            libappindicator3-1 \
+            xdg-utils
+      
+      - name: Install dependencies
+        run: npm install
       
       - name: Run badminton crawler
         run: node crawl-badminton.js
+        env:
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
       
       - name: Commit and push if changed
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+          
+          # package-lock.json 무시
+          git restore --staged node_modules/.package-lock.json package-lock.json 2>/dev/null || true
+          
           git add public/data/ahn-seyoung-matches.json
-          git diff --staged --quiet || git commit -m "Update Ahn Se-young match data"
-          git push
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          else
+            git commit -m "Update Ahn Se-young match data - $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+            git push
+          fi
