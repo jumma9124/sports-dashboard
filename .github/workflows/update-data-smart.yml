@@ -91,4 +91,3 @@ jobs:
             git push
             echo "✅ Successfully pushed updates"
           fi
-          fi
