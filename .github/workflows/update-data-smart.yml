@@ -56,7 +56,7 @@ jobs:
             xdg-utils
 
       - name: Install dependencies
-        run: npm ci  # npm install 대신 ci 사용 (package-lock.json 수정 안 함)
+        run: npm install --prefer-offline --no-audit
 
       - name: Run sports data crawler
         run: node crawl-sports.js
@@ -72,6 +72,10 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+          
+          # package-lock.json 변경사항 무시 (npm install로 생성/수정될 수 있음)
+          git checkout -- package-lock.json 2>/dev/null || true
+          git clean -fd  # 생성된 불필요한 파일 제거
           
           # 데이터 파일만 커밋
           git add public/data/sports.json 2>/dev/null || true
