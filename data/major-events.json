@@ -1,0 +1,49 @@
+{
+  "lastUpdated": "2026-01-01T01:59:01.171Z",
+  "events": [
+    {
+      "id": "olympics-winter-2026",
+      "type": "olympics-winter",
+      "title": "2026 Winter Olympics",
+      "emoji": "⛷️",
+      "startDate": "2026-02-06",
+      "endDate": "2026-02-06",
+      "location": "Milan and Cortina d'Ampezzo, Italy",
+      "source": "wikipedia",
+      "crawledAt": "2026-01-01T01:58:50.402Z"
+    },
+    {
+      "id": "worldcup-2026",
+      "type": "worldcup",
+      "title": "FIFA 월드컵",
+      "emoji": "⚽",
+      "startDate": "2026-06-11",
+      "endDate": "2026-07-19",
+      "location": "USA, Canada, Mexico",
+      "source": "fallback",
+      "crawledAt": "2026-01-01T01:58:57.732Z"
+    },
+    {
+      "id": "asian-games-2026",
+      "type": "asian-games",
+      "title": "2026 Asian Games",
+      "emoji": "🏅",
+      "startDate": "2026-09-19",
+      "endDate": "2026-09-19",
+      "location": "Aichi Prefecture and Nagoya, Japan",
+      "source": "wikipedia",
+      "crawledAt": "2026-01-01T01:59:01.087Z"
+    },
+    {
+      "id": "olympics-summer-2028",
+      "type": "olympics-summer",
+      "title": "하계올림픽",
+      "emoji": "🏃",
+      "startDate": "2028-07-21",
+      "endDate": "2028-08-06",
+      "location": "Los Angeles, USA",
+      "source": "fallback",
+      "crawledAt": "2026-01-01T01:58:53.691Z"
+    }
+  ]
+}
