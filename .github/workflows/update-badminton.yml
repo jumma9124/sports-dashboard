@@ -23,6 +23,9 @@ jobs:
     - name: Install Chromium
       run: sudo apt-get update && sudo apt-get install -y chromium-browser
 
+    - name: Install puppeteer-core only
+      run: npm install puppeteer-core
+
     - name: Run badminton crawling
       run: node crawl-badminton.js
 
