@@ -2,93 +2,39 @@ name: Update Sports Data (Smart Schedule)
 
 on:
   schedule:
-    # 배구 시즌 (10월-4월): 매일 21:00, 23:00 KST
-    - cron: '0 12,14 * 10-12,1-4 *'  # UTC 12:00, 14:00 = KST 21:00, 23:00
-    
-    # 야구 오프시즌 (11월-2월): 월 1회
-    - cron: '0 15 1 11-12,1-2 *'  # 매월 1일 00:00 KST
-    
-    # 야구 시즌 (3월-10월): 주 1회
-    - cron: '0 18 * 3-10 1'  # 매주 화요일 03:00 KST
-
-  workflow_dispatch:  # 수동 실행
+    - cron: '0 3,9 * 10-12,1-4 *'  # 배구 시즌
+    - cron: '0 3,9 * 3-10 *'        # 야구 시즌
+  workflow_dispatch:
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
 
-      - name: Install Chromium
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser
+    - name: Install Chromium
+      run: sudo apt-get update && sudo apt-get install -y chromium-browser
 
-      - name: Install Chromium dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libnss3 \
-            libatk1.0-0 \
-            libatk-bridge2.0-0 \
-            libcups2 \
-            libdrm2 \
-            libxkbcommon0 \
-            libxcomposite1 \
-            libxdamage1 \
-            libxfixes3 \
-            libxrandr2 \
-            libgbm1 \
-            libpango-1.0-0 \
-            libcairo2 \
-            libasound2t64 \
-            fonts-liberation \
-            libappindicator3-1 \
-            xdg-utils
+    - name: Run crawling script
+      run: node crawl-sports.js
 
-      - name: Install dependencies
-        run: npm install --prefer-offline --no-audit
+    - name: Configure Git
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
 
-      - name: Run sports data crawler
-        run: node crawl-sports.js
-        env:
-          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
-
-      - name: Run badminton data crawler
-        run: node crawl-badminton.js
-        env:
-          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
-
-      - name: Commit and push if changed
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          
-          # Git status 확인 및 데이터 파일만 추가
-          git add -f public/data/sports.json 2>/dev/null || true
-          git add -f public/data/ahn-seyoung-matches.json 2>/dev/null || true
-          
-          # node_modules와 package-lock.json 변경사항은 완전히 무시
-          git restore --staged . 2>/dev/null || true
-          git add -f public/data/sports.json 2>/dev/null || true
-          git add -f public/data/ahn-seyoung-matches.json 2>/dev/null || true
-          
-          # 변경사항 확인
-          if git diff --staged --quiet; then
-            echo "✅ No data changes to commit"
-            exit 0
-          else
-            echo "✅ Committing data updates..."
-            git commit -m "Update sports data - $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-            git push
-            echo "✅ Successfully pushed updates"
-          fi
+    - name: Commit and push if changed
+      run: |
+        git restore --staged .
+        git add -f public/data/sports.json
+        git diff --staged --quiet || git commit -m "Update sports data (auto)"
+        git push

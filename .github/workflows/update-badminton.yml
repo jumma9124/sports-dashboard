@@ -1,74 +1,39 @@
-name: Update Ahn Se-young Data
+name: Update Badminton Data
+
 on:
   schedule:
-    # 매일 오전 9시, 오후 6시 KST (00:00, 09:00 UTC)
-    - cron: '0 0,9 * * *'
+    - cron: '0 3,9 * * *'  # 매일 12시, 18시 KST
   workflow_dispatch:
+
 jobs:
   update-badminton:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
-      - name: Install Chromium
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser
-      
-      - name: Install Chromium dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libnss3 \
-            libatk1.0-0 \
-            libatk-bridge2.0-0 \
-            libcups2 \
-            libdrm2 \
-            libxkbcommon0 \
-            libxcomposite1 \
-            libxdamage1 \
-            libxfixes3 \
-            libxrandr2 \
-            libgbm1 \
-            libpango-1.0-0 \
-            libcairo2 \
-            libasound2t64 \
-            fonts-liberation \
-            libappindicator3-1 \
-            xdg-utils
-      
-      - name: Install dependencies
-        run: npm install --prefer-offline --no-audit
-      
-      - name: Run badminton crawler
-        run: node crawl-badminton.js
-        env:
-          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
-      
-      - name: Commit and push if changed
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          
-          # Git status 확인 및 데이터 파일만 추가
-          git add -f public/data/ahn-seyoung-matches.json 2>/dev/null || true
-          
-          # node_modules와 package-lock.json 변경사항은 완전히 무시
-          git restore --staged . 2>/dev/null || true
-          git add -f public/data/ahn-seyoung-matches.json 2>/dev/null || true
-          
-          if git diff --staged --quiet; then
-            echo "✅ No data changes to commit"
-            exit 0
-          else
-            echo "✅ Committing badminton data updates..."
-            git commit -m "Update Ahn Se-young match data - $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-            git push
-            echo "✅ Successfully pushed updates"
-          fi
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Chromium
+      run: sudo apt-get update && sudo apt-get install -y chromium-browser
+
+    - name: Run badminton crawling
+      run: node crawl-badminton.js
+
+    - name: Configure Git
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+
+    - name: Commit and push if changed
+      run: |
+        git restore --staged .
+        git add -f public/data/ahn-seyoung-matches.json
+        git diff --staged --quiet || git commit -m "Update badminton data (auto)"
+        git push
