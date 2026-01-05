@@ -7,7 +7,7 @@
     "record": "크롤링 실패",
     "winRate": "-",
     "error": "page.waitForTimeout is not a function",
-    "lastUpdated": "2026-01-05T01:32:53.826Z"
+    "lastUpdated": "2026-01-05T01:54:00.479Z"
   },
   "baseball": {
     "sport": "야구",
@@ -16,8 +16,8 @@
     "rank": "2위",
     "record": "83승 57패 4무",
     "winRate": ".593",
-    "lastUpdated": "2026-01-05T01:32:47.872Z",
+    "lastUpdated": "2026-01-05T01:53:54.503Z",
     "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
   },
-  "lastUpdated": "2026-01-05T01:32:53.826Z"
+  "lastUpdated": "2026-01-05T01:54:00.479Z"
 }
