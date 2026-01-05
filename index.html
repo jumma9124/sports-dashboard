@@ -32,12 +32,6 @@
             letter-spacing: 2px;
         }
 
-        .last-updated {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 5px;
-        }
-
         .dashboard {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -54,11 +48,7 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             display: flex;
             flex-direction: column;
-            transition: transform 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
+            overflow: auto;
         }
 
         .card-header {
@@ -70,50 +60,43 @@
 
         .icon {
             font-size: 2.5rem;
-            flex-shrink: 0;
         }
 
-        .team-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .team-name {
-            font-size: 1.1rem;
-            font-weight: 700;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .team-info h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            line-height: 1.2;
         }
 
         .league {
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .rank-big {
-            font-size: 4rem;
-            font-weight: 700;
-            text-align: center;
-            margin: 15px 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 3px;
         }
 
         .stats {
-            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .rank-big {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 10px 0;
         }
 
         .stat-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .stat-label {
@@ -185,145 +168,6 @@
             color: #e57373;
         }
 
-        /* 모바일 팝업 스타일 */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            animation: fadeIn 0.2s;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { 
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to { 
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-content {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 25px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            animation: slideUp 0.3s;
-            position: relative;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .modal-close:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .modal-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding-right: 40px;
-        }
-
-        .modal-icon {
-            font-size: 3.5rem;
-        }
-
-        .modal-team-info {
-            flex: 1;
-        }
-
-        .modal-team-name {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .modal-league {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .modal-rank {
-            font-size: 3.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin: 20px 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .modal-stats {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .modal-stat-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .modal-stat-row:last-child {
-            border-bottom: none;
-        }
-
-        .modal-stat-label {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .modal-stat-value {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
         /* 반응형 */
         @media (max-width: 768px) {
             body { padding: 10px; }
@@ -333,7 +177,6 @@
                 padding: 15px;
                 justify-content: center;
                 align-items: center;
-                cursor: pointer;
             }
             
             /* 아이콘만 크게 표시 */
@@ -391,9 +234,6 @@
             .icon { 
                 font-size: 3.5rem;
             }
-            .modal-content {
-                padding: 20px;
-            }
         }
         
         /* 데스크톱 작은 화면에서 폰트 크기 조정 */
@@ -410,468 +250,250 @@
 <body>
     <div class="header">
         <h1>MY SPORT</h1>
-        <div class="last-updated" id="lastUpdated">마지막 업데이트: 로딩 중...</div>
+        <div id="last-update" style="font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 5px;"></div>
     </div>
 
-    <div class="dashboard">
+    <div class="dashboard" id="dashboard">
+        <!-- 카드 순서는 JavaScript가 동적으로 결정 -->
+    </div>
+
+    <!-- 카드 템플릿들 (숨김) -->
+    <div id="card-templates" style="display: none;">
         <!-- 배구 카드 -->
-        <div class="card" data-sport="volleyball">
+        <div class="card volleyball-card" data-card-type="volleyball">
             <div class="card-header">
                 <div class="icon">🏐</div>
                 <div class="team-info">
-                    <div class="team-name" id="vb-team">현대캐피탈 스카이워커스</div>
+                    <h2>현대캐피탈 스카이워커스</h2>
                     <div class="league">V-리그</div>
                 </div>
             </div>
-            <div class="rank-big" id="vb-rank">-</div>
             <div class="stats">
+                <div class="rank-big" id="volleyball-rank">-</div>
                 <div class="stat-row">
                     <span class="stat-label">전적 / 승률 / 세트득실률</span>
-                    <span class="stat-value" id="vb-record">로딩 중...</span>
+                    <span class="stat-value">
+                        <span id="volleyball-record">- 승 - 패</span>
+                        <span style="margin: 0 8px; color: rgba(255,255,255,0.4);">/</span>
+                        <span id="volleyball-winrate">-</span>
+                        <span style="margin: 0 8px; color: rgba(255,255,255,0.4);">/</span>
+                        <span id="volleyball-setratio">-</span>
+                    </span>
                 </div>
-            </div>
-            <div class="next-match-info" id="vb-next" style="display: none;">
-                <div class="next-match-label">다음 경기</div>
-                <div class="opponent" id="vb-next-opponent">-</div>
-                <div class="match-details">
-                    <span id="vb-next-date">-</span>
-                    <span class="match-separator">·</span>
-                    <span id="vb-next-location">-</span>
+                <div id="volleyball-next-match">
+                    <div class="next-match-label">다음 경기</div>
+                    <div class="next-match-info">
+                        <div class="no-match">로딩 중...</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- 야구 카드 -->
-        <div class="card" data-sport="baseball">
+        <div class="card baseball-card" data-card-type="baseball">
             <div class="card-header">
                 <div class="icon">⚾</div>
                 <div class="team-info">
-                    <div class="team-name" id="bb-team">한화 이글스</div>
+                    <h2>한화 이글스</h2>
                     <div class="league">KBO 리그</div>
                 </div>
             </div>
-            <div class="rank-big" id="bb-rank">-</div>
             <div class="stats">
+                <div class="rank-big" id="baseball-rank">-</div>
                 <div class="stat-row">
                     <span class="stat-label">전적 / 승률</span>
-                    <span class="stat-value" id="bb-record">로딩 중...</span>
+                    <span class="stat-value">
+                        <span id="baseball-record">시즌 종료</span>
+                        <span style="margin: 0 8px; color: rgba(255,255,255,0.4);">/</span>
+                        <span id="baseball-winrate">-</span>
+                    </span>
                 </div>
-            </div>
-            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 0.85rem; color: rgba(255, 255, 255, 0.6);">
-                2025 시즌 최종 순위 (2026년 3월 재개)
+                <div id="baseball-season-info"></div>
             </div>
         </div>
 
-        <!-- 국제 스포츠 이벤트 카드 -->
-        <div class="card" data-sport="events">
+        <!-- 주요 이벤트 카드 -->
+        <div class="card events-card" data-card-type="events">
             <div class="card-header">
                 <div class="icon">📅</div>
                 <div class="team-info">
-                    <div class="team-name">주요 스포츠 이벤트</div>
+                    <h2>주요 스포츠 이벤트</h2>
                     <div class="league">다가오는 대회</div>
                 </div>
             </div>
-            <div id="events-list" style="flex: 1; display: flex; flex-direction: column; gap: 10px; overflow-y: auto;">
-                <div class="no-event">로딩 중...</div>
+            <div class="stats">
+                <div id="major-event">
+                    <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                        <div class="event-icon" style="font-size: 3rem;">📅</div>
+                        <div class="event-info">
+                            <div class="no-event">로딩 중...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- 안세영 카드 -->
-        <div class="card" data-sport="badminton">
+        <div class="card badminton-card" data-card-type="badminton">
             <div class="card-header">
                 <div class="icon">🏸</div>
                 <div class="team-info">
-                    <div class="team-name">안세영</div>
+                    <h2>안세영</h2>
                     <div class="league">세계 1위</div>
                 </div>
             </div>
-            <div style="text-align: center; margin: 15px 0;">
-                <div style="font-size: 2rem; font-weight: 700; margin-bottom: 5px;">포인트</div>
-                <div style="font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" id="ahn-points">로딩 중...</div>
-                <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); margin-top: 5px;" id="ahn-rank-info">최근 대회 1개</div>
-            </div>
-            <div class="recent-match-info" id="ahn-recent" style="display: none;">
-                <div class="recent-match-label">최근 경기</div>
-                <div class="opponent">
-                    <span class="result" id="ahn-result">-</span>
-                    <span id="ahn-opponent" style="margin-left: 8px;">-</span>
+            <div class="stats">
+                <div id="badminton-points"></div>
+                <div id="badminton-recent-match">
+                    <div class="recent-match-label">최근 경기</div>
+                    <div class="recent-match-info">
+                        <div class="no-data">로딩 중...</div>
+                    </div>
                 </div>
-                <div class="match-details" style="margin-top: 6px;">
-                    <span id="ahn-match-date">-</span>
-                </div>
-            </div>
-            <div class="next-match-info" id="ahn-tournament" style="display: none; margin-top: 8px;">
-                <div class="next-match-label">다음 대회</div>
-                <div class="opponent" id="ahn-tournament-name">-</div>
-                <div class="match-details">
-                    <span id="ahn-tournament-date">-</span>
-                    <span class="match-separator">·</span>
-                    <span id="ahn-tournament-location">-</span>
+                <div id="badminton-next-match">
+                    <div class="next-match-label">다음 경기</div>
+                    <div class="next-match-info">
+                        <div class="no-match">로딩 중...</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 모바일 팝업 -->
-    <div class="modal-overlay" id="modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal()">×</button>
-            <div class="modal-header">
-                <div class="modal-icon" id="modal-icon">🏐</div>
-                <div class="modal-team-info">
-                    <div class="modal-team-name" id="modal-team">현대캐피탈 스카이워커스</div>
-                    <div class="modal-league" id="modal-league">V-리그</div>
-                </div>
-            </div>
-            <div class="modal-rank" id="modal-rank">-</div>
-            <div class="modal-stats" id="modal-stats">
-                <!-- 동적으로 생성 -->
-            </div>
-        </div>
-    </div>
-
-    <script src="data/sports.json"></script>
-    <script src="data/ahn-seyoung-matches.json"></script>
+    <!-- 카드 배치 로직 -->
     <script>
-        let currentData = {
-            volleyball: null,
-            baseball: null,
-            badminton: null,
-            events: null
-        };
+        let eventsChecked = false;
+        let hasUpcomingEvent = false;
 
-        // 모바일 체크
-        function isMobile() {
-            return window.innerWidth <= 768;
-        }
-
-        // 모달 열기
-        function openModal(sport) {
-            if (!isMobile()) return;
-            
-            const modal = document.getElementById('modal');
-            const data = currentData[sport];
-            
-            if (!data) return;
-
-            // 아이콘 설정
-            const icons = {
-                'volleyball': '🏐',
-                'baseball': '⚾',
-                'badminton': '🏸',
-                'events': '📅'
-            };
-            document.getElementById('modal-icon').textContent = icons[sport];
-            
-            // 스포츠별 데이터 표시
-            if (sport === 'volleyball') {
-                document.getElementById('modal-team').textContent = '현대캐피탈 스카이워커스';
-                document.getElementById('modal-league').textContent = 'V-리그';
-                document.getElementById('modal-rank').textContent = data.rank || '-';
-                
-                let statsHTML = `
-                    <div class="modal-stat-row">
-                        <span class="modal-stat-label">전적</span>
-                        <span class="modal-stat-value">${data.record || '-'}</span>
-                    </div>
-                    <div class="modal-stat-row">
-                        <span class="modal-stat-label">승률</span>
-                        <span class="modal-stat-value">${data.winRate || '-'}</span>
-                    </div>
-                    <div class="modal-stat-row">
-                        <span class="modal-stat-label">승점</span>
-                        <span class="modal-stat-value">${data.points || '-'}</span>
-                    </div>
-                    <div class="modal-stat-row">
-                        <span class="modal-stat-label">세트득실률</span>
-                        <span class="modal-stat-value">${data.setRatio || '-'}</span>
-                    </div>
-                `;
-                
-                if (data.nextMatch) {
-                    statsHTML += `
-                        <div style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 15px; margin-top: 10px;">
-                            <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); margin-bottom: 8px;">다음 경기</div>
-                            <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">vs ${data.nextMatch.opponent}</div>
-                            <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.8);">
-                                ${data.nextMatch.date} · ${data.nextMatch.time}<br>
-                                ${data.nextMatch.location}
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                document.getElementById('modal-stats').innerHTML = statsHTML;
-                
-            } else if (sport === 'baseball') {
-                document.getElementById('modal-team').textContent = '한화 이글스';
-                document.getElementById('modal-league').textContent = 'KBO 리그';
-                document.getElementById('modal-rank').textContent = data.rank || '-';
-                
-                let statsHTML = `
-                    <div class="modal-stat-row">
-                        <span class="modal-stat-label">전적</span>
-                        <span class="modal-stat-value">${data.record || '-'}</span>
-                    </div>
-                    <div class="modal-stat-row">
-                        <span class="modal-stat-label">승률</span>
-                        <span class="modal-stat-value">${data.winRate || '-'}</span>
-                    </div>
-                    <div style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 15px; margin-top: 10px; text-align: center; color: rgba(255, 255, 255, 0.7);">
-                        2025 시즌 최종 순위<br>
-                        (2026년 3월 재개)
-                    </div>
-                `;
-                
-                document.getElementById('modal-stats').innerHTML = statsHTML;
-                
-            } else if (sport === 'badminton') {
-                document.getElementById('modal-team').textContent = '안세영';
-                document.getElementById('modal-league').textContent = '세계 1위';
-                document.getElementById('modal-rank').textContent = `${data.points || '-'}`;
-                
-                let statsHTML = '<div style="text-align: center; margin-bottom: 15px; color: rgba(255, 255, 255, 0.7);">포인트</div>';
-                
-                if (data.recentMatch) {
-                    const resultClass = data.recentMatch.result === '승' ? 'win' : 'loss';
-                    statsHTML += `
-                        <div style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 15px; margin-bottom: 10px;">
-                            <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); margin-bottom: 8px;">최근 경기</div>
-                            <div style="font-size: 1.1rem; margin-bottom: 8px;">
-                                <span class="result ${resultClass}">${data.recentMatch.result}</span>
-                                <span style="margin-left: 8px;">${data.recentMatch.opponent}</span>
-                            </div>
-                            <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.7);">
-                                ${data.recentMatch.score || ''}<br>
-                                ${data.recentMatch.date}
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                if (data.nextTournament) {
-                    statsHTML += `
-                        <div style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 15px;">
-                            <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); margin-bottom: 8px;">다음 대회</div>
-                            <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">${data.nextTournament.name}</div>
-                            <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.8);">
-                                ${data.nextTournament.date}<br>
-                                ${data.nextTournament.location}
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                document.getElementById('modal-stats').innerHTML = statsHTML;
-                
-            } else if (sport === 'events') {
-                document.getElementById('modal-team').textContent = '주요 스포츠 이벤트';
-                document.getElementById('modal-league').textContent = '다가오는 대회';
-                document.getElementById('modal-rank').style.display = 'none';
-                
-                let statsHTML = '';
-                if (data && data.length > 0) {
-                    data.forEach(event => {
-                        const dday = calculateDday(event.startDate);
-                        const ddayText = formatDday(dday);
-                        const ddayClass = dday === 0 ? 'ongoing' : 'upcoming';
-                        
-                        statsHTML += `
-                            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 15px; margin-bottom: 10px;">
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                    <span style="font-size: 1.5rem;">${event.icon}</span>
-                                    <div style="flex: 1;">
-                                        <div style="font-size: 1.1rem; font-weight: 600;">${event.name}</div>
-                                        <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.6);">${event.category}</div>
-                                    </div>
-                                    <span class="dday ${ddayClass}">${ddayText}</span>
-                                </div>
-                                <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.7);">
-                                    ${event.duration}
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    statsHTML = '<div class="no-data">이벤트 정보가 없습니다.</div>';
-                }
-                
-                document.getElementById('modal-stats').innerHTML = statsHTML;
-            }
-            
-            modal.classList.add('active');
-        }
-
-        // 모달 닫기
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-            document.getElementById('modal-rank').style.display = 'block';
-        }
-
-        // 모달 외부 클릭시 닫기
-        document.getElementById('modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
-
-        // 카드 클릭 이벤트
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('click', function() {
-                const sport = this.getAttribute('data-sport');
-                openModal(sport);
-            });
-        });
-
-        // D-day 계산
-        function calculateDday(dateStr) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const targetDate = new Date(dateStr);
-            targetDate.setHours(0, 0, 0, 0);
-            const diff = Math.floor((targetDate - today) / (1000 * 60 * 60 * 24));
-            return diff;
-        }
-
-        function formatDday(dday) {
-            if (dday === 0) return '진행중';
-            if (dday > 0) return `D-${dday}`;
-            return `종료`;
-        }
-
-        // 데이터 로드 함수들
-        async function loadSportsData() {
+        // 주요 이벤트 체크 함수
+        async function checkUpcomingEvents() {
             try {
-                const response = await fetch('data/sports.json');
-                const data = await response.json();
-                
-                // 배구 데이터
-                if (data.volleyball) {
-                    currentData.volleyball = data.volleyball;
-                    document.getElementById('vb-rank').textContent = data.volleyball.rank || '-';
-                    const recordText = `${data.volleyball.record} / ${data.volleyball.winRate} / ${data.volleyball.setRatio}`;
-                    document.getElementById('vb-record').textContent = recordText;
-                    
-                    if (data.volleyball.nextMatch) {
-                        document.getElementById('vb-next').style.display = 'block';
-                        document.getElementById('vb-next-opponent').textContent = 'vs ' + data.volleyball.nextMatch.opponent;
-                        document.getElementById('vb-next-date').textContent = data.volleyball.nextMatch.date + ' - ' + data.volleyball.nextMatch.time;
-                        document.getElementById('vb-next-location').textContent = data.volleyball.nextMatch.location;
-                    }
-                }
-                
-                // 야구 데이터
-                if (data.baseball) {
-                    currentData.baseball = data.baseball;
-                    document.getElementById('bb-rank').textContent = data.baseball.rank || '-';
-                    document.getElementById('bb-record').textContent = `${data.baseball.record} / ${data.baseball.winRate}`;
-                }
-                
-                // 마지막 업데이트 시간
-                if (data.lastUpdated) {
-                    const date = new Date(data.lastUpdated);
-                    const formatted = `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}. 오전 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-                    document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${formatted}`;
-                }
-                
-            } catch (error) {
-                console.error('스포츠 데이터 로드 실패:', error);
-            }
-        }
-
-        async function loadBadmintonData() {
-            try {
-                const response = await fetch('data/ahn-seyoung-matches.json');
-                const data = await response.json();
-                
-                currentData.badminton = data;
-                
-                if (data.points) {
-                    document.getElementById('ahn-points').textContent = data.points.toLocaleString();
-                }
-                
-                if (data.rankInfo) {
-                    document.getElementById('ahn-rank-info').textContent = data.rankInfo;
-                }
-                
-                if (data.recentMatch) {
-                    document.getElementById('ahn-recent').style.display = 'block';
-                    const resultClass = data.recentMatch.result === '승' ? 'win' : 'loss';
-                    document.getElementById('ahn-result').textContent = data.recentMatch.result;
-                    document.getElementById('ahn-result').className = `result ${resultClass}`;
-                    document.getElementById('ahn-opponent').textContent = data.recentMatch.opponent;
-                    
-                    let matchDate = data.recentMatch.date;
-                    if (data.recentMatch.score) {
-                        matchDate += ` · ${data.recentMatch.score}`;
-                    }
-                    document.getElementById('ahn-match-date').textContent = matchDate;
-                }
-                
-                if (data.nextTournament) {
-                    document.getElementById('ahn-tournament').style.display = 'block';
-                    document.getElementById('ahn-tournament-name').textContent = data.nextTournament.name;
-                    document.getElementById('ahn-tournament-date').textContent = data.nextTournament.date;
-                    document.getElementById('ahn-tournament-location').textContent = data.nextTournament.location;
-                }
-                
-            } catch (error) {
-                console.error('배드민턴 데이터 로드 실패:', error);
-                document.getElementById('ahn-points').textContent = '데이터 없음';
-            }
-        }
-
-        async function loadEventsData() {
-            try {
-                const response = await fetch('data/major-events.json');
+                const response = await fetch('./public/data/major-events.json');
                 const events = await response.json();
                 
-                currentData.events = events;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
                 
-                const eventsList = document.getElementById('events-list');
+                // 이벤트가 오늘 시작하거나 진행 중인지 확인
+                const ongoingEvents = events.filter(e => {
+                    const eventDate = new Date(e.date);
+                    eventDate.setHours(0, 0, 0, 0);
+                    
+                    // 종료일이 있으면 그 범위 체크, 없으면 시작일만 체크
+                    if (e.endDate) {
+                        const endDate = new Date(e.endDate);
+                        endDate.setHours(0, 0, 0, 0);
+                        return today >= eventDate && today <= endDate;
+                    } else {
+                        // 종료일 없으면 시작일부터 +14일 동안 진행중으로 간주
+                        const estimatedEnd = new Date(eventDate);
+                        estimatedEnd.setDate(estimatedEnd.getDate() + 14);
+                        return today >= eventDate && today <= estimatedEnd;
+                    }
+                });
                 
-                if (events && events.length > 0) {
-                    eventsList.innerHTML = events.map(event => {
-                        const dday = calculateDday(event.startDate);
-                        const ddayText = formatDday(dday);
-                        const ddayClass = dday === 0 ? 'ongoing' : 'upcoming';
-                        
-                        return `
-                            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 12px;">
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                                    <span style="font-size: 1.5rem;">${event.icon}</span>
-                                    <div style="flex: 1; min-width: 0;">
-                                        <div style="font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${event.name}</div>
-                                        <div style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.6);">${event.category}</div>
-                                    </div>
-                                    <span class="dday ${ddayClass}">${ddayText}</span>
-                                </div>
-                                <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.7);">
-                                    ${event.duration}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    eventsList.innerHTML = '<div class="no-event">예정된 이벤트가 없습니다.</div>';
-                }
+                hasUpcomingEvent = ongoingEvents.length > 0;
+                
+                eventsChecked = true;
+                arrangeCards();
             } catch (error) {
-                console.error('이벤트 데이터 로드 실패:', error);
-                document.getElementById('events-list').innerHTML = '<div class="no-event">데이터를 불러올 수 없습니다.</div>';
+                console.error('이벤트 데이터 로딩 실패:', error);
+                eventsChecked = true;
+                arrangeCards();
             }
         }
 
-        // 초기 로드
-        loadSportsData();
-        loadBadmintonData();
-        loadEventsData();
+        // 시즌별 우선순위 계산
+        function calculateCardOrder() {
+            const now = new Date();
+            const month = now.getMonth() + 1; // 1-12
+            
+            const order = [];
+            
+            // 1. 주요 이벤트가 진행 중이면 최우선
+            if (hasUpcomingEvent) {
+                order.push('events');
+            }
+            
+            // 2. 시즌별 우선순위
+            const isVolleyballSeason = month >= 10 || month <= 4; // 10-4월
+            const isBaseballSeason = month >= 3 && month <= 10;   // 3-10월
+            
+            if (isVolleyballSeason && !isBaseballSeason) {
+                // 배구 시즌만 (11-12월, 1-2월)
+                order.push('volleyball', 'baseball');
+            } else if (isBaseballSeason && !isVolleyballSeason) {
+                // 야구 시즌만 (5-9월)
+                order.push('baseball', 'volleyball');
+            } else {
+                // 겹치는 시즌 (3-4월, 10월) - 배구 우선
+                order.push('volleyball', 'baseball');
+            }
+            
+            // 3. 이벤트가 아직 추가 안됐으면 추가
+            if (!hasUpcomingEvent) {
+                order.push('events');
+            }
+            
+            // 4. 안세영은 항상 4번(마지막) 고정
+            order.push('badminton');
+            
+            return order;
+        }
 
-        // 5분마다 자동 새로고침
-        setInterval(() => {
-            loadSportsData();
-            loadBadmintonData();
-            loadEventsData();
-        }, 5 * 60 * 1000);
+        // 카드 배치
+        function arrangeCards() {
+            if (!eventsChecked) return; // 이벤트 체크 완료될 때까지 대기
+            
+            const order = calculateCardOrder();
+            const dashboard = document.getElementById('dashboard');
+            const templates = document.getElementById('card-templates');
+            
+            dashboard.innerHTML = '';
+            
+            order.forEach(cardType => {
+                const card = templates.querySelector(`[data-card-type="${cardType}"]`);
+                if (card) {
+                    dashboard.appendChild(card.cloneNode(true));
+                }
+            });
+        }
+
+        // 페이지 로드 시 이벤트 체크 후 카드 배치
+        checkUpcomingEvents();
+        
+        // 마지막 업데이트 시간 표시
+        async function displayLastUpdate() {
+            console.log('🕐 [마지막 업데이트] 시간 로딩...');
+            
+            try {
+                const response = await fetch('./public/data/sports.json');
+                const data = await response.json();
+                
+                if (data.lastUpdated) {
+                    const updateTime = new Date(data.lastUpdated);
+                    const formatted = `마지막 업데이트: ${updateTime.toLocaleString('ko-KR')}`;
+                    
+                    const updateElement = document.getElementById('last-update');
+                    if (updateElement) {
+                        updateElement.textContent = formatted;
+                    }
+                    
+                    console.log('🕐 [마지막 업데이트]', formatted);
+                }
+            } catch (error) {
+                console.error('❌ [마지막 업데이트] 로딩 실패:', error);
+            }
+        }
+        
+        // 2초 후 업데이트 시간 표시 (모든 데이터 로딩 후)
+        setTimeout(displayLastUpdate, 2000);
     </script>
+
+    <!-- 외부 JavaScript 파일 로드 -->
+    <script src="./public/js/volleyball.js"></script>
+    <script src="./public/js/baseball.js"></script>
+    <script src="./public/js/badminton.js"></script>
+    <script src="./public/js/events.js"></script>
 </body>
 </html>
