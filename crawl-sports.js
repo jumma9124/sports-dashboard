@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -17,6 +17,8 @@ async function crawlVolleyball() {
     // GitHub Actions에서 Chromium 경로 사용
     if (process.env.PUPPETEER_EXECUTABLE_PATH) {
       launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    } else {
+      launchOptions.executablePath = '/usr/bin/chromium-browser';
     }
     
     browser = await puppeteer.launch(launchOptions);
