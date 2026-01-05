@@ -323,7 +323,7 @@
     <div class="container">
         <!-- 헤더 -->
         <div class="header">
-            <a href="index.html" class="back-button">
+            <a href="../../index.html" class="back-button">
                 <span>←</span>
                 <span>홈으로</span>
             </a>
@@ -386,7 +386,7 @@
     <script>
         async function loadVolleyballData() {
             try {
-                const response = await fetch('data/sports.json');
+                const response = await fetch('../../data/sports.json');
                 const data = await response.json();
                 
                 if (data.volleyball) {
