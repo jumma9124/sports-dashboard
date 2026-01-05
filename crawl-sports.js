@@ -124,22 +124,23 @@ async function crawlVolleyballNextMatch(browser) {
     const page = await browser.newPage();
     const today = new Date();
     
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 30; i++) {  // 14일 → 30일로 확대
       const checkDate = new Date(today);
       checkDate.setDate(checkDate.getDate() + i);
       const dateStr = checkDate.toISOString().split('T')[0];
       
-      const url = `https://m.sports.naver.com/volleyball/schedule/index?date=${dateStr}&teamCode=2003`;
+      // teamCode 제거 - 전체 일정에서 찾기
+      const url = `https://m.sports.naver.com/volleyball/schedule/index?date=${dateStr}`;
       console.log('[배구 다음 경기] 확인:', dateStr);
       
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(5000);  // 3초 → 5초로 증가
 
       // 페이지 전체 텍스트 가져오기
       const pageText = await page.evaluate(() => document.body.textContent);
       
-      // 현대캐피탈 또는 천안유관순이 있는지 확인
-      if (pageText.includes('현대캐피탈') || pageText.includes('천안유관순')) {
+      // 현대캐피탈 또는 스카이워커스 또는 천안유관순이 있는지 확인
+      if (pageText.includes('현대캐피탈') || pageText.includes('스카이워커스') || pageText.includes('천안유관순')) {
         console.log('[배구 다음 경기] 매치 발견!');
         
         const matchData = await page.evaluate(() => {
@@ -149,8 +150,11 @@ async function crawlVolleyballNextMatch(browser) {
           const timeMatch = bodyText.match(/(\d{2}:\d{2})/);
           const time = timeMatch ? timeMatch[1] : '19:00';
           
-          // 상대팀 찾기
-          const teams = ['우리카드', 'OK저축은행', '대한항공', '한국전력', '삼성화재', 'KB손해보험'];
+          // 상대팀 찾기 - 모든 V리그 팀 포함
+          const teams = [
+            '우리카드', 'OK저축은행', '대한항공', '한국전력', 
+            '삼성화재', 'KB손해보험'
+          ];
           let opponent = '';
           for (let team of teams) {
             if (bodyText.includes(team)) {
@@ -159,12 +163,27 @@ async function crawlVolleyballNextMatch(browser) {
             }
           }
           
+          // 상대팀 못 찾을 경우 VS 패턴으로 찾기
+          if (!opponent) {
+            const vsPattern = /(\S+)\s*(vs|VS|대)\s*(\S+)/;
+            const vsMatch = bodyText.match(vsPattern);
+            if (vsMatch) {
+              const team1 = vsMatch[1];
+              const team2 = vsMatch[3];
+              opponent = team1.includes('현대') || team1.includes('캐피탈') ? team2 : team1;
+            }
+          }
+          
           // 경기장 찾기
           let location = '';
           if (bodyText.includes('천안유관순')) {
             location = '천안유관순체육관';
           } else {
-            const stadiums = ['수원체육관', '의정부체육관', '장충체육관', '김천실내체육관', '대전충무체육관'];
+            const stadiums = [
+              '수원체육관', '의정부체육관', '장충체육관', 
+              '김천실내체육관', '대전충무체육관', '인천계양체육관',
+              '화성실내체육관'
+            ];
             for (let stadium of stadiums) {
               if (bodyText.includes(stadium)) {
                 location = stadium;
@@ -180,12 +199,13 @@ async function crawlVolleyballNextMatch(browser) {
           };
         });
         
-        if (matchData.opponent) {
+        // 상대팀을 찾았거나, 시간이라도 있으면 반환
+        if (matchData.opponent || matchData.time !== '19:00') {
           await page.close();
           const result = {
             date: dateStr,
             time: matchData.time,
-            opponent: matchData.opponent,
+            opponent: matchData.opponent || '상대 미정',
             location: matchData.location
           };
           console.log('[배구 다음 경기] 성공:', result);
@@ -195,7 +215,7 @@ async function crawlVolleyballNextMatch(browser) {
     }
 
     await page.close();
-    console.log('[배구 다음 경기] 14일 이내 경기 없음');
+    console.log('[배구 다음 경기] 30일 이내 경기 없음');
     return null;
     
   } catch (error) {
