@@ -14,7 +14,6 @@ async function crawlVolleyball() {
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     };
     
-    // GitHub Actions에서 Chromium 경로 사용
     if (process.env.PUPPETEER_EXECUTABLE_PATH) {
       launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
     } else {
@@ -58,7 +57,6 @@ async function crawlVolleyball() {
         const winRate = (wins !== '-' && games !== '-') 
           ? (parseInt(wins) / parseInt(games)).toFixed(3) : '-';
         
-        // 전체 팀 순위 저장
         allTeams.push({
           rank: rank + '위',
           team: teamName,
@@ -68,7 +66,6 @@ async function crawlVolleyball() {
           setRatio: setRatio
         });
         
-        // 현대캐피탈 데이터 저장
         if (teamName.includes('현대캐피탈')) {
           currentTeamData = {
             sport: '배구',
@@ -107,7 +104,6 @@ async function crawlVolleyball() {
       };
     }
 
-    // 전체 팀 순위 추가
     volleyball.fullRankings = volleyballData.allTeams;
 
     console.log('[배구] 성공:', volleyball);
@@ -122,7 +118,6 @@ async function crawlVolleyball() {
       console.error('[배구] 다음 경기 실패:', error.message);
     }
     
-    // 지난 경기 크롤링 추가 (상세 정보 포함)
     try {
       const pastMatches = await crawlVolleyballPastMatches(browser);
       if (pastMatches && pastMatches.length > 0) {
@@ -279,13 +274,11 @@ async function crawlVolleyballPastMatches(browser) {
     const page = await browser.newPage();
     const matches = [];
     
-    // 최근 30일 동안의 경기 확인
     for (let i = 1; i <= 30; i++) {
       const checkDate = new Date();
       checkDate.setDate(checkDate.getDate() - i);
       const dateStr = checkDate.toISOString().split('T')[0];
       
-      // 이미 5경기 찾았으면 중단
       if (matches.length >= 5) break;
       
       const url = `https://m.sports.naver.com/volleyball/schedule/index?date=${dateStr}`;
@@ -294,27 +287,27 @@ async function crawlVolleyballPastMatches(browser) {
 
       const pageText = await page.evaluate(() => document.body.textContent);
       
-      // 현대캐피탈 경기가 있는지 확인
       if (pageText.includes('현대캐피탈') || pageText.includes('스카이워커스')) {
         console.log('[배구 지난 경기] 발견:', dateStr);
         
-        // 경기 ID 찾기 (상세 페이지 접근용)
-        const matchId = await page.evaluate(() => {
-          const links = document.querySelectorAll('a[href*="/game/"]');
-          for (let link of links) {
-            const href = link.getAttribute('href');
-            if (href && href.includes('/game/')) {
-              const match = href.match(/game\/(\d+)/);
-              return match ? match[1] : null;
-            }
-          }
-          return null;
-        });
-        
-        const matchData = await page.evaluate(() => {
+        // 경기 ID와 기본 정보 추출
+        const basicInfo = await page.evaluate(() => {
           const bodyText = document.body.textContent;
           
-          // 상대팀 찾기
+          // 경기 링크에서 ID 찾기
+          let matchId = null;
+          const links = document.querySelectorAll('a');
+          for (let link of links) {
+            const href = link.getAttribute('href');
+            if (href && href.includes('/game/') && (bodyText.includes('현대캐피탈') || bodyText.includes('스카이워커스'))) {
+              const match = href.match(/game\/(\d+)/);
+              if (match) {
+                matchId = match[1];
+                break;
+              }
+            }
+          }
+          
           const teams = ['우리카드', 'OK저축은행', '대한항공', '한국전력', '삼성화재', 'KB손해보험'];
           let opponent = '';
           for (let team of teams) {
@@ -324,13 +317,11 @@ async function crawlVolleyballPastMatches(browser) {
             }
           }
           
-          // 홈/원정 확인
           let isHome = false;
           if (bodyText.includes('현대캐피탈홈') || bodyText.includes('천안유관순')) {
             isHome = true;
           }
           
-          // 결과 찾기
           const scorePattern = /(\d)-(\d)/g;
           const scores = bodyText.match(scorePattern);
           
@@ -348,7 +339,6 @@ async function crawlVolleyballPastMatches(browser) {
             }
           }
           
-          // 경기장 찾기
           let location = '';
           const teamStadiums = {
             'OK저축은행': '부산강서체육관',
@@ -372,6 +362,7 @@ async function crawlVolleyballPastMatches(browser) {
           }
           
           return {
+            matchId: matchId,
             opponent: opponent,
             isHome: isHome,
             result: result,
@@ -380,64 +371,70 @@ async function crawlVolleyballPastMatches(browser) {
           };
         });
         
-        // 상세 정보 크롤링 (경기 ID가 있을 때만)
-        let detailInfo = null;
-        if (matchId) {
+        // 상세 정보 크롤링 (matchId가 있을 때만)
+        let detailInfo = {
+          setScores: [],
+          time: null
+        };
+        
+        if (basicInfo.matchId) {
           try {
-            const detailUrl = `https://m.sports.naver.com/volleyball/game/${matchId}/record`;
+            console.log('[배구 지난 경기] 상세 페이지 접근:', basicInfo.matchId);
+            const detailUrl = `https://m.sports.naver.com/game/${basicInfo.matchId}/record`;
+            
             await page.goto(detailUrl, { waitUntil: 'networkidle2', timeout: 20000 });
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 3000));
             
             detailInfo = await page.evaluate(() => {
               const bodyText = document.body.textContent;
               
-              // 세트별 스코어 찾기
+              // 세트별 스코어 찾기 - 더 정확한 패턴
               const setScores = [];
-              const setPattern = /(\d+)-(\d+)/g;
-              let match;
-              let count = 0;
-              while ((match = setPattern.exec(bodyText)) !== null && count < 5) {
-                setScores.push(`${match[1]}-${match[2]}`);
-                count++;
+              
+              // "25-23", "22-25" 형태의 배구 스코어 찾기
+              const scoreMatches = bodyText.match(/\b(1?\d|2[0-5])\s*-\s*(1?\d|2[0-5])\b/g);
+              if (scoreMatches) {
+                // 배구 스코어 범위 (일반적으로 15-35 사이)
+                for (let score of scoreMatches) {
+                  const [s1, s2] = score.split('-').map(s => parseInt(s.trim()));
+                  if ((s1 >= 15 && s1 <= 35) && (s2 >= 15 && s2 <= 35)) {
+                    setScores.push(score.replace(/\s/g, ''));
+                    if (setScores.length >= 5) break; // 최대 5세트
+                  }
+                }
               }
               
               // 경기 시간 찾기
               const timeMatch = bodyText.match(/(\d{2}:\d{2})/);
               const time = timeMatch ? timeMatch[1] : null;
               
+              console.log('상세 정보 추출:', { setScores, time });
+              
               return {
-                setScores: setScores.length > 0 ? setScores : null,
+                setScores: setScores.length > 0 ? setScores : [],
                 time: time
               };
             });
             
-            console.log('[배구 지난 경기] 상세 정보:', detailInfo);
+            console.log('[배구 지난 경기] 상세 정보 성공:', detailInfo);
           } catch (error) {
             console.log('[배구 지난 경기] 상세 정보 실패:', error.message);
           }
         }
         
         // 결과가 확정된 경기만 추가
-        if (matchData.opponent && matchData.result) {
+        if (basicInfo.opponent && basicInfo.result) {
           const matchRecord = {
             date: dateStr,
-            homeTeam: matchData.isHome ? '현대캐피탈' : matchData.opponent,
-            awayTeam: matchData.isHome ? matchData.opponent : '현대캐피탈',
-            result: matchData.result,
-            score: matchData.score || '-',
-            location: matchData.location,
-            matchId: matchId
+            homeTeam: basicInfo.isHome ? '현대캐피탈' : basicInfo.opponent,
+            awayTeam: basicInfo.isHome ? basicInfo.opponent : '현대캐피탈',
+            result: basicInfo.result,
+            score: basicInfo.score || '-',
+            location: basicInfo.location,
+            matchId: basicInfo.matchId,
+            setScores: detailInfo.setScores.length > 0 ? detailInfo.setScores : null,
+            time: detailInfo.time
           };
-          
-          // 상세 정보 추가
-          if (detailInfo) {
-            if (detailInfo.setScores) {
-              matchRecord.setScores = detailInfo.setScores;
-            }
-            if (detailInfo.time) {
-              matchRecord.time = detailInfo.time;
-            }
-          }
           
           matches.push(matchRecord);
           console.log('[배구 지난 경기] 추가:', matchRecord);
@@ -448,7 +445,6 @@ async function crawlVolleyballPastMatches(browser) {
     await page.close();
     console.log('[배구 지난 경기] 완료:', matches.length + '경기');
     
-    // 최신순 정렬
     matches.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     return matches.slice(0, 5);
