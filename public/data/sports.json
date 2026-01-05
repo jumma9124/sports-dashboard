@@ -3,19 +3,11 @@
     "sport": "배구",
     "team": "현대캐피탈 스카이워커스",
     "league": "V-리그",
-    "rank": "2위",
-    "record": "12승 7패",
-    "winRate": "0.632",
-    "games": "19",
-    "points": "38",
-    "setRatio": "1.517",
-    "lastUpdated": "2026-01-04T15:19:30.754Z",
-    "nextMatch": {
-      "date": "2026-01-04",
-      "time": "14:00",
-      "opponent": "대한항공",
-      "location": "장소 미정"
-    }
+    "rank": "-",
+    "record": "크롤링 실패",
+    "winRate": "-",
+    "error": "page.waitForTimeout is not a function",
+    "lastUpdated": "2026-01-05T01:32:53.826Z"
   },
   "baseball": {
     "sport": "야구",
@@ -24,8 +16,8 @@
     "rank": "2위",
     "record": "83승 57패 4무",
     "winRate": ".593",
-    "lastUpdated": "2026-01-04T15:19:19.880Z",
+    "lastUpdated": "2026-01-05T01:32:47.872Z",
     "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
   },
-  "lastUpdated": "2026-01-04T15:19:35.033Z"
+  "lastUpdated": "2026-01-05T01:32:53.826Z"
 }
