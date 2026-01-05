@@ -201,26 +201,49 @@ async function crawlVolleyballNextMatch(browser) {
           
           // 경기장 찾기
           let location = '';
-          if (bodyText.includes('천안유관순')) {
-            location = '천안유관순체육관';
-          } else {
-            // 띄어쓰기 무시하고 찾기
-            const stadiumPatterns = [
-              { pattern: /부산강서\s*체육관/, name: '부산강서체육관' },
-              { pattern: /부산사직\s*체육관/, name: '부산사직체육관' },
-              { pattern: /수원\s*체육관/, name: '수원체육관' },
-              { pattern: /의정부\s*체육관/, name: '의정부체육관' },
-              { pattern: /장충\s*체육관/, name: '장충체육관' },
-              { pattern: /김천실내\s*체육관/, name: '김천실내체육관' },
-              { pattern: /대전충무\s*체육관/, name: '대전충무체육관' },
-              { pattern: /인천계양\s*체육관/, name: '인천계양체육관' },
-              { pattern: /화성실내\s*체육관/, name: '화성실내체육관' }
-            ];
-            
-            for (let stadium of stadiumPatterns) {
-              if (stadium.pattern.test(bodyText)) {
-                location = stadium.name;
-                break;
+          
+          // 홈/원정 표시로 경기장 추론
+          const teamStadiums = {
+            'OK저축은행': '부산강서체육관',
+            '현대캐피탈': '천안유관순체육관',
+            '한국전력': '수원체육관',
+            '대한항공': '인천계양체육관',
+            '우리카드': '장충체육관',
+            '삼성화재': '대전충무체육관',
+            'KB손해보험': '의정부체육관'
+          };
+          
+          // "OK저축은행홈" 패턴으로 홈 경기 찾기
+          for (let [team, stadium] of Object.entries(teamStadiums)) {
+            if (bodyText.includes(team + '홈')) {
+              location = stadium;
+              break;
+            }
+          }
+          
+          // 못 찾았으면 직접 경기장 이름으로 찾기
+          if (!location) {
+            if (bodyText.includes('천안유관순')) {
+              location = '천안유관순체육관';
+            } else {
+              // 띄어쓰기 무시하고 찾기
+              const stadiumPatterns = [
+                { pattern: /부산강서\s*체육관/, name: '부산강서체육관' },
+                { pattern: /부산사직\s*체육관/, name: '부산사직체육관' },
+                { pattern: /수원\s*체육관/, name: '수원체육관' },
+                { pattern: /의정부\s*체육관/, name: '의정부체육관' },
+                { pattern: /장충\s*체육관/, name: '장충체육관' },
+                { pattern: /김천실내\s*체육관/, name: '김천실내체육관' },
+                { pattern: /대전충무\s*체육관/, name: '대전충무체육관' },
+                { pattern: /인천계양\s*체육관/, name: '인천계양체육관' },
+                { pattern: /화성실내\s*체육관/, name: '화성실내체육관' }
+              ];
+              
+              for (let stadium of stadiumPatterns) {
+                if (stadium.pattern.test(bodyText)) {
+                  location = stadium.name;
+                  break;
+                }
               }
             }
           }
