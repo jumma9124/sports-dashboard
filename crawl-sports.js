@@ -105,7 +105,6 @@ async function crawlVolleyball() {
     }
 
     volleyball.fullRankings = volleyballData.allTeams;
-
     console.log('[배구] 성공:', volleyball);
     
     try {
@@ -290,19 +289,20 @@ async function crawlVolleyballPastMatches(browser) {
       if (pageText.includes('현대캐피탈') || pageText.includes('스카이워커스')) {
         console.log('[배구 지난 경기] 발견:', dateStr);
         
-        // 경기 ID와 기본 정보 추출
+        // matchId 추출 - 수정된 패턴 (20260104022M134 형식)
         const basicInfo = await page.evaluate(() => {
           const bodyText = document.body.textContent;
           
-          // 경기 링크에서 ID 찾기
           let matchId = null;
           const links = document.querySelectorAll('a');
           for (let link of links) {
             const href = link.getAttribute('href');
-            if (href && href.includes('/game/') && (bodyText.includes('현대캐피탈') || bodyText.includes('스카이워커스'))) {
-              const match = href.match(/game\/(\d+)/);
-              if (match) {
+            // /game/20260104022M134 형식 찾기
+            if (href && href.includes('/game/')) {
+              const match = href.match(/\/game\/([0-9A-Z]+)/i);
+              if (match && match[1]) {
                 matchId = match[1];
+                console.log('matchId 발견:', matchId);
                 break;
               }
             }
@@ -371,7 +371,9 @@ async function crawlVolleyballPastMatches(browser) {
           };
         });
         
-        // 상세 정보 크롤링 (matchId가 있을 때만)
+        console.log('[배구 지난 경기] 기본 정보:', basicInfo);
+        
+        // 상세 정보 크롤링
         let detailInfo = {
           setScores: [],
           time: null
@@ -388,18 +390,24 @@ async function crawlVolleyballPastMatches(browser) {
             detailInfo = await page.evaluate(() => {
               const bodyText = document.body.textContent;
               
-              // 세트별 스코어 찾기 - 더 정확한 패턴
+              // 세트별 스코어 찾기
               const setScores = [];
               
-              // "25-23", "22-25" 형태의 배구 스코어 찾기
-              const scoreMatches = bodyText.match(/\b(1?\d|2[0-5])\s*-\s*(1?\d|2[0-5])\b/g);
-              if (scoreMatches) {
-                // 배구 스코어 범위 (일반적으로 15-35 사이)
-                for (let score of scoreMatches) {
-                  const [s1, s2] = score.split('-').map(s => parseInt(s.trim()));
-                  if ((s1 >= 15 && s1 <= 35) && (s2 >= 15 && s2 <= 35)) {
-                    setScores.push(score.replace(/\s/g, ''));
-                    if (setScores.length >= 5) break; // 최대 5세트
+              // 배구 세트 스코어 패턴 (15-35 범위)
+              const allText = bodyText;
+              const scoreRegex = /\b([12]?\d|3[0-5])\s*-\s*([12]?\d|3[0-5])\b/g;
+              let match;
+              
+              while ((match = scoreRegex.exec(allText)) !== null && setScores.length < 5) {
+                const s1 = parseInt(match[1]);
+                const s2 = parseInt(match[2]);
+                
+                // 배구 스코어 범위 체크 (15-35)
+                if (s1 >= 15 && s1 <= 35 && s2 >= 15 && s2 <= 35) {
+                  const scoreStr = `${s1}-${s2}`;
+                  // 중복 체크
+                  if (!setScores.includes(scoreStr)) {
+                    setScores.push(scoreStr);
                   }
                 }
               }
@@ -408,10 +416,8 @@ async function crawlVolleyballPastMatches(browser) {
               const timeMatch = bodyText.match(/(\d{2}:\d{2})/);
               const time = timeMatch ? timeMatch[1] : null;
               
-              console.log('상세 정보 추출:', { setScores, time });
-              
               return {
-                setScores: setScores.length > 0 ? setScores : [],
+                setScores: setScores,
                 time: time
               };
             });
@@ -420,6 +426,8 @@ async function crawlVolleyballPastMatches(browser) {
           } catch (error) {
             console.log('[배구 지난 경기] 상세 정보 실패:', error.message);
           }
+        } else {
+          console.log('[배구 지난 경기] matchId 없음 - 상세 정보 스킵');
         }
         
         // 결과가 확정된 경기만 추가
@@ -437,13 +445,13 @@ async function crawlVolleyballPastMatches(browser) {
           };
           
           matches.push(matchRecord);
-          console.log('[배구 지난 경기] 추가:', matchRecord);
+          console.log('[배구 지난 경기] 추가 완료:', matchRecord);
         }
       }
     }
 
     await page.close();
-    console.log('[배구 지난 경기] 완료:', matches.length + '경기');
+    console.log('[배구 지난 경기] 최종 완료:', matches.length + '경기');
     
     matches.sort((a, b) => new Date(b.date) - new Date(a.date));
     
