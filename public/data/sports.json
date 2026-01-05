@@ -9,7 +9,7 @@
     "games": "19",
     "points": "38",
     "setRatio": "1.517",
-    "lastUpdated": "2026-01-05T08:20:47.044Z",
+    "lastUpdated": "2026-01-05T08:37:37.256Z",
     "fullRankings": [
       {
         "rank": "1위",
@@ -82,7 +82,9 @@
         "result": "패",
         "score": "8-3",
         "location": "인천계양체육관",
-        "matchId": "20260104022"
+        "matchId": "20260104022",
+        "setScores": null,
+        "time": null
       },
       {
         "date": "2025-12-31",
@@ -91,7 +93,9 @@
         "result": "승",
         "score": "8-3",
         "location": "천안유관순체육관",
-        "matchId": "20251231022"
+        "matchId": "20251231022",
+        "setScores": null,
+        "time": null
       },
       {
         "date": "2025-12-27",
@@ -100,7 +104,9 @@
         "result": "패",
         "score": "8-3",
         "location": "수원체육관",
-        "matchId": "20251227022"
+        "matchId": "20251227022",
+        "setScores": null,
+        "time": null
       },
       {
         "date": "2025-12-24",
@@ -109,7 +115,9 @@
         "result": "승",
         "score": "8-3",
         "location": "천안유관순체육관",
-        "matchId": "20251224022"
+        "matchId": "20251224022",
+        "setScores": null,
+        "time": null
       },
       {
         "date": "2025-12-20",
@@ -118,7 +126,9 @@
         "result": "승",
         "score": "8-3",
         "location": "천안유관순체육관",
-        "matchId": "20251220022"
+        "matchId": "20251220022",
+        "setScores": null,
+        "time": null
       }
     ]
   },
@@ -129,8 +139,8 @@
     "rank": "2위",
     "record": "83승 57패 4무",
     "winRate": ".593",
-    "lastUpdated": "2026-01-05T08:20:36.253Z",
+    "lastUpdated": "2026-01-05T08:37:27.274Z",
     "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
   },
-  "lastUpdated": "2026-01-05T08:23:22.455Z"
+  "lastUpdated": "2026-01-05T08:40:12.384Z"
 }
