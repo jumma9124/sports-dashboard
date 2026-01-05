@@ -38,8 +38,8 @@
   },
   "tournamentDays": {
     "type": "upcoming",
-    "days": 1,
-    "text": "D-1"
+    "days": 0,
+    "text": "D-0"
   },
-  "lastUpdated": "2026-01-04T09:21:53.029Z"
+  "lastUpdated": "2026-01-05T09:33:35.225Z"
 }
