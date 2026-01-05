@@ -209,16 +209,17 @@ async function crawlVolleyballNextMatch(browser) {
             }
           }
           
-          // 디버깅: 찾은 경기장 로그
-          console.log('[디버깅] 경기장 검색 결과:', location || '못 찾음');
-          console.log('[디버깅] 페이지 텍스트 일부:', bodyText.substring(0, 500));
-          
           return {
             time: time,
             opponent: opponent,
-            location: location || '장소 미정'
+            location: location || '장소 미정',
+            debugText: bodyText.substring(0, 1000)  // 디버깅용 텍스트
           };
         });
+        
+        // 디버깅: 경기장 검색 결과 (evaluate 밖에서 로그)
+        console.log('[디버깅] 경기장 검색 결과:', matchData.location);
+        console.log('[디버깅] 페이지 텍스트 일부:', matchData.debugText);
         
         // 상대팀을 찾았거나, 시간이라도 있으면 반환
         if (matchData.opponent || matchData.time !== '19:00') {
