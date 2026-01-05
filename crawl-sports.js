@@ -27,7 +27,7 @@ async function crawlVolleyball() {
     const url = 'https://m.sports.naver.com/volleyball/record/kovo?seasonCode=022&tab=teamRank';
     
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-    await page.waitForTimeout(5000);
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     // 디버깅: 페이지 구조 확인
     const pageDebug = await page.evaluate(() => {
@@ -151,7 +151,7 @@ async function crawlVolleyballNextMatch(browser) {
       console.log('[배구 다음 경기] 확인:', dateStr);
       
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-      await page.waitForTimeout(5000);  // 3초 → 5초로 증가
+      await new Promise(resolve => setTimeout(resolve, 5000));  // 3초 → 5초로 증가
 
       // 페이지 전체 텍스트 가져오기
       const pageText = await page.evaluate(() => document.body.textContent);
