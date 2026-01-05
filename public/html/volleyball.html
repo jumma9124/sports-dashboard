@@ -29,31 +29,14 @@
         .header {
             display: flex;
             align-items: center;
-            gap: 20px;
+            justify-content: space-between;
             margin-bottom: 30px;
-        }
-
-        .back-button {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .back-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(-3px);
+            gap: 20px;
         }
 
         .title-section {
             flex: 1;
+            min-width: 0;
         }
 
         .title-section h1 {
@@ -74,6 +57,27 @@
             font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.5);
             margin-top: 5px;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(3px);
         }
 
         /* 메인 그리드 */
@@ -294,9 +298,13 @@
             }
 
             .header {
-                flex-direction: column;
+                flex-direction: column-reverse;
                 align-items: flex-start;
                 gap: 15px;
+            }
+
+            .back-button {
+                align-self: flex-end;
             }
 
             .title-section h1 {
@@ -323,10 +331,6 @@
     <div class="container">
         <!-- 헤더 -->
         <div class="header">
-            <a href="../../index.html" class="back-button">
-                <span>←</span>
-                <span>홈으로</span>
-            </a>
             <div class="title-section">
                 <h1>
                     <span>🏐</span>
@@ -335,6 +339,10 @@
                 <div class="league-badge">V-리그 남자부</div>
                 <div class="last-updated" id="lastUpdated">마지막 업데이트: 로딩 중...</div>
             </div>
+            <a href="../../index.html" class="back-button">
+                <span>홈으로</span>
+                <span>→</span>
+            </a>
         </div>
 
         <!-- 메인 그리드 -->
@@ -349,15 +357,15 @@
                 <div class="rank-stats">
                     <div class="rank-stat-item">
                         <span class="rank-stat-label">전적</span>
-                        <span class="rank-stat-value" id="record">-</span>
+                        <span class="rank-stat-value" id="record">로딩 중...</span>
                     </div>
                     <div class="rank-stat-item">
                         <span class="rank-stat-label">승률</span>
-                        <span class="rank-stat-value" id="winrate">-</span>
+                        <span class="rank-stat-value" id="winrate">로딩 중...</span>
                     </div>
                     <div class="rank-stat-item">
                         <span class="rank-stat-label">세트득실률</span>
-                        <span class="rank-stat-value" id="setratio">-</span>
+                        <span class="rank-stat-value" id="setratio">로딩 중...</span>
                     </div>
                 </div>
             </div>
@@ -375,8 +383,8 @@
                 <!-- 지난 경기 기록 -->
                 <div class="card past-matches-card">
                     <div class="card-title">📊 지난 경기 결과</div>
-                    <div class="matches-list">
-                        <div class="no-match">지난 경기 기록은 추후 업데이트 예정입니다.</div>
+                    <div class="matches-list" id="pastMatchesList">
+                        <div class="loading">로딩 중...</div>
                     </div>
                 </div>
             </div>
@@ -386,25 +394,25 @@
     <script>
         async function loadVolleyballData() {
             try {
-                const response = await fetch('../../data/sports.json');
+                const response = await fetch('../../public/data/sports.json');
                 const data = await response.json();
                 
                 if (data.volleyball) {
                     const vb = data.volleyball;
                     
-                    // 순위
+                    // 순위 (실시간)
                     document.getElementById('rank').textContent = vb.rank || '-';
                     
-                    // 전적
+                    // 전적 (실시간)
                     document.getElementById('record').textContent = vb.record || '-';
                     
-                    // 승률
+                    // 승률 (실시간)
                     document.getElementById('winrate').textContent = vb.winRate || '-';
                     
-                    // 세트득실률
+                    // 세트득실률 (실시간)
                     document.getElementById('setratio').textContent = vb.setRatio || '-';
                     
-                    // 다음 경기
+                    // 다음 경기 (실시간)
                     const nextMatchContainer = document.getElementById('nextMatchContainer');
                     if (vb.nextMatch) {
                         nextMatchContainer.innerHTML = `
@@ -431,6 +439,27 @@
                         nextMatchContainer.innerHTML = '<div class="no-match">예정된 경기가 없습니다.</div>';
                     }
                     
+                    // 지난 경기 결과 (실시간)
+                    const pastMatchesList = document.getElementById('pastMatchesList');
+                    if (vb.pastMatches && vb.pastMatches.length > 0) {
+                        pastMatchesList.innerHTML = vb.pastMatches.map(match => `
+                            <div class="match-item">
+                                <div class="match-date">${match.date}</div>
+                                <div class="match-teams">
+                                    <span class="team-name">${match.homeTeam}</span>
+                                    <span class="vs">vs</span>
+                                    <span class="team-name">${match.awayTeam}</span>
+                                </div>
+                                <div class="match-result">
+                                    <div class="result-badge ${match.result === '승' ? 'win' : 'loss'}">${match.result}</div>
+                                    ${match.score ? `<div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); margin-top: 4px;">${match.score}</div>` : ''}
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        pastMatchesList.innerHTML = '<div class="no-match">지난 경기 기록은 추후 업데이트 예정입니다.</div>';
+                    }
+                    
                     // 마지막 업데이트
                     if (data.lastUpdated) {
                         const date = new Date(data.lastUpdated);
@@ -442,11 +471,15 @@
             } catch (error) {
                 console.error('데이터 로드 실패:', error);
                 document.getElementById('nextMatchContainer').innerHTML = '<div class="no-match">데이터를 불러올 수 없습니다.</div>';
+                document.getElementById('pastMatchesList').innerHTML = '<div class="no-match">데이터를 불러올 수 없습니다.</div>';
             }
         }
 
         // 페이지 로드시 데이터 가져오기
         loadVolleyballData();
+        
+        // 5분마다 자동 새로고침
+        setInterval(loadVolleyballData, 5 * 60 * 1000);
     </script>
 </body>
 </html>
