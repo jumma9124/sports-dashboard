@@ -9,12 +9,12 @@
     "games": "19",
     "points": "38",
     "setRatio": "1.517",
-    "lastUpdated": "2026-01-05T05:21:45.605Z",
+    "lastUpdated": "2026-01-05T06:17:28.648Z",
     "nextMatch": {
       "date": "2026-01-09",
       "time": "19:00",
       "opponent": "OK저축은행",
-      "location": "장소 미정"
+      "location": "부산강서체육관"
     }
   },
   "baseball": {
@@ -24,8 +24,8 @@
     "rank": "2위",
     "record": "83승 57패 4무",
     "winRate": ".593",
-    "lastUpdated": "2026-01-05T05:21:34.947Z",
+    "lastUpdated": "2026-01-05T06:17:17.498Z",
     "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
   },
-  "lastUpdated": "2026-01-05T05:23:01.934Z"
+  "lastUpdated": "2026-01-05T06:18:40.264Z"
 }
