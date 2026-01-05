@@ -29,6 +29,21 @@ async function crawlVolleyball() {
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
     await page.waitForTimeout(5000);
 
+    // 디버깅: 페이지 구조 확인
+    const pageDebug = await page.evaluate(() => {
+      const teamItems = document.querySelectorAll('.TableBody_item__eCenH');
+      const allItems = document.querySelectorAll('[class*="TableBody"]');
+      const bodyText = document.body.textContent;
+      
+      return {
+        teamItemsCount: teamItems.length,
+        allTableItemsCount: allItems.length,
+        hasHyundaiText: bodyText.includes('현대캐피탈'),
+        firstItemText: teamItems[0] ? teamItems[0].textContent.substring(0, 100) : 'none'
+      };
+    });
+    console.log('[배구] 페이지 디버깅:', JSON.stringify(pageDebug, null, 2));
+
     const volleyball = await page.evaluate(() => {
       const teamItems = document.querySelectorAll('.TableBody_item__eCenH');
       
