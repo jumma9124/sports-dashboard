@@ -218,19 +218,24 @@
         }
 
         .match-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .match-item:hover .match-summary {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .match-summary {
             display: grid;
             grid-template-columns: 100px 1fr 100px;
             align-items: center;
             gap: 20px;
             padding: 18px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
             transition: all 0.2s;
-        }
-
-        .match-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateX(3px);
         }
 
         .match-date {
@@ -277,6 +282,67 @@
             color: #e57373;
         }
 
+        /* 상세 정보 (토글) */
+        .match-detail-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .match-detail-panel.expanded {
+            max-height: 500px;
+        }
+
+        .match-detail-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+
+        .detail-label {
+            color: rgba(255, 255, 255, 0.6);
+            min-width: 80px;
+        }
+
+        .detail-value {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .set-scores {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .set-score {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .expand-icon {
+            margin-left: auto;
+            transition: transform 0.3s ease;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .match-item.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
         /* 로딩 */
         .loading {
             text-align: center;
@@ -310,7 +376,7 @@
                 font-size: 1.8rem;
             }
 
-            .match-item {
+            .match-summary {
                 grid-template-columns: 1fr;
                 gap: 12px;
                 text-align: center;
@@ -384,6 +450,28 @@
     </div>
 
     <script>
+        function toggleMatchDetail(matchElement) {
+            const detailPanel = matchElement.querySelector('.match-detail-panel');
+            const isExpanded = matchElement.classList.contains('expanded');
+            
+            // 모든 다른 경기 접기
+            document.querySelectorAll('.match-item').forEach(item => {
+                if (item !== matchElement) {
+                    item.classList.remove('expanded');
+                    item.querySelector('.match-detail-panel').classList.remove('expanded');
+                }
+            });
+            
+            // 현재 경기 토글
+            if (isExpanded) {
+                matchElement.classList.remove('expanded');
+                detailPanel.classList.remove('expanded');
+            } else {
+                matchElement.classList.add('expanded');
+                detailPanel.classList.add('expanded');
+            }
+        }
+
         async function loadVolleyballData() {
             try {
                 const response = await fetch('../../public/data/sports.json');
@@ -405,7 +493,7 @@
                         `).join('');
                     }
                     
-                    // 다음 경기 (실시간)
+                    // 다음 경기
                     const nextMatchContainer = document.getElementById('nextMatchContainer');
                     if (vb.nextMatch) {
                         nextMatchContainer.innerHTML = `
@@ -432,23 +520,62 @@
                         nextMatchContainer.innerHTML = '<div class="no-match">예정된 경기가 없습니다.</div>';
                     }
                     
-                    // 지난 경기 결과 (실시간)
+                    // 지난 경기 결과 (토글 기능 포함)
                     const pastMatchesList = document.getElementById('pastMatchesList');
                     if (vb.pastMatches && vb.pastMatches.length > 0) {
-                        pastMatchesList.innerHTML = vb.pastMatches.map(match => `
-                            <div class="match-item">
-                                <div class="match-date">${match.date}</div>
-                                <div class="match-teams">
-                                    <span class="team-name">${match.homeTeam}</span>
-                                    <span class="vs">vs</span>
-                                    <span class="team-name">${match.awayTeam}</span>
+                        pastMatchesList.innerHTML = vb.pastMatches.map((match, index) => {
+                            // 상세 정보 HTML 생성
+                            let detailHTML = '';
+                            if (match.setScores || match.time || match.location) {
+                                detailHTML = `
+                                    <div class="match-detail-panel">
+                                        <div class="match-detail-content">
+                                            ${match.time ? `
+                                            <div class="detail-row">
+                                                <span class="detail-label">⏰ 경기 시간</span>
+                                                <span class="detail-value">${match.time}</span>
+                                            </div>
+                                            ` : ''}
+                                            ${match.location ? `
+                                            <div class="detail-row">
+                                                <span class="detail-label">📍 경기장</span>
+                                                <span class="detail-value">${match.location}</span>
+                                            </div>
+                                            ` : ''}
+                                            ${match.setScores && match.setScores.length > 0 ? `
+                                            <div class="detail-row">
+                                                <span class="detail-label">🏐 세트별</span>
+                                                <div class="set-scores">
+                                                    ${match.setScores.map((score, i) => `
+                                                        <div class="set-score">${i + 1}세트: ${score}</div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            
+                            return `
+                                <div class="match-item" onclick="toggleMatchDetail(this)">
+                                    <div class="match-summary">
+                                        <div class="match-date">${match.date}</div>
+                                        <div class="match-teams">
+                                            <span class="team-name">${match.homeTeam}</span>
+                                            <span class="vs">vs</span>
+                                            <span class="team-name">${match.awayTeam}</span>
+                                        </div>
+                                        <div class="match-result">
+                                            <div class="result-badge ${match.result === '승' ? 'win' : 'loss'}">${match.result}</div>
+                                            ${match.score ? `<div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); margin-top: 4px;">${match.score}</div>` : ''}
+                                            ${detailHTML ? '<span class="expand-icon">▼</span>' : ''}
+                                        </div>
+                                    </div>
+                                    ${detailHTML}
                                 </div>
-                                <div class="match-result">
-                                    <div class="result-badge ${match.result === '승' ? 'win' : 'loss'}">${match.result}</div>
-                                    ${match.score ? `<div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); margin-top: 4px;">${match.score}</div>` : ''}
-                                </div>
-                            </div>
-                        `).join('');
+                            `;
+                        }).join('');
                     } else {
                         pastMatchesList.innerHTML = '<div class="no-match">지난 경기 기록이 없습니다.</div>';
                     }
