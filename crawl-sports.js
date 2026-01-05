@@ -199,7 +199,7 @@ async function crawlVolleyballNextMatch(browser) {
             const stadiums = [
               '수원체육관', '의정부체육관', '장충체육관', 
               '김천실내체육관', '대전충무체육관', '인천계양체육관',
-              '화성실내체육관', '부산강서체육관'
+              '화성실내체육관', '부산강서체육관', '부산사직체육관'
             ];
             for (let stadium of stadiums) {
               if (bodyText.includes(stadium)) {
@@ -208,6 +208,10 @@ async function crawlVolleyballNextMatch(browser) {
               }
             }
           }
+          
+          // 디버깅: 찾은 경기장 로그
+          console.log('[디버깅] 경기장 검색 결과:', location || '못 찾음');
+          console.log('[디버깅] 페이지 텍스트 일부:', bodyText.substring(0, 500));
           
           return {
             time: time,
