@@ -29,39 +29,52 @@ async function crawlVolleyball() {
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
     await new Promise(resolve => setTimeout(resolve, 5000));
 
-    const volleyball = await page.evaluate(() => {
+    const volleyballData = await page.evaluate(() => {
       const teamItems = document.querySelectorAll('.TableBody_item__eCenH');
+      let currentTeamData = null;
+      const allTeams = [];
       
       for (let item of teamItems) {
         const teamNameEl = item.querySelector('.TeamInfo_team_name__dni7F');
         const teamName = teamNameEl ? teamNameEl.textContent.trim() : '';
         
+        const cells = item.querySelectorAll('.TableBody_cell__rFrpm');
+        const rankText = cells[0] ? cells[0].textContent.trim() : '';
+        const rankMatch = rankText.match(/(\d+)위/);
+        const rank = rankMatch ? rankMatch[1] : '-';
+        
+        const fullText = item.textContent;
+        const pointsMatch = fullText.match(/승점(\d+)/);
+        const points = pointsMatch ? pointsMatch[1] : '-';
+        const gamesMatch = fullText.match(/경기(\d+)/);
+        const games = gamesMatch ? gamesMatch[1] : '-';
+        const winsMatch = fullText.match(/승(\d+)/);
+        const lossesMatch = fullText.match(/패(\d+)/);
+        const wins = winsMatch ? winsMatch[1] : '-';
+        const losses = lossesMatch ? lossesMatch[1] : '-';
+        const setRatioMatch = fullText.match(/세트득실률([\d.]+)/);
+        const setRatio = setRatioMatch ? setRatioMatch[1] : '-';
+        
+        const winRate = (wins !== '-' && games !== '-') 
+          ? (parseInt(wins) / parseInt(games)).toFixed(3) : '-';
+        
+        // 전체 팀 순위 저장
+        allTeams.push({
+          rank: rank + '위',
+          team: teamName,
+          record: wins + '승 ' + losses + '패',
+          winRate: winRate,
+          points: points,
+          setRatio: setRatio
+        });
+        
+        // 현대캐피탈 데이터 저장
         if (teamName.includes('현대캐피탈')) {
-          const cells = item.querySelectorAll('.TableBody_cell__rFrpm');
-          const rankText = cells[0] ? cells[0].textContent.trim() : '';
-          const rankMatch = rankText.match(/(\d+)위/);
-          const rank = rankMatch ? rankMatch[1] + '위' : '-';
-          
-          const fullText = item.textContent;
-          const pointsMatch = fullText.match(/승점(\d+)/);
-          const points = pointsMatch ? pointsMatch[1] : '-';
-          const gamesMatch = fullText.match(/경기(\d+)/);
-          const games = gamesMatch ? gamesMatch[1] : '-';
-          const winsMatch = fullText.match(/승(\d+)/);
-          const lossesMatch = fullText.match(/패(\d+)/);
-          const wins = winsMatch ? winsMatch[1] : '-';
-          const losses = lossesMatch ? lossesMatch[1] : '-';
-          const setRatioMatch = fullText.match(/세트득실률([\d.]+)/);
-          const setRatio = setRatioMatch ? setRatioMatch[1] : '-';
-          
-          const winRate = (wins !== '-' && games !== '-') 
-            ? (parseInt(wins) / parseInt(games)).toFixed(3) : '-';
-          
-          return {
+          currentTeamData = {
             sport: '배구',
             team: '현대캐피탈 스카이워커스',
             league: 'V-리그',
-            rank: rank,
+            rank: rank + '위',
             record: wins + '승 ' + losses + '패',
             winRate: winRate,
             games: games,
@@ -71,9 +84,15 @@ async function crawlVolleyball() {
           };
         }
       }
-      return null;
+      
+      return {
+        currentTeam: currentTeamData,
+        allTeams: allTeams
+      };
     });
 
+    const volleyball = volleyballData.currentTeam;
+    
     if (!volleyball) {
       await browser.close();
       return {
@@ -87,6 +106,9 @@ async function crawlVolleyball() {
         lastUpdated: new Date().toISOString()
       };
     }
+
+    // 전체 팀 순위 추가
+    volleyball.fullRankings = volleyballData.allTeams;
 
     console.log('[배구] 성공:', volleyball);
     

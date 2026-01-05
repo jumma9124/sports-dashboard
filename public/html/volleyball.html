@@ -83,7 +83,7 @@
         /* 메인 그리드 */
         .main-grid {
             display: grid;
-            grid-template-columns: 350px 1fr;
+            grid-template-columns: 400px 1fr;
             gap: 20px;
         }
 
@@ -102,58 +102,63 @@
             margin-bottom: 20px;
         }
 
-        /* 순위 카드 */
-        .rank-card {
+        /* 순위 테이블 */
+        .rankings-card {
             height: fit-content;
         }
 
-        .rank-display {
-            text-align: center;
-            padding: 30px 0;
+        .rankings-table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .rank-number {
-            font-size: 6rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1;
-            margin-bottom: 15px;
-        }
-
-        .rank-label {
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 20px;
-        }
-
-        .rank-stats {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .rank-stat-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.95rem;
-        }
-
-        .rank-stat-label {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .rank-stat-value {
+        .rankings-table th {
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             font-weight: 600;
         }
 
-        /* 다음 경기 */
-        .next-match-card {
-            margin-bottom: 20px;
+        .rankings-table td {
+            padding: 12px 8px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .rankings-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .rankings-table tr.highlight {
+            background: rgba(102, 126, 234, 0.15);
+            font-weight: 600;
+        }
+
+        .rank-col {
+            width: 50px;
+            text-align: center;
+        }
+
+        .team-col {
+            flex: 1;
+        }
+
+        .record-col {
+            width: 80px;
+            text-align: center;
+        }
+
+        /* 다음/지난 경기 */
+        .matches-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .past-matches-card {
+            margin-bottom: 0;
         }
 
         .next-match {
@@ -206,12 +211,6 @@
         }
 
         /* 지난 경기 기록 */
-        .past-matches-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
         .matches-list {
             display: flex;
             flex-direction: column;
@@ -311,10 +310,6 @@
                 font-size: 1.8rem;
             }
 
-            .rank-number {
-                font-size: 4.5rem;
-            }
-
             .match-item {
                 grid-template-columns: 1fr;
                 gap: 12px;
@@ -347,43 +342,40 @@
 
         <!-- 메인 그리드 -->
         <div class="main-grid">
-            <!-- 순위 카드 -->
-            <div class="card rank-card">
-                <div class="card-title">🏆 현재 순위</div>
-                <div class="rank-display">
-                    <div class="rank-number" id="rank">-</div>
-                    <div class="rank-label">V-리그 순위</div>
-                </div>
-                <div class="rank-stats">
-                    <div class="rank-stat-item">
-                        <span class="rank-stat-label">전적</span>
-                        <span class="rank-stat-value" id="record">로딩 중...</span>
-                    </div>
-                    <div class="rank-stat-item">
-                        <span class="rank-stat-label">승률</span>
-                        <span class="rank-stat-value" id="winrate">로딩 중...</span>
-                    </div>
-                    <div class="rank-stat-item">
-                        <span class="rank-stat-label">세트득실률</span>
-                        <span class="rank-stat-value" id="setratio">로딩 중...</span>
-                    </div>
-                </div>
+            <!-- 리그 전체 순위 -->
+            <div class="card rankings-card">
+                <div class="card-title">🏆 리그 순위</div>
+                <table class="rankings-table" id="rankingsTable">
+                    <thead>
+                        <tr>
+                            <th class="rank-col">순위</th>
+                            <th class="team-col">팀</th>
+                            <th class="record-col">전적</th>
+                            <th class="record-col">승률</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="loading">로딩 중...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- 오른쪽 컬럼 -->
-            <div class="past-matches-container">
-                <!-- 다음 경기 -->
-                <div class="card next-match-card">
-                    <div class="card-title">📅 다음 경기</div>
-                    <div id="nextMatchContainer">
+            <div class="matches-container">
+                <!-- 지난 경기 결과 (위로) -->
+                <div class="card past-matches-card">
+                    <div class="card-title">📊 지난 경기 결과</div>
+                    <div class="matches-list" id="pastMatchesList">
                         <div class="loading">로딩 중...</div>
                     </div>
                 </div>
 
-                <!-- 지난 경기 기록 -->
-                <div class="card past-matches-card">
-                    <div class="card-title">📊 지난 경기 결과</div>
-                    <div class="matches-list" id="pastMatchesList">
+                <!-- 다음 경기 (아래로) -->
+                <div class="card next-match-card">
+                    <div class="card-title">📅 다음 경기</div>
+                    <div id="nextMatchContainer">
                         <div class="loading">로딩 중...</div>
                     </div>
                 </div>
@@ -400,17 +392,18 @@
                 if (data.volleyball) {
                     const vb = data.volleyball;
                     
-                    // 순위 (실시간)
-                    document.getElementById('rank').textContent = vb.rank || '-';
-                    
-                    // 전적 (실시간)
-                    document.getElementById('record').textContent = vb.record || '-';
-                    
-                    // 승률 (실시간)
-                    document.getElementById('winrate').textContent = vb.winRate || '-';
-                    
-                    // 세트득실률 (실시간)
-                    document.getElementById('setratio').textContent = vb.setRatio || '-';
+                    // 전체 순위 표시
+                    if (vb.fullRankings && vb.fullRankings.length > 0) {
+                        const rankingsTableBody = document.querySelector('#rankingsTable tbody');
+                        rankingsTableBody.innerHTML = vb.fullRankings.map(team => `
+                            <tr class="${team.team.includes('현대캐피탈') ? 'highlight' : ''}">
+                                <td class="rank-col">${team.rank}</td>
+                                <td class="team-col">${team.team}</td>
+                                <td class="record-col">${team.record}</td>
+                                <td class="record-col">${team.winRate}</td>
+                            </tr>
+                        `).join('');
+                    }
                     
                     // 다음 경기 (실시간)
                     const nextMatchContainer = document.getElementById('nextMatchContainer');
@@ -457,7 +450,7 @@
                             </div>
                         `).join('');
                     } else {
-                        pastMatchesList.innerHTML = '<div class="no-match">지난 경기 기록은 추후 업데이트 예정입니다.</div>';
+                        pastMatchesList.innerHTML = '<div class="no-match">지난 경기 기록이 없습니다.</div>';
                     }
                     
                     // 마지막 업데이트
