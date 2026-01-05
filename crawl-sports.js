@@ -151,7 +151,15 @@ async function crawlVolleyballNextMatch(browser) {
       console.log('[배구 다음 경기] 확인:', dateStr);
       
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-      await new Promise(resolve => setTimeout(resolve, 5000));  // 3초 → 5초로 증가
+      
+      // 경기장 정보가 로드될 때까지 대기 (최대 10초)
+      try {
+        await page.waitForSelector('[class*="stadium"]', { timeout: 10000 });
+      } catch (e) {
+        console.log('[배구 다음 경기] 경기장 정보 대기 타임아웃 (계속 진행)');
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 3000));  // 추가 대기
 
       // 페이지 전체 텍스트 가져오기
       const pageText = await page.evaluate(() => document.body.textContent);
@@ -196,14 +204,22 @@ async function crawlVolleyballNextMatch(browser) {
           if (bodyText.includes('천안유관순')) {
             location = '천안유관순체육관';
           } else {
-            const stadiums = [
-              '수원체육관', '의정부체육관', '장충체육관', 
-              '김천실내체육관', '대전충무체육관', '인천계양체육관',
-              '화성실내체육관', '부산강서체육관', '부산사직체육관'
+            // 띄어쓰기 무시하고 찾기
+            const stadiumPatterns = [
+              { pattern: /부산강서\s*체육관/, name: '부산강서체육관' },
+              { pattern: /부산사직\s*체육관/, name: '부산사직체육관' },
+              { pattern: /수원\s*체육관/, name: '수원체육관' },
+              { pattern: /의정부\s*체육관/, name: '의정부체육관' },
+              { pattern: /장충\s*체육관/, name: '장충체육관' },
+              { pattern: /김천실내\s*체육관/, name: '김천실내체육관' },
+              { pattern: /대전충무\s*체육관/, name: '대전충무체육관' },
+              { pattern: /인천계양\s*체육관/, name: '인천계양체육관' },
+              { pattern: /화성실내\s*체육관/, name: '화성실내체육관' }
             ];
-            for (let stadium of stadiums) {
-              if (bodyText.includes(stadium)) {
-                location = stadium;
+            
+            for (let stadium of stadiumPatterns) {
+              if (stadium.pattern.test(bodyText)) {
+                location = stadium.name;
                 break;
               }
             }
