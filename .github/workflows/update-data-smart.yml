@@ -37,7 +37,10 @@ jobs:
 
     - name: Commit and push if changed
       run: |
+        git add public/data/sports.json
+        git stash
         git pull origin main --rebase
+        git stash pop || true
         git restore --staged .
         git add -f public/data/sports.json
         git diff --staged --quiet || git commit -m "Update sports data (auto)"
