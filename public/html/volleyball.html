@@ -101,6 +101,23 @@
             font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid rgba(76, 175, 80, 0.5);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #81c784;
+            flex-shrink: 0;
         }
 
         .rankings-table {
@@ -420,19 +437,23 @@
             <div class="left-column">
                 <!-- 리그 순위 (70%) -->
                 <div class="card rankings-card">
-                    <div class="card-title">🏆 리그 순위</div>
+                    <div class="card-title">
+                        <span class="card-title-icon">✓</span>
+                        리그 순위
+                    </div>
                     <table class="rankings-table" id="rankingsTable">
                         <thead>
                             <tr>
                                 <th class="rank-col">순위</th>
                                 <th class="team-col">팀</th>
+                                <th class="record-col">승점</th>
                                 <th class="record-col">전적</th>
                                 <th class="record-col">승률</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="4" class="loading">로딩 중...</td>
+                                <td colspan="5" class="loading">로딩 중...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -440,7 +461,10 @@
 
                 <!-- 다음 경기 (30%) -->
                 <div class="card next-match-card">
-                    <div class="card-title">📅 다음 경기</div>
+                    <div class="card-title">
+                        <span class="card-title-icon">✓</span>
+                        다음 경기
+                    </div>
                     <div id="nextMatchContainer">
                         <div class="loading">로딩 중...</div>
                     </div>
@@ -449,7 +473,10 @@
 
             <!-- 오른쪽 컬럼: 지난 경기 결과 -->
             <div class="card past-matches-card">
-                <div class="card-title">📊 지난 경기 결과</div>
+                <div class="card-title">
+                    <span class="card-title-icon">✓</span>
+                    지난 경기 결과
+                </div>
                 <div class="matches-list" id="pastMatchesList">
                     <div class="loading">로딩 중...</div>
                 </div>
@@ -495,6 +522,7 @@
                             <tr class="${team.team.includes('현대캐피탈') ? 'highlight' : ''}">
                                 <td class="rank-col">${team.rank}</td>
                                 <td class="team-col">${team.team}</td>
+                                <td class="record-col">${team.points || '-'}</td>
                                 <td class="record-col">${team.record}</td>
                                 <td class="record-col">${team.winRate}</td>
                             </tr>
@@ -549,8 +577,8 @@
                                             <div class="detail-row">
                                                 <span class="detail-label">🏐 세트별 스코어</span>
                                                 <div class="set-scores">
-                                                    ${match.setScores.map((score, i) => `
-                                                        <div class="set-score">${i + 1}세트: ${score}</div>
+                                                    ${match.setScores.map(scoreObj => `
+                                                        <div class="set-score">${scoreObj.set}세트: ${scoreObj.home}-${scoreObj.away}</div>
                                                     `).join('')}
                                                 </div>
                                             </div>
