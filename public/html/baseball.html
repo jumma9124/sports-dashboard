@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한화 이글스 - MY SPORT</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚾</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 헤더 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .title-section {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .title-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .league-badge {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .last-updated {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 5px;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(3px);
+        }
+
+        /* 메인 그리드 */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 3.5fr 6.5fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 카드 스타일 */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid rgba(76, 175, 80, 0.5);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #81c784;
+            flex-shrink: 0;
+        }
+
+        /* 팀 정보 카드 */
+        .team-card {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 159, 64, 0.15) 100%);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .team-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ff9f40;
+        }
+
+        .info-value.rank-1 {
+            color: #ffd700;
+        }
+
+        /* 순위 테이블 */
+        .rankings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .rankings-table th {
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+        }
+
+        .rankings-table td {
+            padding: 12px 8px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        .rankings-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .rankings-table tr.highlight {
+            background: rgba(255, 107, 107, 0.15);
+            font-weight: 600;
+        }
+
+        .rank-col {
+            width: 50px;
+        }
+
+        .team-col {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .record-col {
+            width: 80px;
+        }
+
+        /* 선수 명단 */
+        .players-section {
+            margin-top: 20px;
+        }
+
+        .position-group {
+            margin-bottom: 25px;
+        }
+
+        .position-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ff9f40;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 159, 64, 0.3);
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .player-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid rgba(255, 159, 64, 0.5);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .player-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .player-number {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 4px;
+        }
+
+        .player-name {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .player-stats {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.1rem;
+        }
+
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .title-section h1 {
+                font-size: 2rem;
+            }
+
+            .team-info {
+                grid-template-columns: 1fr;
+            }
+
+            .players-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="title-section">
+                <h1>
+                    <span>⚾</span>
+                    <span>한화 이글스</span>
+                </h1>
+                <div class="league-badge">KBO 리그</div>
+                <div class="last-updated" id="lastUpdated">마지막 업데이트: 로딩 중...</div>
+            </div>
+            <a href="../../index.html" class="back-button">
+                <span>홈으로</span>
+                <span>→</span>
+            </a>
+        </div>
+
+        <!-- 메인 그리드 -->
+        <div class="main-grid">
+            <!-- 왼쪽: 팀 정보 -->
+            <div class="left-column">
+                <!-- 팀 순위 -->
+                <div class="card team-card">
+                    <div class="card-title">
+                        <span class="card-title-icon">✓</span>
+                        팀 순위
+                    </div>
+                    <div class="team-info" id="teamInfo">
+                        <div class="loading">로딩 중...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 선수 명단 -->
+            <div class="card">
+                <div class="card-title">
+                    <span class="card-title-icon">✓</span>
+                    선수 명단
+                </div>
+                <div class="players-section" id="playersSection">
+                    <div class="loading">로딩 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 전체 순위 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-title-icon">✓</span>
+                KBO 리그 순위
+            </div>
+            <table class="rankings-table" id="leagueTable">
+                <thead>
+                    <tr>
+                        <th class="rank-col">순위</th>
+                        <th class="team-col">팀</th>
+                        <th class="record-col">승점</th>
+                        <th class="record-col">전적</th>
+                        <th class="record-col">승률</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5" class="loading">로딩 중...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function loadBaseballData() {
+            try {
+                const response = await fetch('../../public/data/baseball-detail.json');
+                const data = await response.json();
+                
+                // 팀 정보 표시
+                if (data.teamInfo) {
+                    const team = data.teamInfo;
+                    const teamHtml = `
+                        <div class="info-item">
+                            <div class="info-label">순위</div>
+                            <div class="info-value ${team.rank === 1 ? 'rank-1' : ''}">${team.rank}위</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">전적</div>
+                            <div class="info-value" style="font-size: 1.2rem;">${team.wins}-${team.losses}-${team.draws}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">승률</div>
+                            <div class="info-value" style="font-size: 1.4rem;">${team.winRate}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">게임차</div>
+                            <div class="info-value" style="font-size: 1.4rem;">${team.gameDiff}</div>
+                        </div>
+                    `;
+                    document.getElementById('teamInfo').innerHTML = teamHtml;
+                }
+
+                // 선수 명단 표시
+                if (data.players) {
+                    let playersHtml = '';
+                    
+                    // 포지션별로 그룹화
+                    const positions = {
+                        '투수': data.players.filter(p => p.position === '투수'),
+                        '포수': data.players.filter(p => p.position === '포수'),
+                        '내야수': data.players.filter(p => p.position === '내야수'),
+                        '외야수': data.players.filter(p => p.position === '외야수')
+                    };
+                    
+                    for (const [posName, posList] of Object.entries(positions)) {
+                        if (posList.length === 0) continue;
+                        
+                        playersHtml += `
+                            <div class="position-group">
+                                <div class="position-title">${posName} (${posList.length}명)</div>
+                                <div class="players-grid">
+                        `;
+                        
+                        posList.forEach(player => {
+                            const stats = player.position === '투수' 
+                                ? `${player.wins || 0}승 ${player.losses || 0}패 / ERA ${player.era || '-'}`
+                                : `타율 ${player.avg || '-'} / ${player.hits || 0}안타`;
+                            
+                            playersHtml += `
+                                <div class="player-card">
+                                    <div class="player-number">#${player.backNumber}</div>
+                                    <div class="player-name">${player.name}</div>
+                                    <div class="player-stats">${stats}</div>
+                                </div>
+                            `;
+                        });
+                        
+                        playersHtml += `
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    document.getElementById('playersSection').innerHTML = playersHtml || '<div class="no-data">선수 데이터를 불러올 수 없습니다.</div>';
+                }
+
+                // 전체 순위 표시
+                if (data.leagueStandings && data.leagueStandings.length > 0) {
+                    const tableBody = document.querySelector('#leagueTable tbody');
+                    tableBody.innerHTML = data.leagueStandings.map(team => `
+                        <tr class="${team.team === '한화' ? 'highlight' : ''}">
+                            <td class="rank-col">${team.rank}</td>
+                            <td class="team-col">${team.team}</td>
+                            <td class="record-col">-</td>
+                            <td class="record-col">${team.wins}-${team.losses}-${team.draws}</td>
+                            <td class="record-col">${team.winRate}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                // 마지막 업데이트 시간
+                if (data.lastUpdated) {
+                    const date = new Date(data.lastUpdated);
+                    const formatted = `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}. ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                    document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${formatted}`;
+                }
+
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                document.getElementById('teamInfo').innerHTML = '<div class="no-data">데이터를 불러올 수 없습니다.</div>';
+                document.getElementById('playersSection').innerHTML = '<div class="no-data">데이터를 불러올 수 없습니다.</div>';
+                document.querySelector('#leagueTable tbody').innerHTML = '<tr><td colspan="5" class="no-data">데이터를 불러올 수 없습니다.</td></tr>';
+            }
+        }
+
+        // 페이지 로드시 데이터 가져오기
+        loadBaseballData();
+        
+        // 5분마다 자동 새로고침
+        setInterval(loadBaseballData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
