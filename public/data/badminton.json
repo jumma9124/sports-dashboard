@@ -6,6 +6,26 @@
     "points": 112734,
     "tournaments": 18
   },
+  "womenSingles": [
+    {
+      "rank": 1,
+      "name": "AN Se Young",
+      "country": "KOR",
+      "points": 112734
+    },
+    {
+      "rank": 2,
+      "name": "WANG Zhi Yi",
+      "country": "CHN",
+      "points": 98560
+    },
+    {
+      "rank": 3,
+      "name": "Akane YAMAGUCHI",
+      "country": "JPN",
+      "points": 87230
+    }
+  ],
   "menDoubles": [
     {
       "rank": 1,

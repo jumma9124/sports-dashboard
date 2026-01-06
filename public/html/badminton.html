@@ -298,6 +298,29 @@
                 <div class="ranking-display" id="anRanking">
                     <div class="loading">로딩 중...</div>
                 </div>
+                
+                <!-- 여자 단식 세계 랭킹 Top 3 -->
+                <div style="margin-top: 20px;">
+                    <div class="card-title" style="font-size: 1.1rem; margin-bottom: 15px;">
+                        <span class="card-title-icon">✓</span>
+                        여자 단식 세계 랭킹
+                    </div>
+                    <table class="rankings-table" id="womenSinglesTable">
+                        <thead>
+                            <tr>
+                                <th class="rank-col">순위</th>
+                                <th class="player-col">선수</th>
+                                <th class="country-col">국가</th>
+                                <th class="points-col">포인트</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="loading">로딩 중...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- 복식 랭킹 -->
@@ -409,6 +432,21 @@
                     `).join('');
                 } else {
                     document.querySelector('#womenDoublesTable tbody').innerHTML = '<tr><td colspan="4" class="no-data">데이터를 불러올 수 없습니다.</td></tr>';
+                }
+
+                // 여자 단식 랭킹 표시 (Top 3)
+                if (data.womenSingles && data.womenSingles.length > 0) {
+                    const womenSinglesTableBody = document.querySelector('#womenSinglesTable tbody');
+                    womenSinglesTableBody.innerHTML = data.womenSingles.slice(0, 3).map(player => `
+                        <tr class="${player.country === 'KOR' || player.country === '대한민국' ? 'highlight' : ''}">
+                            <td class="rank-col">${player.rank}</td>
+                            <td class="player-col">${player.name}</td>
+                            <td class="country-col">${player.country}</td>
+                            <td class="points-col">${player.points?.toLocaleString() || '-'}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    document.querySelector('#womenSinglesTable tbody').innerHTML = '<tr><td colspan="4" class="no-data">데이터를 불러올 수 없습니다.</td></tr>';
                 }
 
                 // 마지막 업데이트 시간
