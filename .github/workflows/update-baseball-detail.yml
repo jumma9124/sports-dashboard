@@ -36,7 +36,11 @@ jobs:
 
     - name: Commit and push if changed
       run: |
-        git pull origin main --rebase
         git add public/data/baseball-detail.json
+        git stash
+        git pull origin main --rebase
+        git stash pop || true
+        git restore --staged .
+        git add -f public/data/baseball-detail.json
         git diff --staged --quiet || git commit -m "Update baseball detail data (auto)"
         git push
