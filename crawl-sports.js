@@ -370,99 +370,53 @@ async function crawlVolleyballPastMatches(browser) {
         
         console.log('[배구 지난 경기] 기본 정보:', basicInfo);
         
-        // 상세 정보 크롤링
-        let detailInfo = {
-          setScores: [],
-          startTime: null,
-          endTime: null
-        };
+        // 세트 스코어 크롤링 (메인 페이지에서 직접)
+        let setScores = null;
         
         if (basicInfo.matchId) {
           try {
-            console.log('[배구 지난 경기] 상세 페이지 접근:', basicInfo.matchId);
-            const detailUrl = `https://m.sports.naver.com/game/${basicInfo.matchId}/record`;
+            console.log('[배구 지난 경기] 세트 스코어 추출 중...');
+            const detailUrl = `https://m.sports.naver.com/game/${basicInfo.matchId}`;
             
             await page.goto(detailUrl, { waitUntil: 'networkidle2', timeout: 20000 });
-            await new Promise(resolve => setTimeout(resolve, 4000));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // HTML 전체 가져오기
-            const htmlContent = await page.content();
-            console.log('[배구 지난 경기] 페이지 로드 완료, HTML 길이:', htmlContent.length);
-            
-            detailInfo = await page.evaluate(() => {
-              const allText = document.body.innerText || document.body.textContent;
-              console.log('전체 텍스트 샘플:', allText.substring(0, 500));
+            setScores = await page.evaluate(() => {
+              const scoreTable = document.querySelector('table.ScoreBox_board_table__3V6uh');
+              if (!scoreTable) return null;
               
-              // 세트별 스코어 찾기 - 다양한 방법 시도
-              const setScores = [];
+              const rows = Array.from(scoreTable.querySelectorAll('tbody tr'));
+              if (rows.length < 2) return null;
               
-              // 방법 1: 테이블에서 찾기
-              const tables = document.querySelectorAll('table');
-              for (let table of tables) {
-                const tableText = table.textContent;
-                const scoreMatches = tableText.match(/(\d{2})\s*-\s*(\d{2})/g);
-                if (scoreMatches) {
-                  for (let score of scoreMatches) {
-                    const clean = score.replace(/\s/g, '');
-                    const [s1, s2] = clean.split('-').map(Number);
-                    if (s1 >= 15 && s1 <= 35 && s2 >= 15 && s2 <= 35) {
-                      if (!setScores.includes(clean)) {
-                        setScores.push(clean);
-                      }
-                    }
-                  }
+              const sets = [];
+              const homeCells = rows[0].querySelectorAll('td');
+              const awayCells = rows[1].querySelectorAll('td');
+              
+              // 마지막 td는 총 세트 수이므로 제외
+              const setCellCount = Math.min(5, homeCells.length - 1);
+              
+              for (let i = 0; i < setCellCount; i++) {
+                const homeScore = homeCells[i].textContent.trim();
+                const awayScore = awayCells[i].textContent.trim();
+                
+                if (homeScore !== '-' && awayScore !== '-') {
+                  sets.push({
+                    set: i + 1,
+                    home: parseInt(homeScore),
+                    away: parseInt(awayScore)
+                  });
                 }
               }
               
-              // 방법 2: 전체 텍스트에서 찾기 (테이블에서 못 찾았을 때)
-              if (setScores.length === 0) {
-                const pattern = /\b([12]?\d|3[0-5])\s*[-:]\s*([12]?\d|3[0-5])\b/g;
-                let match;
-                while ((match = pattern.exec(allText)) !== null && setScores.length < 5) {
-                  const s1 = parseInt(match[1]);
-                  const s2 = parseInt(match[2]);
-                  if (s1 >= 15 && s1 <= 35 && s2 >= 15 && s2 <= 35) {
-                    const scoreStr = `${s1}-${s2}`;
-                    if (!setScores.includes(scoreStr)) {
-                      setScores.push(scoreStr);
-                    }
-                  }
-                }
-              }
-              
-              // 경기 시작/종료 시간 찾기
-              let startTime = null;
-              let endTime = null;
-              
-              // "19:00 - 21:30" 형식 찾기
-              const timeRangeMatch = allText.match(/(\d{2}:\d{2})\s*[-~]\s*(\d{2}:\d{2})/);
-              if (timeRangeMatch) {
-                startTime = timeRangeMatch[1];
-                endTime = timeRangeMatch[2];
-              } else {
-                // 단일 시간만 있는 경우
-                const singleTimeMatch = allText.match(/(\d{2}:\d{2})/);
-                if (singleTimeMatch) {
-                  startTime = singleTimeMatch[1];
-                }
-              }
-              
-              console.log('추출된 세트 스코어:', setScores);
-              console.log('추출된 시간:', { startTime, endTime });
-              
-              return {
-                setScores: setScores,
-                startTime: startTime,
-                endTime: endTime
-              };
+              return sets.length > 0 ? sets : null;
             });
             
-            console.log('[배구 지난 경기] 상세 정보 성공:', detailInfo);
+            console.log('[배구 지난 경기] 세트 스코어 성공:', setScores);
           } catch (error) {
-            console.log('[배구 지난 경기] 상세 정보 실패:', error.message);
+            console.log('[배구 지난 경기] 세트 스코어 실패:', error.message);
           }
         } else {
-          console.log('[배구 지난 경기] matchId 없음 - 상세 정보 스킵');
+          console.log('[배구 지난 경기] matchId 없음 - 세트 스코어 스킵');
         }
         
         if (basicInfo.opponent && basicInfo.result) {
@@ -474,9 +428,7 @@ async function crawlVolleyballPastMatches(browser) {
             score: basicInfo.score || '-',
             location: basicInfo.location,
             matchId: basicInfo.matchId,
-            setScores: detailInfo.setScores.length > 0 ? detailInfo.setScores : null,
-            startTime: detailInfo.startTime,
-            endTime: detailInfo.endTime
+            setScores: setScores
           };
           
           matches.push(matchRecord);
