@@ -108,14 +108,14 @@ async function crawlBWFSchedule(browser) {
     
     // 다가오는 대회 찾기 (오늘 이후 시작)
     const upcomingTournaments = tournaments.filter(t => {
-      const startDate = new Date(t.startDate);
+      const startDate = new Date(t.startDate); startDate.setHours(0, 0, 0, 0);
       return startDate >= now;
     }).sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
     
     // 진행 중인 대회 찾기
     const ongoingTournaments = tournaments.filter(t => {
-      const startDate = new Date(t.startDate);
-      const endDate = new Date(t.endDate);
+      const startDate = new Date(t.startDate); startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(t.endDate); endDate.setHours(0, 0, 0, 0);
       return startDate <= now && endDate >= now;
     });
     
@@ -127,7 +127,7 @@ async function crawlBWFSchedule(browser) {
     let daysInfo = null;
     
     if (ongoingTournament) {
-      const daysSinceStart = Math.floor((now - new Date(ongoingTournament.startDate)) / (1000 * 60 * 60 * 24));
+      const startDateNorm = new Date(ongoingTournament.startDate); startDateNorm.setHours(0, 0, 0, 0); const daysSinceStart = Math.floor((now - startDateNorm) / (1000 * 60 * 60 * 24));
       displayTournament = ongoingTournament;
       daysInfo = {
         type: 'ongoing',
@@ -135,7 +135,7 @@ async function crawlBWFSchedule(browser) {
         text: `D+${daysSinceStart}`
       };
     } else if (nextTournament) {
-      const daysUntilStart = Math.floor((new Date(nextTournament.startDate) - now) / (1000 * 60 * 60 * 24));
+      const startDateNorm = new Date(nextTournament.startDate); startDateNorm.setHours(0, 0, 0, 0); const daysUntilStart = Math.floor((startDateNorm - now) / (1000 * 60 * 60 * 24));
       displayTournament = nextTournament;
       daysInfo = {
         type: 'upcoming',
@@ -151,7 +151,9 @@ async function crawlBWFSchedule(browser) {
       console.log('[BWF 일정] 임시 데이터 사용 (크롤링 실패)');
       
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
       const malaysiaOpen = new Date('2026-01-06');
+      malaysiaOpen.setHours(0, 0, 0, 0);
       const daysUntil = Math.floor((malaysiaOpen - today) / (1000 * 60 * 60 * 24));
       
       displayTournament = {
