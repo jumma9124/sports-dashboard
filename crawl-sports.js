@@ -11,7 +11,13 @@ async function crawlVolleyball() {
     
     const launchOptions = {
       headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu'
+      ],
+      timeout: 60000  // 브라우저 실행 타임아웃 60초
     };
     
     if (process.env.PUPPETEER_EXECUTABLE_PATH) {
@@ -25,7 +31,7 @@ async function crawlVolleyball() {
     const page = await browser.newPage();
     const url = 'https://m.sports.naver.com/volleyball/record/kovo?seasonCode=022&tab=teamRank';
     
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
     await new Promise(resolve => setTimeout(resolve, 5000));
 
     const volleyballData = await page.evaluate(() => {
