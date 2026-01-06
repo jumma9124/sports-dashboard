@@ -127,7 +127,7 @@
 
         .rankings-table th {
             padding: 12px 8px;
-            text-align: left;
+            text-align: center;
             font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.6);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -150,16 +150,17 @@
         }
 
         .rank-col {
-            width: 50px;
+            width: 40px;
             text-align: center;
         }
 
         .team-col {
-            flex: 1;
+            text-align: left;
+            white-space: nowrap;
         }
 
         .record-col {
-            width: 80px;
+            width: 70px;
             text-align: center;
         }
 
@@ -518,15 +519,24 @@
                     // 전체 순위 표시
                     if (vb.fullRankings && vb.fullRankings.length > 0) {
                         const rankingsTableBody = document.querySelector('#rankingsTable tbody');
-                        rankingsTableBody.innerHTML = vb.fullRankings.map(team => `
-                            <tr class="${team.team.includes('현대캐피탈') ? 'highlight' : ''}">
-                                <td class="rank-col">${team.rank}</td>
-                                <td class="team-col">${team.team}</td>
-                                <td class="record-col">${team.points || '-'}</td>
-                                <td class="record-col">${team.record}</td>
-                                <td class="record-col">${team.winRate}</td>
-                            </tr>
-                        `).join('');
+                        rankingsTableBody.innerHTML = vb.fullRankings.map(team => {
+                            // 순위에서 '위' 제거
+                            const rankNumber = team.rank.replace('위', '');
+                            
+                            // 전적을 "14승 5패" → "14-5" 형식으로 변환
+                            const recordMatch = team.record.match(/(\d+)승\s*(\d+)패/);
+                            const simpleRecord = recordMatch ? `${recordMatch[1]}-${recordMatch[2]}` : team.record;
+                            
+                            return `
+                                <tr class="${team.team.includes('현대캐피탈') ? 'highlight' : ''}">
+                                    <td class="rank-col">${rankNumber}</td>
+                                    <td class="team-col">${team.team}</td>
+                                    <td class="record-col">${team.points || '-'}</td>
+                                    <td class="record-col">${simpleRecord}</td>
+                                    <td class="record-col">${team.winRate}</td>
+                                </tr>
+                            `;
+                        }).join('');
                     }
                     
                     // 다음 경기
@@ -599,7 +609,6 @@
                                         </div>
                                         <div class="match-result">
                                             <div class="result-badge ${match.result === '승' ? 'win' : 'loss'}">${match.result}</div>
-                                            ${match.score ? `<div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); margin-top: 4px;">${match.score}</div>` : ''}
                                             ${hasDetails ? '<span class="expand-icon">▼</span>' : ''}
                                         </div>
                                     </div>
