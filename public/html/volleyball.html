@@ -303,19 +303,20 @@
 
         .detail-row {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 10px;
             font-size: 0.95rem;
         }
 
         .detail-label {
             color: rgba(255, 255, 255, 0.6);
-            min-width: 80px;
+            min-width: 100px;
         }
 
         .detail-value {
             color: rgba(255, 255, 255, 0.9);
             font-weight: 500;
+            flex: 1;
         }
 
         .set-scores {
@@ -330,6 +331,10 @@
             border-radius: 8px;
             font-size: 0.9rem;
             font-weight: 600;
+        }
+
+        .time-range {
+            font-family: 'Courier New', monospace;
         }
 
         .expand-icon {
@@ -524,16 +529,21 @@
                     const pastMatchesList = document.getElementById('pastMatchesList');
                     if (vb.pastMatches && vb.pastMatches.length > 0) {
                         pastMatchesList.innerHTML = vb.pastMatches.map((match, index) => {
+                            // 상세 정보가 있는지 체크
+                            const hasDetails = match.setScores || match.startTime || match.endTime;
+                            
                             // 상세 정보 HTML 생성
                             let detailHTML = '';
-                            if (match.setScores || match.time || match.location) {
+                            if (hasDetails) {
                                 detailHTML = `
                                     <div class="match-detail-panel">
                                         <div class="match-detail-content">
-                                            ${match.time ? `
+                                            ${match.startTime || match.endTime ? `
                                             <div class="detail-row">
                                                 <span class="detail-label">⏰ 경기 시간</span>
-                                                <span class="detail-value">${match.time}</span>
+                                                <span class="detail-value time-range">
+                                                    ${match.startTime || '-'} ${match.endTime ? '~ ' + match.endTime : ''}
+                                                </span>
                                             </div>
                                             ` : ''}
                                             ${match.location ? `
@@ -544,7 +554,7 @@
                                             ` : ''}
                                             ${match.setScores && match.setScores.length > 0 ? `
                                             <div class="detail-row">
-                                                <span class="detail-label">🏐 세트별</span>
+                                                <span class="detail-label">🏐 세트별 스코어</span>
                                                 <div class="set-scores">
                                                     ${match.setScores.map((score, i) => `
                                                         <div class="set-score">${i + 1}세트: ${score}</div>
@@ -558,7 +568,7 @@
                             }
                             
                             return `
-                                <div class="match-item" onclick="toggleMatchDetail(this)">
+                                <div class="match-item" ${hasDetails ? 'onclick="toggleMatchDetail(this)"' : ''}>
                                     <div class="match-summary">
                                         <div class="match-date">${match.date}</div>
                                         <div class="match-teams">
@@ -569,7 +579,7 @@
                                         <div class="match-result">
                                             <div class="result-badge ${match.result === '승' ? 'win' : 'loss'}">${match.result}</div>
                                             ${match.score ? `<div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); margin-top: 4px;">${match.score}</div>` : ''}
-                                            ${detailHTML ? '<span class="expand-icon">▼</span>' : ''}
+                                            ${hasDetails ? '<span class="expand-icon">▼</span>' : ''}
                                         </div>
                                     </div>
                                     ${detailHTML}

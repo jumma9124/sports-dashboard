@@ -289,7 +289,6 @@ async function crawlVolleyballPastMatches(browser) {
       if (pageText.includes('현대캐피탈') || pageText.includes('스카이워커스')) {
         console.log('[배구 지난 경기] 발견:', dateStr);
         
-        // matchId 추출 - 수정된 패턴 (20260104022M134 형식)
         const basicInfo = await page.evaluate(() => {
           const bodyText = document.body.textContent;
           
@@ -297,12 +296,10 @@ async function crawlVolleyballPastMatches(browser) {
           const links = document.querySelectorAll('a');
           for (let link of links) {
             const href = link.getAttribute('href');
-            // /game/20260104022M134 형식 찾기
             if (href && href.includes('/game/')) {
               const match = href.match(/\/game\/([0-9A-Z]+)/i);
               if (match && match[1]) {
                 matchId = match[1];
-                console.log('matchId 발견:', matchId);
                 break;
               }
             }
@@ -376,7 +373,8 @@ async function crawlVolleyballPastMatches(browser) {
         // 상세 정보 크롤링
         let detailInfo = {
           setScores: [],
-          time: null
+          startTime: null,
+          endTime: null
         };
         
         if (basicInfo.matchId) {
@@ -385,40 +383,77 @@ async function crawlVolleyballPastMatches(browser) {
             const detailUrl = `https://m.sports.naver.com/game/${basicInfo.matchId}/record`;
             
             await page.goto(detailUrl, { waitUntil: 'networkidle2', timeout: 20000 });
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            await new Promise(resolve => setTimeout(resolve, 4000));
+            
+            // HTML 전체 가져오기
+            const htmlContent = await page.content();
+            console.log('[배구 지난 경기] 페이지 로드 완료, HTML 길이:', htmlContent.length);
             
             detailInfo = await page.evaluate(() => {
-              const bodyText = document.body.textContent;
+              const allText = document.body.innerText || document.body.textContent;
+              console.log('전체 텍스트 샘플:', allText.substring(0, 500));
               
-              // 세트별 스코어 찾기
+              // 세트별 스코어 찾기 - 다양한 방법 시도
               const setScores = [];
               
-              // 배구 세트 스코어 패턴 (15-35 범위)
-              const allText = bodyText;
-              const scoreRegex = /\b([12]?\d|3[0-5])\s*-\s*([12]?\d|3[0-5])\b/g;
-              let match;
-              
-              while ((match = scoreRegex.exec(allText)) !== null && setScores.length < 5) {
-                const s1 = parseInt(match[1]);
-                const s2 = parseInt(match[2]);
-                
-                // 배구 스코어 범위 체크 (15-35)
-                if (s1 >= 15 && s1 <= 35 && s2 >= 15 && s2 <= 35) {
-                  const scoreStr = `${s1}-${s2}`;
-                  // 중복 체크
-                  if (!setScores.includes(scoreStr)) {
-                    setScores.push(scoreStr);
+              // 방법 1: 테이블에서 찾기
+              const tables = document.querySelectorAll('table');
+              for (let table of tables) {
+                const tableText = table.textContent;
+                const scoreMatches = tableText.match(/(\d{2})\s*-\s*(\d{2})/g);
+                if (scoreMatches) {
+                  for (let score of scoreMatches) {
+                    const clean = score.replace(/\s/g, '');
+                    const [s1, s2] = clean.split('-').map(Number);
+                    if (s1 >= 15 && s1 <= 35 && s2 >= 15 && s2 <= 35) {
+                      if (!setScores.includes(clean)) {
+                        setScores.push(clean);
+                      }
+                    }
                   }
                 }
               }
               
-              // 경기 시간 찾기
-              const timeMatch = bodyText.match(/(\d{2}:\d{2})/);
-              const time = timeMatch ? timeMatch[1] : null;
+              // 방법 2: 전체 텍스트에서 찾기 (테이블에서 못 찾았을 때)
+              if (setScores.length === 0) {
+                const pattern = /\b([12]?\d|3[0-5])\s*[-:]\s*([12]?\d|3[0-5])\b/g;
+                let match;
+                while ((match = pattern.exec(allText)) !== null && setScores.length < 5) {
+                  const s1 = parseInt(match[1]);
+                  const s2 = parseInt(match[2]);
+                  if (s1 >= 15 && s1 <= 35 && s2 >= 15 && s2 <= 35) {
+                    const scoreStr = `${s1}-${s2}`;
+                    if (!setScores.includes(scoreStr)) {
+                      setScores.push(scoreStr);
+                    }
+                  }
+                }
+              }
+              
+              // 경기 시작/종료 시간 찾기
+              let startTime = null;
+              let endTime = null;
+              
+              // "19:00 - 21:30" 형식 찾기
+              const timeRangeMatch = allText.match(/(\d{2}:\d{2})\s*[-~]\s*(\d{2}:\d{2})/);
+              if (timeRangeMatch) {
+                startTime = timeRangeMatch[1];
+                endTime = timeRangeMatch[2];
+              } else {
+                // 단일 시간만 있는 경우
+                const singleTimeMatch = allText.match(/(\d{2}:\d{2})/);
+                if (singleTimeMatch) {
+                  startTime = singleTimeMatch[1];
+                }
+              }
+              
+              console.log('추출된 세트 스코어:', setScores);
+              console.log('추출된 시간:', { startTime, endTime });
               
               return {
                 setScores: setScores,
-                time: time
+                startTime: startTime,
+                endTime: endTime
               };
             });
             
@@ -430,7 +465,6 @@ async function crawlVolleyballPastMatches(browser) {
           console.log('[배구 지난 경기] matchId 없음 - 상세 정보 스킵');
         }
         
-        // 결과가 확정된 경기만 추가
         if (basicInfo.opponent && basicInfo.result) {
           const matchRecord = {
             date: dateStr,
@@ -441,7 +475,8 @@ async function crawlVolleyballPastMatches(browser) {
             location: basicInfo.location,
             matchId: basicInfo.matchId,
             setScores: detailInfo.setScores.length > 0 ? detailInfo.setScores : null,
-            time: detailInfo.time
+            startTime: detailInfo.startTime,
+            endTime: detailInfo.endTime
           };
           
           matches.push(matchRecord);
