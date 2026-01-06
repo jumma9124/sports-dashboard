@@ -20,14 +20,16 @@ jobs:
       with:
         node-version: '18'
 
-    - name: Install Chromium
-      run: sudo apt-get update && sudo apt-get install -y chromium-browser
-
-    - name: Install puppeteer-core only
-      run: npm install puppeteer-core
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y chromium-browser
+        npm install puppeteer-core
 
     - name: Run baseball detail crawling
       run: node crawl-baseball-detail.js
+      env:
+        PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
 
     - name: Configure Git
       run: |
