@@ -178,37 +178,27 @@
             background: rgba(76, 175, 80, 0.1);
             border: 1px solid rgba(76, 175, 80, 0.3);
             border-radius: 12px;
-            padding: 25px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .match-badge {
             background: rgba(76, 175, 80, 0.3);
             color: #81c784;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
             font-weight: 600;
-            display: inline-block;
-            margin-bottom: 15px;
+            white-space: nowrap;
         }
 
-        .opponent-info {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 20px;
+        .next-match-info {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
         }
-
-        .match-details {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            font-size: 1.05rem;
-        }
-
-        .match-detail-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .match-detail-icon {
@@ -514,24 +504,14 @@
                     // 다음 경기
                     const nextMatchContainer = document.getElementById('nextMatchContainer');
                     if (vb.nextMatch) {
+                        // 날짜를 YY.MM.DD 형식으로 변환
+                        const dateObj = new Date(vb.nextMatch.date);
+                        const shortDate = `${String(dateObj.getFullYear()).slice(2)}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}`;
+                        
                         nextMatchContainer.innerHTML = `
                             <div class="next-match">
                                 <div class="match-badge">NEXT GAME</div>
-                                <div class="opponent-info">vs ${vb.nextMatch.opponent}</div>
-                                <div class="match-details">
-                                    <div class="match-detail-item">
-                                        <span class="match-detail-icon">📅</span>
-                                        <span>${vb.nextMatch.date}</span>
-                                    </div>
-                                    <div class="match-detail-item">
-                                        <span class="match-detail-icon">⏰</span>
-                                        <span>${vb.nextMatch.time}</span>
-                                    </div>
-                                    <div class="match-detail-item">
-                                        <span class="match-detail-icon">📍</span>
-                                        <span>${vb.nextMatch.location}</span>
-                                    </div>
-                                </div>
+                                <div class="next-match-info">vs ${vb.nextMatch.opponent} (${shortDate})</div>
                             </div>
                         `;
                     } else {
