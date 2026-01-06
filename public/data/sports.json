@@ -3,11 +3,224 @@
     "sport": "배구",
     "team": "현대캐피탈 스카이워커스",
     "league": "V-리그",
-    "rank": "-",
-    "record": "크롤링 실패",
-    "winRate": "-",
-    "error": "Timed out after 30000 ms while waiting for the WS endpoint URL to appear in stdout!",
-    "lastUpdated": "2026-01-06T13:00:23.711Z"
+    "rank": "2위",
+    "record": "12승 7패",
+    "winRate": "0.632",
+    "games": "19",
+    "points": "38",
+    "setRatio": "1.517",
+    "lastUpdated": "2026-01-06T13:47:11.341Z",
+    "fullRankings": [
+      {
+        "rank": "1위",
+        "team": "대한항공",
+        "record": "14승 5패",
+        "winRate": "0.737",
+        "points": "41",
+        "setRatio": "1.769"
+      },
+      {
+        "rank": "2위",
+        "team": "현대캐피탈",
+        "record": "12승 7패",
+        "winRate": "0.632",
+        "points": "38",
+        "setRatio": "1.517"
+      },
+      {
+        "rank": "3위",
+        "team": "한국전력",
+        "record": "12승 8패",
+        "winRate": "0.600",
+        "points": "33",
+        "setRatio": "1.171"
+      },
+      {
+        "rank": "4위",
+        "team": "KB손해보험",
+        "record": "10승 10패",
+        "winRate": "0.500",
+        "points": "31",
+        "setRatio": "0.974"
+      },
+      {
+        "rank": "5위",
+        "team": "OK저축은행",
+        "record": "9승 11패",
+        "winRate": "0.450",
+        "points": "28",
+        "setRatio": "0.933"
+      },
+      {
+        "rank": "6위",
+        "team": "우리카드",
+        "record": "7승 12패",
+        "winRate": "0.368",
+        "points": "21",
+        "setRatio": "0.744"
+      },
+      {
+        "rank": "7위",
+        "team": "삼성화재",
+        "record": "4승 15패",
+        "winRate": "0.211",
+        "points": "12",
+        "setRatio": "0.480"
+      }
+    ],
+    "nextMatch": {
+      "date": "2026-01-09",
+      "time": "19:00",
+      "opponent": "OK저축은행",
+      "location": "부산강서체육관"
+    },
+    "pastMatches": [
+      {
+        "date": "2026-01-04",
+        "homeTeam": "대한항공",
+        "awayTeam": "현대캐피탈",
+        "result": "패",
+        "score": "8-3",
+        "location": "인천계양체육관",
+        "matchId": "20260104022M134",
+        "setScores": [
+          {
+            "set": 1,
+            "home": 17,
+            "away": 25
+          },
+          {
+            "set": 2,
+            "home": 14,
+            "away": 25
+          },
+          {
+            "set": 3,
+            "home": 18,
+            "away": 25
+          }
+        ]
+      },
+      {
+        "date": "2025-12-31",
+        "homeTeam": "현대캐피탈",
+        "awayTeam": "KB손해보험",
+        "result": "승",
+        "score": "8-3",
+        "location": "천안유관순체육관",
+        "matchId": "20251231022M126",
+        "setScores": [
+          {
+            "set": 1,
+            "home": 21,
+            "away": 25
+          },
+          {
+            "set": 2,
+            "home": 25,
+            "away": 22
+          },
+          {
+            "set": 3,
+            "home": 25,
+            "away": 21
+          },
+          {
+            "set": 4,
+            "home": 25,
+            "away": 15
+          }
+        ]
+      },
+      {
+        "date": "2025-12-27",
+        "homeTeam": "한국전력",
+        "awayTeam": "현대캐피탈",
+        "result": "패",
+        "score": "8-3",
+        "location": "수원체육관",
+        "matchId": "20251227022M120",
+        "setScores": [
+          {
+            "set": 1,
+            "home": 25,
+            "away": 22
+          },
+          {
+            "set": 2,
+            "home": 25,
+            "away": 21
+          },
+          {
+            "set": 3,
+            "home": 17,
+            "away": 25
+          },
+          {
+            "set": 4,
+            "home": 25,
+            "away": 19
+          }
+        ]
+      },
+      {
+        "date": "2025-12-24",
+        "homeTeam": "현대캐피탈",
+        "awayTeam": "우리카드",
+        "result": "승",
+        "score": "8-3",
+        "location": "천안유관순체육관",
+        "matchId": "20251224022M114",
+        "setScores": [
+          {
+            "set": 1,
+            "home": 25,
+            "away": 19
+          },
+          {
+            "set": 2,
+            "home": 25,
+            "away": 16
+          },
+          {
+            "set": 3,
+            "home": 21,
+            "away": 25
+          },
+          {
+            "set": 4,
+            "home": 29,
+            "away": 27
+          }
+        ]
+      },
+      {
+        "date": "2025-12-20",
+        "homeTeam": "현대캐피탈",
+        "awayTeam": "OK저축은행",
+        "result": "승",
+        "score": "8-3",
+        "location": "천안유관순체육관",
+        "matchId": "20251220022M108",
+        "setScores": [
+          {
+            "set": 1,
+            "home": 25,
+            "away": 19
+          },
+          {
+            "set": 2,
+            "home": 25,
+            "away": 21
+          },
+          {
+            "set": 3,
+            "home": 25,
+            "away": 23
+          }
+        ]
+      }
+    ]
   },
   "baseball": {
     "sport": "야구",
@@ -16,8 +229,8 @@
     "rank": "2위",
     "record": "83승 57패 4무",
     "winRate": ".593",
-    "lastUpdated": "2026-01-06T12:59:53.649Z",
+    "lastUpdated": "2026-01-06T13:47:00.328Z",
     "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
   },
-  "lastUpdated": "2026-01-06T13:00:23.711Z"
+  "lastUpdated": "2026-01-06T13:49:41.534Z"
 }
