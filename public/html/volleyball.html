@@ -83,8 +83,9 @@
         /* 메인 그리드 */
         .main-grid {
             display: grid;
-            grid-template-columns: 400px 1fr;
+            grid-template-columns: 3.5fr 6.5fr;
             gap: 20px;
+            align-items: start;
         }
 
         /* 카드 스타일 */
@@ -100,11 +101,6 @@
             font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 20px;
-        }
-
-        /* 순위 테이블 */
-        .rankings-card {
-            height: fit-content;
         }
 
         .rankings-table {
@@ -155,6 +151,23 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            height: 100%;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .rankings-card {
+            flex: 7;
+            min-height: 0;
+        }
+
+        .next-match-card {
+            flex: 3;
+            min-height: 0;
         }
 
         .past-matches-card {
@@ -413,42 +426,42 @@
 
         <!-- 메인 그리드 -->
         <div class="main-grid">
-            <!-- 리그 전체 순위 -->
-            <div class="card rankings-card">
-                <div class="card-title">🏆 리그 순위</div>
-                <table class="rankings-table" id="rankingsTable">
-                    <thead>
-                        <tr>
-                            <th class="rank-col">순위</th>
-                            <th class="team-col">팀</th>
-                            <th class="record-col">전적</th>
-                            <th class="record-col">승률</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="4" class="loading">로딩 중...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- 오른쪽 컬럼 -->
-            <div class="matches-container">
-                <!-- 지난 경기 결과 (위로) -->
-                <div class="card past-matches-card">
-                    <div class="card-title">📊 지난 경기 결과</div>
-                    <div class="matches-list" id="pastMatchesList">
-                        <div class="loading">로딩 중...</div>
-                    </div>
+            <!-- 왼쪽 컬럼: 리그 순위 + 다음 경기 -->
+            <div class="left-column">
+                <!-- 리그 순위 (70%) -->
+                <div class="card rankings-card">
+                    <div class="card-title">🏆 리그 순위</div>
+                    <table class="rankings-table" id="rankingsTable">
+                        <thead>
+                            <tr>
+                                <th class="rank-col">순위</th>
+                                <th class="team-col">팀</th>
+                                <th class="record-col">전적</th>
+                                <th class="record-col">승률</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="loading">로딩 중...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- 다음 경기 (아래로) -->
+                <!-- 다음 경기 (30%) -->
                 <div class="card next-match-card">
                     <div class="card-title">📅 다음 경기</div>
                     <div id="nextMatchContainer">
                         <div class="loading">로딩 중...</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- 오른쪽 컬럼: 지난 경기 결과 -->
+            <div class="card past-matches-card">
+                <div class="card-title">📊 지난 경기 결과</div>
+                <div class="matches-list" id="pastMatchesList">
+                    <div class="loading">로딩 중...</div>
                 </div>
             </div>
         </div>
