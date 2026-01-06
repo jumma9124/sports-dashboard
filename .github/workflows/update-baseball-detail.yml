@@ -1,0 +1,42 @@
+name: Update Baseball Detail Data
+
+on:
+  schedule:
+    - cron: '0 3,9 * 3-10 *'  # 야구 시즌 (3월-10월): 매일 12시, 18시 KST
+  workflow_dispatch:  # 수동 실행 가능
+
+jobs:
+  update-baseball-detail:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Chromium
+      run: sudo apt-get update && sudo apt-get install -y chromium-browser
+
+    - name: Install puppeteer-core only
+      run: npm install puppeteer-core
+
+    - name: Run baseball detail crawling
+      run: node crawl-baseball-detail.js
+
+    - name: Configure Git
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+
+    - name: Commit and push if changed
+      run: |
+        git pull origin main --rebase
+        git add public/data/baseball-detail.json
+        git diff --staged --quiet || git commit -m "Update baseball detail data (auto)"
+        git push

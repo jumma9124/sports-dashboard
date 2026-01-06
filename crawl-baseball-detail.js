@@ -26,31 +26,38 @@ async function crawlBaseballDetail() {
     browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
 
-    // 1. 전체 순위 크롤링
+    // 1. 전체 순위 크롤링 (모바일 최신 버전)
     console.log('[순위] 크롤링 중...');
-    await page.goto('https://sports.news.naver.com/kbaseball/record/index?category=kbo', {
+    await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&tab=teamRank', {
       waitUntil: 'networkidle2',
       timeout: 30000
     });
     await page.waitForTimeout(2000);
 
     const standings = await page.evaluate(() => {
-      const rows = document.querySelectorAll('#regularTeamRecordList_table tbody tr');
+      const rows = document.querySelectorAll('table tbody tr');
       const result = [];
       
       rows.forEach(row => {
-        const rank = row.querySelector('th strong')?.textContent.trim();
-        const teamSpan = row.querySelector('td:nth-child(2) span');
-        const team = teamSpan?.textContent.trim();
-        const wins = row.querySelector('td:nth-child(3)')?.textContent.trim();
-        const losses = row.querySelector('td:nth-child(4)')?.textContent.trim();
-        const draws = row.querySelector('td:nth-child(5)')?.textContent.trim();
-        const winRate = row.querySelector('td:nth-child(6)')?.textContent.trim();
-        const gameDiff = row.querySelector('td:nth-child(7)')?.textContent.trim();
+        const rankTd = row.querySelector('td:nth-child(1)');
+        const teamTd = row.querySelector('td:nth-child(2)');
+        const winsTd = row.querySelector('td:nth-child(3)');
+        const lossesTd = row.querySelector('td:nth-child(4)');
+        const drawsTd = row.querySelector('td:nth-child(5)');
+        const winRateTd = row.querySelector('td:nth-child(6)');
+        const gameDiffTd = row.querySelector('td:nth-child(7)');
         
-        if (rank && team) {
+        if (rankTd && teamTd) {
+          const rank = rankTd.textContent.trim();
+          const team = teamTd.textContent.trim();
+          const wins = winsTd?.textContent.trim();
+          const losses = lossesTd?.textContent.trim();
+          const draws = drawsTd?.textContent.trim();
+          const winRate = winRateTd?.textContent.trim();
+          const gameDiff = gameDiffTd?.textContent.trim();
+          
           result.push({
-            rank: parseInt(rank),
+            rank: parseInt(rank) || 0,
             team,
             wins: parseInt(wins) || 0,
             losses: parseInt(losses) || 0,
@@ -73,61 +80,60 @@ async function crawlBaseballDetail() {
       console.warn('[경고] 한화 이글스 순위를 찾을 수 없습니다');
     }
 
-    // 2. 한화 선수 명단 크롤링
+    // 2. 한화 선수 명단 크롤링 (KBO 공식)
     console.log('[선수] 크롤링 중...');
-    await page.goto('https://sports.news.naver.com/kbaseball/record/index?category=kbo&tab=player&teamId=6', {
+    await page.goto('https://www.koreabaseball.com/Player/RegisterAll.aspx', {
       waitUntil: 'networkidle2',
       timeout: 30000
     });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
 
     const players = await page.evaluate(() => {
       const result = [];
       
-      // 투수 명단
-      const pitcherRows = document.querySelectorAll('#playerRecordList_pitcher tbody tr');
-      pitcherRows.forEach(row => {
-        const backNumber = row.querySelector('td:nth-child(1)')?.textContent.trim();
-        const name = row.querySelector('td:nth-child(2) a')?.textContent.trim();
-        const wins = row.querySelector('td:nth-child(5)')?.textContent.trim();
-        const losses = row.querySelector('td:nth-child(6)')?.textContent.trim();
-        const era = row.querySelector('td:nth-child(8)')?.textContent.trim();
-        
-        if (name) {
-          result.push({
-            backNumber: backNumber || '-',
-            name,
-            position: '투수',
-            wins: parseInt(wins) || 0,
-            losses: parseInt(losses) || 0,
-            era: era || '-'
-          });
-        }
-      });
+      // 한화 선수 찾기
+      const teamHeaders = document.querySelectorAll('h3.tit');
+      let hanwhaTable = null;
       
-      // 타자 명단
-      const batterRows = document.querySelectorAll('#playerRecordList_batter tbody tr');
-      batterRows.forEach(row => {
+      for (const header of teamHeaders) {
+        if (header.textContent.includes('한화')) {
+          hanwhaTable = header.nextElementSibling;
+          break;
+        }
+      }
+      
+      if (!hanwhaTable) return result;
+      
+      const rows = hanwhaTable.querySelectorAll('tbody tr');
+      
+      rows.forEach(row => {
         const backNumber = row.querySelector('td:nth-child(1)')?.textContent.trim();
-        const name = row.querySelector('td:nth-child(2) a')?.textContent.trim();
-        const posSpan = row.querySelector('td:nth-child(3) span');
-        const position = posSpan?.textContent.trim();
-        const avg = row.querySelector('td:nth-child(4)')?.textContent.trim();
-        const hits = row.querySelector('td:nth-child(6)')?.textContent.trim();
+        const name = row.querySelector('td:nth-child(2)')?.textContent.trim();
+        const position = row.querySelector('td:nth-child(3)')?.textContent.trim();
         
         if (name) {
           let positionType = '외야수';
+          
           if (position) {
-            if (position.includes('포')) positionType = '포수';
-            else if (['1루', '2루', '3루', '유격'].some(p => position.includes(p))) positionType = '내야수';
+            if (position.includes('투수')) positionType = '투수';
+            else if (position.includes('포수')) positionType = '포수';
+            else if (['내야수', '1루수', '2루수', '3루수', '유격수'].some(p => position.includes(p))) {
+              positionType = '내야수';
+            } else if (position.includes('외야수')) {
+              positionType = '외야수';
+            }
           }
           
           result.push({
             backNumber: backNumber || '-',
             name,
             position: positionType,
-            avg: avg || '.000',
-            hits: parseInt(hits) || 0
+            // 기록은 나중에 추가 크롤링 필요
+            wins: 0,
+            losses: 0,
+            era: '-',
+            avg: '.000',
+            hits: 0
           });
         }
       });
@@ -136,6 +142,78 @@ async function crawlBaseballDetail() {
     });
 
     console.log(`[선수] ${players.length}명 크롤링 완료`);
+
+    // 3. 선수 기록 크롤링 (네이버 스포츠)
+    if (players.length > 0) {
+      console.log('[기록] 선수 기록 크롤링 중...');
+      
+      // 투수 기록
+      await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&category=pitcher&tab=player&teamId=6', {
+        waitUntil: 'networkidle2',
+        timeout: 30000
+      });
+      await page.waitForTimeout(2000);
+
+      const pitcherStats = await page.evaluate(() => {
+        const stats = {};
+        const rows = document.querySelectorAll('table tbody tr');
+        
+        rows.forEach(row => {
+          const name = row.querySelector('td:nth-child(2)')?.textContent.trim();
+          const wins = row.querySelector('td:nth-child(5)')?.textContent.trim();
+          const losses = row.querySelector('td:nth-child(6)')?.textContent.trim();
+          const era = row.querySelector('td:nth-child(8)')?.textContent.trim();
+          
+          if (name) {
+            stats[name] = {
+              wins: parseInt(wins) || 0,
+              losses: parseInt(losses) || 0,
+              era: era || '-'
+            };
+          }
+        });
+        
+        return stats;
+      });
+
+      // 타자 기록
+      await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&category=hitter&tab=player&teamId=6', {
+        waitUntil: 'networkidle2',
+        timeout: 30000
+      });
+      await page.waitForTimeout(2000);
+
+      const hitterStats = await page.evaluate(() => {
+        const stats = {};
+        const rows = document.querySelectorAll('table tbody tr');
+        
+        rows.forEach(row => {
+          const name = row.querySelector('td:nth-child(2)')?.textContent.trim();
+          const avg = row.querySelector('td:nth-child(4)')?.textContent.trim();
+          const hits = row.querySelector('td:nth-child(6)')?.textContent.trim();
+          
+          if (name) {
+            stats[name] = {
+              avg: avg || '.000',
+              hits: parseInt(hits) || 0
+            };
+          }
+        });
+        
+        return stats;
+      });
+
+      // 선수 기록 병합
+      players.forEach(player => {
+        if (player.position === '투수' && pitcherStats[player.name]) {
+          Object.assign(player, pitcherStats[player.name]);
+        } else if (hitterStats[player.name]) {
+          Object.assign(player, hitterStats[player.name]);
+        }
+      });
+
+      console.log('[기록] 선수 기록 크롤링 완료');
+    }
 
     await browser.close();
 
