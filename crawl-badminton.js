@@ -2,6 +2,157 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
+// BWF 세계 랭킹 크롤링 (안세영 상세 정보)
+async function crawlAnSeYoungRanking(browser) {
+  try {
+    console.log('[안세영 랭킹] 크롤링 시작...');
+    
+    const page = await browser.newPage();
+    const url = 'https://bwf.tournamentsoftware.com/ranking/category.aspx?id=40129'; // Women's Singles
+    
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.waitForTimeout(3000);
+
+    const anSeYoungData = await page.evaluate(() => {
+      const rows = document.querySelectorAll('table.ruler tr');
+      
+      for (let row of rows) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 4) continue;
+        
+        const name = cells[2]?.textContent?.trim() || '';
+        
+        // 안세영 찾기
+        if (name.toLowerCase().includes('an se') || name.toLowerCase().includes('an, se')) {
+          const rank = cells[0]?.textContent?.trim() || '';
+          const country = cells[1]?.textContent?.trim() || '';
+          const points = cells[3]?.textContent?.trim().replace(/,/g, '') || '';
+          const tournaments = cells[4]?.textContent?.trim() || '';
+          
+          return {
+            name: name,
+            rank: parseInt(rank) || 1,
+            country: country,
+            points: parseInt(points) || 0,
+            tournaments: parseInt(tournaments) || 0
+          };
+        }
+      }
+      
+      return null;
+    });
+
+    await page.close();
+    
+    console.log('[안세영 랭킹] 성공:', anSeYoungData);
+    return anSeYoungData;
+    
+  } catch (error) {
+    console.error('[안세영 랭킹] 실패:', error.message);
+    return null;
+  }
+}
+
+// BWF 남자 복식 랭킹 크롤링
+async function crawlMenDoublesRanking(browser) {
+  try {
+    console.log('[남자 복식 랭킹] 크롤링 시작...');
+    
+    const page = await browser.newPage();
+    const url = 'https://bwf.tournamentsoftware.com/ranking/category.aspx?id=40131'; // Men's Doubles
+    
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.waitForTimeout(3000);
+
+    const rankings = await page.evaluate(() => {
+      const rows = document.querySelectorAll('table.ruler tr');
+      const result = [];
+      
+      for (let row of rows) {
+        if (result.length >= 10) break;
+        
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 4) continue;
+        
+        const rank = cells[0]?.textContent?.trim() || '';
+        if (!rank || isNaN(parseInt(rank))) continue;
+        
+        const country = cells[1]?.textContent?.trim() || '';
+        const players = cells[2]?.textContent?.trim() || '';
+        const points = cells[3]?.textContent?.trim().replace(/,/g, '') || '';
+        
+        result.push({
+          rank: parseInt(rank),
+          country: country,
+          players: players,
+          points: parseInt(points) || 0
+        });
+      }
+      
+      return result;
+    });
+
+    await page.close();
+    
+    console.log('[남자 복식 랭킹] 성공:', rankings.length + '팀');
+    return rankings;
+    
+  } catch (error) {
+    console.error('[남자 복식 랭킹] 실패:', error.message);
+    return [];
+  }
+}
+
+// BWF 여자 복식 랭킹 크롤링
+async function crawlWomenDoublesRanking(browser) {
+  try {
+    console.log('[여자 복식 랭킹] 크롤링 시작...');
+    
+    const page = await browser.newPage();
+    const url = 'https://bwf.tournamentsoftware.com/ranking/category.aspx?id=40132'; // Women's Doubles
+    
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.waitForTimeout(3000);
+
+    const rankings = await page.evaluate(() => {
+      const rows = document.querySelectorAll('table.ruler tr');
+      const result = [];
+      
+      for (let row of rows) {
+        if (result.length >= 10) break;
+        
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 4) continue;
+        
+        const rank = cells[0]?.textContent?.trim() || '';
+        if (!rank || isNaN(parseInt(rank))) continue;
+        
+        const country = cells[1]?.textContent?.trim() || '';
+        const players = cells[2]?.textContent?.trim() || '';
+        const points = cells[3]?.textContent?.trim().replace(/,/g, '') || '';
+        
+        result.push({
+          rank: parseInt(rank),
+          country: country,
+          players: players,
+          points: parseInt(points) || 0
+        });
+      }
+      
+      return result;
+    });
+
+    await page.close();
+    
+    console.log('[여자 복식 랭킹] 성공:', rankings.length + '팀');
+    return rankings;
+    
+  } catch (error) {
+    console.error('[여자 복식 랭킹] 실패:', error.message);
+    return [];
+  }
+}
+
 // BWF 대회 일정 크롤링
 async function crawlBWFSchedule(browser) {
   try {
@@ -410,12 +561,49 @@ async function crawlAhnSeYoungData() {
 
     // BWF 대회 일정 크롤링
     console.log('\n==========================================');
-    console.log('[SCHEDULE]  BWF 대회 일정 크롤링 시작...');
+    console.log('[SCHEDULE] BWF 대회 일정 크롤링 시작...');
     console.log('==========================================');
     
     const schedule = await crawlBWFSchedule(browser);
 
-    // JSON 파일로 저장
+    // BWF 세계 랭킹 크롤링
+    console.log('\n==========================================');
+    console.log('[RANKING] BWF 세계 랭킹 크롤링 시작...');
+    console.log('==========================================');
+    
+    const anSeYoungRanking = await crawlAnSeYoungRanking(browser);
+    const menDoublesRanking = await crawlMenDoublesRanking(browser);
+    const womenDoublesRanking = await crawlWomenDoublesRanking(browser);
+
+    // 통합 JSON 파일로 저장 (badminton.json)
+    const badmintonData = {
+      anSeYoung: anSeYoungRanking || {
+        name: "AN Se Young",
+        rank: data.ranking || 1,
+        country: "KOR",
+        points: data.points || 0,
+        tournaments: 0
+      },
+      menDoubles: menDoublesRanking,
+      womenDoubles: womenDoublesRanking,
+      recentMatches: data.recentMatches,
+      upcomingMatches: data.upcomingMatches,
+      nextTournament: schedule.displayTournament,
+      tournamentDays: schedule.daysInfo,
+      lastUpdated: new Date().toISOString()
+    };
+
+    const badmintonPath = path.join(__dirname, 'public', 'data', 'badminton.json');
+    
+    // 디렉토리 생성
+    const dir = path.dirname(badmintonPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    fs.writeFileSync(badmintonPath, JSON.stringify(badmintonData, null, 2), 'utf-8');
+
+    // 기존 파일도 유지 (하위 호환성)
     const outputData = {
       ranking: data.ranking,
       points: data.points || 0,
@@ -427,23 +615,23 @@ async function crawlAhnSeYoungData() {
     };
 
     const outputPath = path.join(__dirname, 'public', 'data', 'ahn-seyoung-matches.json');
-    
-    // 디렉토리 생성
-    const dir = path.dirname(outputPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
     fs.writeFileSync(outputPath, JSON.stringify(outputData, null, 2), 'utf-8');
     
     console.log('\n==========================================');
-    console.log(`[SUCCESS] 파일 저장 완료: ${outputPath}`);
+    console.log(`[SUCCESS] 파일 저장 완료:`);
+    console.log(`  - ${badmintonPath}`);
+    console.log(`  - ${outputPath}`);
     if (schedule.displayTournament) {
       console.log(`[NEXT] 다음 대회: ${schedule.displayTournament.name}`);
       console.log(`[CATEGORY] 등급: ${schedule.displayTournament.category}`);
       console.log(`[URL] 장소: ${schedule.displayTournament.country}`);
       console.log(`[D-DAY] D-day: ${schedule.daysInfo.text}`);
     }
+    if (anSeYoungRanking) {
+      console.log(`[RANKING] 안세영: ${anSeYoungRanking.rank}위 (${anSeYoungRanking.points} pts)`);
+    }
+    console.log(`[RANKING] 남자 복식: ${menDoublesRanking.length}팀`);
+    console.log(`[RANKING] 여자 복식: ${womenDoublesRanking.length}팀`);
     console.log('==========================================');
 
     await browser.close();

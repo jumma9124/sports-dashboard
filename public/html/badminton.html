@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안세영 - MY SPORT</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏸</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 헤더 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .title-section {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .title-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .league-badge {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .last-updated {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 5px;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(3px);
+        }
+
+        /* 메인 그리드 */
+        .main-grid {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+        }
+
+        .doubles-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* 카드 스타일 */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid rgba(76, 175, 80, 0.5);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #81c784;
+            flex-shrink: 0;
+        }
+
+        /* 안세영 카드 */
+        .player-card {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 159, 64, 0.15) 100%);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .player-avatar {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .player-details h2 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .player-category {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .ranking-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .ranking-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .ranking-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
+        }
+
+        .ranking-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ff9f40;
+        }
+
+        .ranking-value.rank-1 {
+            color: #ffd700;
+        }
+
+        /* 복식 랭킹 테이블 */
+        .rankings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .rankings-table th {
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+        }
+
+        .rankings-table td {
+            padding: 12px 8px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        .rankings-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .rankings-table tr.highlight {
+            background: rgba(102, 126, 234, 0.15);
+            font-weight: 600;
+        }
+
+        .rank-col {
+            width: 50px;
+        }
+
+        .player-col {
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .country-col {
+            width: 80px;
+        }
+
+        .points-col {
+            width: 100px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.1rem;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .doubles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .title-section h1 {
+                font-size: 2rem;
+            }
+
+            .player-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="title-section">
+                <h1>
+                    <span>🏸</span>
+                    <span>안세영</span>
+                </h1>
+                <div class="league-badge">BWF 세계 랭킹</div>
+                <div class="last-updated" id="lastUpdated">마지막 업데이트: 로딩 중...</div>
+            </div>
+            <a href="../../index.html" class="back-button">
+                <span>홈으로</span>
+                <span>→</span>
+            </a>
+        </div>
+
+        <!-- 메인 그리드 -->
+        <div class="main-grid">
+            <!-- 안세영 카드 -->
+            <div class="card player-card">
+                <div class="player-info">
+                    <div class="player-avatar">🏸</div>
+                    <div class="player-details">
+                        <h2>안세영</h2>
+                        <div class="player-category">여자 단식</div>
+                    </div>
+                </div>
+                <div class="ranking-display" id="anRanking">
+                    <div class="loading">로딩 중...</div>
+                </div>
+            </div>
+
+            <!-- 복식 랭킹 -->
+            <div class="doubles-grid">
+                <!-- 남자 복식 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-title-icon">✓</span>
+                        남자 복식 세계 랭킹
+                    </div>
+                    <table class="rankings-table" id="menDoublesTable">
+                        <thead>
+                            <tr>
+                                <th class="rank-col">순위</th>
+                                <th class="player-col">선수</th>
+                                <th class="country-col">국가</th>
+                                <th class="points-col">포인트</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="loading">로딩 중...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 여자 복식 -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-title-icon">✓</span>
+                        여자 복식 세계 랭킹
+                    </div>
+                    <table class="rankings-table" id="womenDoublesTable">
+                        <thead>
+                            <tr>
+                                <th class="rank-col">순위</th>
+                                <th class="player-col">선수</th>
+                                <th class="country-col">국가</th>
+                                <th class="points-col">포인트</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="loading">로딩 중...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadBadmintonData() {
+            try {
+                const response = await fetch('../../public/data/badminton.json');
+                const data = await response.json();
+                
+                // 안세영 랭킹 표시
+                if (data.anSeYoung) {
+                    const player = data.anSeYoung;
+                    const rankingHtml = `
+                        <div class="ranking-item">
+                            <div class="ranking-label">세계 랭킹</div>
+                            <div class="ranking-value ${player.rank === 1 ? 'rank-1' : ''}">${player.rank}위</div>
+                        </div>
+                        <div class="ranking-item">
+                            <div class="ranking-label">포인트</div>
+                            <div class="ranking-value">${player.points?.toLocaleString() || '-'}</div>
+                        </div>
+                        ${player.tournaments ? `
+                        <div class="ranking-item">
+                            <div class="ranking-label">참가 대회</div>
+                            <div class="ranking-value">${player.tournaments}</div>
+                        </div>
+                        ` : ''}
+                    `;
+                    document.getElementById('anRanking').innerHTML = rankingHtml;
+                } else {
+                    document.getElementById('anRanking').innerHTML = '<div class="no-data">데이터를 불러올 수 없습니다.</div>';
+                }
+
+                // 남자 복식 랭킹 표시
+                if (data.menDoubles && data.menDoubles.length > 0) {
+                    const menTableBody = document.querySelector('#menDoublesTable tbody');
+                    menTableBody.innerHTML = data.menDoubles.map(team => `
+                        <tr class="${team.country === 'KOR' || team.country === '대한민국' ? 'highlight' : ''}">
+                            <td class="rank-col">${team.rank}</td>
+                            <td class="player-col">${team.players}</td>
+                            <td class="country-col">${team.country}</td>
+                            <td class="points-col">${team.points?.toLocaleString() || '-'}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    document.querySelector('#menDoublesTable tbody').innerHTML = '<tr><td colspan="4" class="no-data">데이터를 불러올 수 없습니다.</td></tr>';
+                }
+
+                // 여자 복식 랭킹 표시
+                if (data.womenDoubles && data.womenDoubles.length > 0) {
+                    const womenTableBody = document.querySelector('#womenDoublesTable tbody');
+                    womenTableBody.innerHTML = data.womenDoubles.map(team => `
+                        <tr class="${team.country === 'KOR' || team.country === '대한민국' ? 'highlight' : ''}">
+                            <td class="rank-col">${team.rank}</td>
+                            <td class="player-col">${team.players}</td>
+                            <td class="country-col">${team.country}</td>
+                            <td class="points-col">${team.points?.toLocaleString() || '-'}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    document.querySelector('#womenDoublesTable tbody').innerHTML = '<tr><td colspan="4" class="no-data">데이터를 불러올 수 없습니다.</td></tr>';
+                }
+
+                // 마지막 업데이트 시간
+                if (data.lastUpdated) {
+                    const date = new Date(data.lastUpdated);
+                    const formatted = `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}. ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                    document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${formatted}`;
+                }
+
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                document.getElementById('anRanking').innerHTML = '<div class="no-data">데이터를 불러올 수 없습니다.</div>';
+                document.querySelector('#menDoublesTable tbody').innerHTML = '<tr><td colspan="4" class="no-data">데이터를 불러올 수 없습니다.</td></tr>';
+                document.querySelector('#womenDoublesTable tbody').innerHTML = '<tr><td colspan="4" class="no-data">데이터를 불러올 수 없습니다.</td></tr>';
+            }
+        }
+
+        // 페이지 로드시 데이터 가져오기
+        loadBadmintonData();
+        
+        // 5분마다 자동 새로고침
+        setInterval(loadBadmintonData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
