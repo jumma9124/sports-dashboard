@@ -274,6 +274,109 @@
             font-size: 1.1rem;
         }
 
+        /* 상대전적 */
+        .head-to-head-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .h2h-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid rgba(255, 159, 64, 0.5);
+        }
+
+        .h2h-team {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .h2h-record {
+            display: flex;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .h2h-wins {
+            color: #4ade80;
+        }
+
+        .h2h-losses {
+            color: #f87171;
+        }
+
+        /* 지난주 경기결과 */
+        .past-matches {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .match-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid transparent;
+        }
+
+        .match-item.win {
+            border-left-color: #4ade80;
+        }
+
+        .match-item.loss {
+            border-left-color: #f87171;
+        }
+
+        .match-date {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            min-width: 70px;
+        }
+
+        .match-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .match-opponent {
+            font-size: 1rem;
+            font-weight: 600;
+            min-width: 100px;
+        }
+
+        .match-result {
+            font-size: 0.9rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        .match-result.win {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+
+        .match-result.loss {
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+        }
+
+        .match-score {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+        }
+
         /* 반응형 */
         @media (max-width: 1024px) {
             .main-grid {
@@ -316,17 +419,28 @@
 
         <!-- 메인 그리드 -->
         <div class="main-grid">
-            <!-- 왼쪽: 팀 정보 -->
+            <!-- 왼쪽: KBO 리그 순위 -->
             <div class="left-column">
-                <!-- 팀 순위 -->
-                <div class="card team-card">
+                <div class="card">
                     <div class="card-title">
                         <span class="card-title-icon">✓</span>
-                        팀 순위
+                        KBO 리그 순위
                     </div>
-                    <div class="team-info" id="teamInfo">
-                        <div class="loading">로딩 중...</div>
-                    </div>
+                    <table class="rankings-table" id="leagueTableTop">
+                        <thead>
+                            <tr>
+                                <th class="rank-col">순위</th>
+                                <th class="team-col">팀</th>
+                                <th class="record-col">전적</th>
+                                <th class="record-col">승률</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="loading">로딩 중...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -342,59 +456,71 @@
             </div>
         </div>
 
-        <!-- 전체 순위 -->
+        <!-- 상대전적 -->
         <div class="card">
             <div class="card-title">
                 <span class="card-title-icon">✓</span>
-                KBO 리그 순위
+                팀별 상대전적
             </div>
-            <table class="rankings-table" id="leagueTable">
-                <thead>
-                    <tr>
-                        <th class="rank-col">순위</th>
-                        <th class="team-col">팀</th>
-                        <th class="record-col">승점</th>
-                        <th class="record-col">전적</th>
-                        <th class="record-col">승률</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="5" class="loading">로딩 중...</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="head-to-head-grid" id="headToHeadSection">
+                <div class="loading">로딩 중...</div>
+            </div>
+        </div>
+
+        <!-- 지난주 경기결과 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-title-icon">✓</span>
+                지난주 경기결과
+            </div>
+            <div class="past-matches" id="pastMatchesSection">
+                <div class="loading">로딩 중...</div>
+            </div>
         </div>
     </div>
 
     <script>
+        // 지난 주 화요일 계산 (월요일 기준)
+        function getLastWeekRange() {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0(일) ~ 6(토)
+            
+            // 이번주 월요일 계산
+            const daysFromMonday = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+            const thisMonday = new Date(today);
+            thisMonday.setDate(today.getDate() - daysFromMonday);
+            thisMonday.setHours(0, 0, 0, 0);
+            
+            // 지난주 화요일 (이번주 월요일 - 6일)
+            const lastTuesday = new Date(thisMonday);
+            lastTuesday.setDate(thisMonday.getDate() - 6);
+            
+            // 지난주 일요일 (이번주 월요일 - 1일)
+            const lastSunday = new Date(thisMonday);
+            lastSunday.setDate(thisMonday.getDate() - 1);
+            
+            return {
+                start: lastTuesday,
+                end: lastSunday
+            };
+        }
+
         async function loadBaseballData() {
             try {
                 const response = await fetch('../../public/data/baseball-detail.json');
                 const data = await response.json();
                 
-                // 팀 정보 표시
-                if (data.teamInfo) {
-                    const team = data.teamInfo;
-                    const teamHtml = `
-                        <div class="info-item">
-                            <div class="info-label">순위</div>
-                            <div class="info-value ${team.rank === 1 ? 'rank-1' : ''}">${team.rank}위</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">전적</div>
-                            <div class="info-value" style="font-size: 1.2rem;">${team.wins}-${team.losses}-${team.draws}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">승률</div>
-                            <div class="info-value" style="font-size: 1.4rem;">${team.winRate}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">게임차</div>
-                            <div class="info-value" style="font-size: 1.4rem;">${team.gameDiff}</div>
-                        </div>
-                    `;
-                    document.getElementById('teamInfo').innerHTML = teamHtml;
+                // KBO 리그 순위 표시 (왼쪽 상단)
+                if (data.leagueStandings && data.leagueStandings.length > 0) {
+                    const tableBody = document.querySelector('#leagueTableTop tbody');
+                    tableBody.innerHTML = data.leagueStandings.map(team => `
+                        <tr class="${team.team === '한화' ? 'highlight' : ''}">
+                            <td class="rank-col">${team.rank}</td>
+                            <td class="team-col">${team.team}</td>
+                            <td class="record-col">${team.wins}-${team.losses}-${team.draws}</td>
+                            <td class="record-col">${team.winRate}</td>
+                        </tr>
+                    `).join('');
                 }
 
                 // 선수 명단 표시
@@ -441,18 +567,37 @@
                     document.getElementById('playersSection').innerHTML = playersHtml || '<div class="no-data">선수 데이터를 불러올 수 없습니다.</div>';
                 }
 
-                // 전체 순위 표시
-                if (data.leagueStandings && data.leagueStandings.length > 0) {
-                    const tableBody = document.querySelector('#leagueTable tbody');
-                    tableBody.innerHTML = data.leagueStandings.map(team => `
-                        <tr class="${team.team === '한화' ? 'highlight' : ''}">
-                            <td class="rank-col">${team.rank}</td>
-                            <td class="team-col">${team.team}</td>
-                            <td class="record-col">-</td>
-                            <td class="record-col">${team.wins}-${team.losses}-${team.draws}</td>
-                            <td class="record-col">${team.winRate}</td>
-                        </tr>
+                // 상대전적 표시
+                if (data.headToHead && data.headToHead.length > 0) {
+                    const h2hHtml = data.headToHead.map(h2h => `
+                        <div class="h2h-item">
+                            <div class="h2h-team">${h2h.opponent}</div>
+                            <div class="h2h-record">
+                                <span class="h2h-wins">${h2h.wins}승</span>
+                                <span class="h2h-losses">${h2h.losses}패</span>
+                            </div>
+                        </div>
                     `).join('');
+                    document.getElementById('headToHeadSection').innerHTML = h2hHtml;
+                } else {
+                    document.getElementById('headToHeadSection').innerHTML = '<div class="no-data">상대전적 데이터가 없습니다.</div>';
+                }
+
+                // 지난주 경기결과 표시
+                if (data.lastWeekMatches && data.lastWeekMatches.length > 0) {
+                    const matchesHtml = data.lastWeekMatches.map(match => `
+                        <div class="match-item ${match.result === '승' ? 'win' : 'loss'}">
+                            <div class="match-date">${match.date}</div>
+                            <div class="match-info">
+                                <span class="match-opponent">vs ${match.opponent}</span>
+                                <span class="match-result ${match.result === '승' ? 'win' : 'loss'}">${match.result}</span>
+                                <span class="match-score">${match.score}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('pastMatchesSection').innerHTML = matchesHtml;
+                } else {
+                    document.getElementById('pastMatchesSection').innerHTML = '<div class="no-data">지난주 경기가 없습니다.</div>';
                 }
 
                 // 마지막 업데이트 시간
@@ -464,9 +609,10 @@
 
             } catch (error) {
                 console.error('데이터 로드 실패:', error);
-                document.getElementById('teamInfo').innerHTML = '<div class="no-data">데이터를 불러올 수 없습니다.</div>';
+                document.querySelector('#leagueTableTop tbody').innerHTML = '<tr><td colspan="4" class="no-data">데이터를 불러올 수 없습니다.</td></tr>';
                 document.getElementById('playersSection').innerHTML = '<div class="no-data">데이터를 불러올 수 없습니다.</div>';
-                document.querySelector('#leagueTable tbody').innerHTML = '<tr><td colspan="5" class="no-data">데이터를 불러올 수 없습니다.</td></tr>';
+                document.getElementById('headToHeadSection').innerHTML = '<div class="no-data">데이터를 불러올 수 없습니다.</div>';
+                document.getElementById('pastMatchesSection').innerHTML = '<div class="no-data">데이터를 불러올 수 없습니다.</div>';
             }
         }
 

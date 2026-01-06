@@ -215,24 +215,126 @@ async function crawlBaseballDetail() {
       console.log('[기록] 선수 기록 크롤링 완료');
     }
 
+    // 4. 상대전적 크롤링
+    console.log('[상대전적] 크롤링 중...');
+    await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&category=team&tab=rank', {
+      waitUntil: 'networkidle2',
+      timeout: 30000
+    });
+    await page.waitForTimeout(2000);
+
+    const headToHead = await page.evaluate(() => {
+      // 한화의 상대전적 찾기 (테이블에서 한화 행 찾기)
+      const rows = document.querySelectorAll('table tbody tr');
+      const teamNames = ['SSG', '삼성', 'LG', 'KT', '두산', 'KIA', '롯데', '키움', 'NC'];
+      const result = [];
+      
+      for (const row of rows) {
+        const teamCell = row.querySelector('td:nth-child(2)');
+        if (teamCell && teamCell.textContent.includes('한화')) {
+          // 한화 행을 찾았으면 각 팀별 전적 추출
+          const cells = row.querySelectorAll('td');
+          
+          teamNames.forEach((opponent, index) => {
+            const recordCell = cells[index + 3]; // 첫 3개 셀은 순위/팀/게임수
+            if (recordCell) {
+              const record = recordCell.textContent.trim();
+              const match = record.match(/(\d+)-(\d+)/);
+              if (match) {
+                result.push({
+                  opponent,
+                  wins: parseInt(match[1]) || 0,
+                  losses: parseInt(match[2]) || 0
+                });
+              }
+            }
+          });
+          break;
+        }
+      }
+      
+      return result;
+    });
+
+    console.log(`[상대전적] ${headToHead.length}개 팀 크롤링 완료`);
+
+    // 5. 지난주 경기결과 크롤링 (지난 화요일 ~ 일요일)
+    console.log('[경기결과] 크롤링 중...');
+    
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const daysFromMonday = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+    const thisMonday = new Date(today);
+    thisMonday.setDate(today.getDate() - daysFromMonday);
+    
+    const lastTuesday = new Date(thisMonday);
+    lastTuesday.setDate(thisMonday.getDate() - 6);
+    
+    const lastSunday = new Date(thisMonday);
+    lastSunday.setDate(thisMonday.getDate() - 1);
+    
+    const lastWeekMatches = [];
+    
+    // 지난주 화~일 각 날짜별로 크롤링
+    for (let d = new Date(lastTuesday); d <= lastSunday; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      const scheduleUrl = `https://m.sports.naver.com/kbaseball/schedule/index?date=${dateStr}`;
+      
+      await page.goto(scheduleUrl, {
+        waitUntil: 'networkidle2',
+        timeout: 30000
+      });
+      await page.waitForTimeout(1000);
+      
+      const dayMatches = await page.evaluate((targetDate) => {
+        const matches = [];
+        const matchItems = document.querySelectorAll('.MatchBox_match_item__3_D3q');
+        
+        matchItems.forEach(item => {
+          const homeTeam = item.querySelector('.MatchBoxTeamArea_team__3aWvl:first-child .MatchBoxTeamArea_team_name__3aEHO')?.textContent.trim();
+          const awayTeam = item.querySelector('.MatchBoxTeamArea_team__3aWvl:last-child .MatchBoxTeamArea_team_name__3aEHO')?.textContent.trim();
+          const homeScore = item.querySelector('.MatchBoxTeamArea_team__3aWvl:first-child .MatchBoxTeamArea_score__3vv7C')?.textContent.trim();
+          const awayScore = item.querySelector('.MatchBoxTeamArea_team__3aWvl:last-child .MatchBoxTeamArea_score__3vv7C')?.textContent.trim();
+          
+          if ((homeTeam && homeTeam.includes('한화')) || (awayTeam && awayTeam.includes('한화'))) {
+            const isHome = homeTeam && homeTeam.includes('한화');
+            const opponent = isHome ? awayTeam : homeTeam;
+            const hanwhaScore = isHome ? parseInt(homeScore) : parseInt(awayScore);
+            const opponentScore = isHome ? parseInt(awayScore) : parseInt(homeScore);
+            
+            if (!isNaN(hanwhaScore) && !isNaN(opponentScore)) {
+              matches.push({
+                date: targetDate,
+                opponent: opponent.replace('한화', '').trim(),
+                result: hanwhaScore > opponentScore ? '승' : '패',
+                score: `${hanwhaScore}-${opponentScore}`
+              });
+            }
+          }
+        });
+        
+        return matches;
+      }, dateStr);
+      
+      lastWeekMatches.push(...dayMatches);
+    }
+
+    console.log(`[경기결과] ${lastWeekMatches.length}경기 크롤링 완료`);
+
     await browser.close();
 
     // 데이터 조합
     const detailData = {
-      teamInfo: hanwhaStanding || {
-        rank: 0,
-        team: '한화',
-        wins: 0,
-        losses: 0,
-        draws: 0,
-        winRate: '.000',
-        gameDiff: '-'
-      },
+      leagueStandings: standings,
       players: players.sort((a, b) => {
         const order = { '투수': 1, '포수': 2, '내야수': 3, '외야수': 4 };
         return (order[a.position] || 5) - (order[b.position] || 5);
       }),
-      leagueStandings: standings,
+      headToHead: headToHead,
+      lastWeekMatches: lastWeekMatches.map(m => ({
+        ...m,
+        date: new Date(m.date).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
+      })),
       lastUpdated: new Date().toISOString()
     };
 
@@ -245,17 +347,10 @@ async function crawlBaseballDetail() {
     
     // 폴백 데이터
     return {
-      teamInfo: {
-        rank: 0,
-        team: '한화',
-        wins: 0,
-        losses: 0,
-        draws: 0,
-        winRate: '.000',
-        gameDiff: '-'
-      },
-      players: [],
       leagueStandings: [],
+      players: [],
+      headToHead: [],
+      lastWeekMatches: [],
       error: error.message,
       lastUpdated: new Date().toISOString()
     };
