@@ -1,0 +1,174 @@
+{
+  "anSeYoung": {
+    "name": "AN Se Young",
+    "rank": 1,
+    "country": "KOR",
+    "points": 112734,
+    "tournaments": 18
+  },
+  "menDoubles": [
+    {
+      "rank": 1,
+      "country": "CHN",
+      "players": "LIANG Wei Keng / WANG Chang",
+      "points": 107820
+    },
+    {
+      "rank": 2,
+      "country": "KOR",
+      "players": "KANG Min Hyuk / SEO Seung Jae",
+      "points": 95340
+    },
+    {
+      "rank": 3,
+      "country": "TPE",
+      "players": "LEE Yang / WANG Chi-Lin",
+      "points": 89670
+    },
+    {
+      "rank": 4,
+      "country": "CHN",
+      "players": "LIU Yu Chen / OU Xuan Yi",
+      "points": 81200
+    },
+    {
+      "rank": 5,
+      "country": "INA",
+      "players": "ALFIAN Eko Yogi Prasetya / ARDIANTO Febri",
+      "points": 76540
+    },
+    {
+      "rank": 6,
+      "country": "MAS",
+      "players": "CHIA Aaron / SOH Wooi Yik",
+      "points": 72890
+    },
+    {
+      "rank": 7,
+      "country": "DEN",
+      "players": "ASTRUP Kim / RASMUSSEN Anders Skaarup",
+      "points": 69120
+    },
+    {
+      "rank": 8,
+      "country": "JPN",
+      "players": "HOKI Takuro / KOBAYASHI Yugo",
+      "points": 65340
+    },
+    {
+      "rank": 9,
+      "country": "IND",
+      "players": "RANKIREDDY Satwiksairaj / SHETTY Chirag",
+      "points": 61780
+    },
+    {
+      "rank": 10,
+      "country": "KOR",
+      "players": "CHOI Sol Gyu / KIM Won Ho",
+      "points": 58920
+    }
+  ],
+  "womenDoubles": [
+    {
+      "rank": 1,
+      "country": "CHN",
+      "players": "CHEN Qing Chen / JIA Yi Fan",
+      "points": 118560
+    },
+    {
+      "rank": 2,
+      "country": "JPN",
+      "players": "FUKUSHIMA Yuki / HIROTA Sayaka",
+      "points": 102340
+    },
+    {
+      "rank": 3,
+      "country": "KOR",
+      "players": "BAEK Ha Na / LEE So Hee",
+      "points": 95670
+    },
+    {
+      "rank": 4,
+      "country": "CHN",
+      "players": "LIU Sheng Shu / TAN Ning",
+      "points": 87230
+    },
+    {
+      "rank": 5,
+      "country": "INA",
+      "players": "POLII Greysia / RAHAYU Apriyani",
+      "points": 79450
+    },
+    {
+      "rank": 6,
+      "country": "MAS",
+      "players": "PEARLY Tan / THINAAH Muralitharan",
+      "points": 74890
+    },
+    {
+      "rank": 7,
+      "country": "THA",
+      "players": "BENYAPA Aimsaard / NUNTAKARN Aimsaard",
+      "points": 68920
+    },
+    {
+      "rank": 8,
+      "country": "KOR",
+      "players": "JEONG Na Eun / KIM Hye Jeong",
+      "points": 63540
+    },
+    {
+      "rank": 9,
+      "country": "JPN",
+      "players": "MATSUYAMA Nami / SHIDA Chiharu",
+      "points": 59780
+    },
+    {
+      "rank": 10,
+      "country": "DEN",
+      "players": "FRUERGAARD Maiken / THYGESEN Sara",
+      "points": 55230
+    }
+  ],
+  "recentMatches": [
+    {
+      "date": "2025-12-21",
+      "tournament": "HSBC BWF World Tour Finals 2025",
+      "round": "결승",
+      "opponent": "WANG Zhi Yi",
+      "result": "승",
+      "score": "2-1"
+    },
+    {
+      "date": "2025-12-20",
+      "tournament": "HSBC BWF World Tour Finals 2025",
+      "round": "준결승",
+      "opponent": "Akane YAMAGUCHI",
+      "result": "승",
+      "score": "2-0"
+    },
+    {
+      "date": "2025-12-19",
+      "tournament": "HSBC BWF World Tour Finals 2025",
+      "round": "조별리그",
+      "opponent": "Ratchanok INTANON",
+      "result": "승",
+      "score": "2-1"
+    }
+  ],
+  "upcomingMatches": [],
+  "nextTournament": {
+    "name": "PETRONAS Malaysia Open 2026",
+    "category": "HSBC BWF World Tour Super 1000",
+    "country": "Kuala Lumpur, Malaysia",
+    "startDate": "2026-01-06",
+    "endDate": "2026-01-11",
+    "dateText": "06 - 11 Jan"
+  },
+  "tournamentDays": {
+    "type": "upcoming",
+    "days": 0,
+    "text": "D-day"
+  },
+  "lastUpdated": "2026-01-06T10:30:00.000Z"
+}
