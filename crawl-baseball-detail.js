@@ -376,8 +376,11 @@ async function main() {
     console.log('\n' + '='.repeat(80));
     console.log('크롤링 완료!');
     console.log('파일:', filePath);
-    console.log('팀 순위:', detailData.teamInfo.rank + '위');
+    const hanwha = detailData.leagueStandings.find(t => t.team === '한화');
+    console.log('한화 순위:', hanwha ? hanwha.rank + '위' : '정보 없음');
     console.log('선수 수:', detailData.players.length + '명');
+    console.log('상대전적:', detailData.headToHead.length + '개 팀');
+    console.log('지난주 경기:', detailData.lastWeekMatches.length + '경기');
     console.log('='.repeat(80) + '\n');
 
   } catch (error) {
