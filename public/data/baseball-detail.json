@@ -1,0 +1,15 @@
+{
+  "teamInfo": {
+    "rank": 0,
+    "team": "한화",
+    "wins": 0,
+    "losses": 0,
+    "draws": 0,
+    "winRate": ".000",
+    "gameDiff": "-"
+  },
+  "players": [],
+  "leagueStandings": [],
+  "error": "page.waitForTimeout is not a function",
+  "lastUpdated": "2026-01-06T07:49:30.857Z"
+}
