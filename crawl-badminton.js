@@ -140,7 +140,7 @@ async function crawlBWFSchedule(browser) {
       daysInfo = {
         type: 'upcoming',
         days: daysUntilStart,
-        text: `D-${daysUntilStart}`
+        text: daysUntilStart === 0 ? "D-day" : `D-${daysUntilStart}`
       };
     }
     
@@ -166,7 +166,7 @@ async function crawlBWFSchedule(browser) {
       daysInfo = {
         type: 'upcoming',
         days: daysUntil,
-        text: `D-${daysUntil}`
+        text: daysUntil === 0 ? "D-day" : `D-${daysUntil}`
       };
       
       console.log('[BWF 일정] 임시 데이터:', displayTournament.name, daysInfo.text);
