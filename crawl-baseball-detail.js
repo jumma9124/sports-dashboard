@@ -32,7 +32,7 @@ async function crawlBaseballDetail() {
       waitUntil: 'networkidle2',
       timeout: 30000
     });
-    await page.waitForTimeout(2000);
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     const standings = await page.evaluate(() => {
       const rows = document.querySelectorAll('table tbody tr');
@@ -86,7 +86,7 @@ async function crawlBaseballDetail() {
       waitUntil: 'networkidle2',
       timeout: 30000
     });
-    await page.waitForTimeout(3000);
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     const players = await page.evaluate(() => {
       const result = [];
@@ -152,7 +152,7 @@ async function crawlBaseballDetail() {
         waitUntil: 'networkidle2',
         timeout: 30000
       });
-      await page.waitForTimeout(2000);
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       const pitcherStats = await page.evaluate(() => {
         const stats = {};
@@ -181,7 +181,7 @@ async function crawlBaseballDetail() {
         waitUntil: 'networkidle2',
         timeout: 30000
       });
-      await page.waitForTimeout(2000);
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       const hitterStats = await page.evaluate(() => {
         const stats = {};
@@ -221,7 +221,7 @@ async function crawlBaseballDetail() {
       waitUntil: 'networkidle2',
       timeout: 30000
     });
-    await page.waitForTimeout(2000);
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     const headToHead = await page.evaluate(() => {
       // 한화의 상대전적 찾기 (테이블에서 한화 행 찾기)
@@ -284,7 +284,7 @@ async function crawlBaseballDetail() {
         waitUntil: 'networkidle2',
         timeout: 30000
       });
-      await page.waitForTimeout(1000);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       const dayMatches = await page.evaluate((targetDate) => {
         const matches = [];
