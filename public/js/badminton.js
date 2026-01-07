@@ -33,11 +33,27 @@ async function loadBadmintonData() {
                     <div class="match-details">
                         <span>${match.score}</span>
                         <span class="match-separator">·</span>
-                        <span>${match.date}</span>
+                        <span>${match.round}</span>
                     </div>
                 </div>
             `;
             document.getElementById('badminton-recent-match').innerHTML = recentHtml;
+        }
+        
+        // 다음 예정 경기 (대회 진행 중일 때만 표시)
+        const upcomingMatchEl = document.getElementById('badminton-upcoming-match');
+        if (upcomingMatchEl && data.upcomingMatch) {
+            const upcoming = data.upcomingMatch;
+            upcomingMatchEl.style.display = 'block';
+            upcomingMatchEl.innerHTML = `
+                <div class="next-match-label">다음 경기</div>
+                <div class="next-match-info">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.9rem; font-weight: 600;">vs ${upcoming.opponent}</span>
+                        <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">${upcoming.round} · ${upcoming.date}</span>
+                    </div>
+                </div>
+            `;
         }
         
         // 다음 경기/대회
