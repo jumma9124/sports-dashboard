@@ -63,6 +63,11 @@
             overflow: auto;
         }
 
+        .card.in-season {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 2px #ff9800;
+        }
+
         .card-header {
             display: flex;
             align-items: center;
@@ -502,11 +507,35 @@
             return order;
         }
 
+        // 시즌 진행 중인 스포츠 확인
+        function getInSeasonSports() {
+            const now = new Date();
+            const month = now.getMonth() + 1; // 1-12
+            
+            const inSeason = [];
+            
+            // 배구: 10월~4월
+            if (month >= 10 || month <= 4) {
+                inSeason.push('volleyball');
+            }
+            
+            // 야구: 3월~10월
+            if (month >= 3 && month <= 10) {
+                inSeason.push('baseball');
+            }
+            
+            // 배드민턴: 연중 진행
+            inSeason.push('badminton');
+            
+            return inSeason;
+        }
+
         // 카드 배치
         function arrangeCards() {
             if (!eventsChecked) return; // 이벤트 체크 완료될 때까지 대기
             
             const order = calculateCardOrder();
+            const inSeasonSports = getInSeasonSports();
             const dashboard = document.getElementById('dashboard');
             const templates = document.getElementById('card-templates');
             
@@ -515,7 +544,14 @@
             order.forEach(cardType => {
                 const card = templates.querySelector(`[data-card-type="${cardType}"]`);
                 if (card) {
-                    dashboard.appendChild(card.cloneNode(true));
+                    const clonedCard = card.cloneNode(true);
+                    
+                    // 시즌 진행 중인 스포츠에 주황색 테두리 추가
+                    if (inSeasonSports.includes(cardType)) {
+                        clonedCard.classList.add('in-season');
+                    }
+                    
+                    dashboard.appendChild(clonedCard);
                 }
             });
         }
