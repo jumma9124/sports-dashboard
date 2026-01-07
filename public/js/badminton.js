@@ -44,17 +44,40 @@ async function loadBadmintonData() {
         if (data.nextTournament) {
             // BWF 대회 일정이 있는 경우
             const tournament = data.nextTournament;
-            const daysInfo = data.tournamentDays;
             
-            const statusClass = daysInfo.type === 'ongoing' ? 'ongoing' : 'upcoming';
-            const statusText = daysInfo.type === 'ongoing' ? '진행중' : '예정';
+            // D-day 실시간 계산
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const startDate = new Date(tournament.startDate);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(tournament.endDate);
+            endDate.setHours(0, 0, 0, 0);
+            
+            let daysText = '';
+            let statusClass = 'upcoming';
+            
+            if (today >= startDate && today <= endDate) {
+                // 대회 진행 중
+                const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+                daysText = daysSinceStart === 0 ? 'D-day' : `D+${daysSinceStart}`;
+                statusClass = 'ongoing';
+            } else if (today < startDate) {
+                // 대회 시작 전
+                const daysUntil = Math.ceil((startDate - today) / (1000 * 60 * 60 * 24));
+                daysText = daysUntil === 0 ? 'D-day' : `D-${daysUntil}`;
+                statusClass = 'upcoming';
+            } else {
+                // 대회 종료
+                daysText = '종료';
+                statusClass = 'ended';
+            }
             
             const upcomingHtml = `
                 <div class="next-match-label">다음 대회</div>
                 <div class="next-match-info">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <span style="font-weight: 600; font-size: 0.95rem;">${tournament.name}</span>
-                        <span class="dday ${statusClass}">${daysInfo.text}</span>
+                        <span class="dday ${statusClass}">${daysText}</span>
                     </div>
                     <div class="match-details">
                         <span>${tournament.category}</span>
