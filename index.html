@@ -22,7 +22,9 @@
         }
 
         .header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
         }
 
@@ -32,12 +34,21 @@
             letter-spacing: 2px;
         }
 
+        .last-update-text {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            text-align: right;
+        }
+
         .dashboard {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             grid-template-rows: repeat(2, 1fr);
-            gap: 15px;
+            gap: 20px;
             height: calc(100vh - 80px);
+            max-width: 90%;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
         .card {
@@ -59,7 +70,18 @@
         }
 
         .icon {
-            font-size: 2.5rem;
+            width: 28px;
+            height: 28px;
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid rgba(76, 175, 80, 0.5);
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #4caf50;
+            font-size: 16px;
+            font-weight: 700;
+            flex-shrink: 0;
         }
 
         .team-info h2 {
@@ -171,8 +193,14 @@
         /* 반응형 */
         @media (max-width: 768px) {
             body { padding: 10px; }
+            .header { flex-direction: column; gap: 5px; }
             .header h1 { font-size: 1.5rem; }
-            .dashboard { gap: 10px; }
+            .last-update-text { text-align: center; }
+            .dashboard { 
+                gap: 10px; 
+                max-width: 100%;
+                padding: 0 10px;
+            }
             .card { 
                 padding: 15px;
                 justify-content: center;
@@ -185,7 +213,10 @@
                 margin-bottom: 0;
             }
             .icon { 
-                font-size: 4rem;
+                width: 60px;
+                height: 60px;
+                font-size: 32px;
+                border-radius: 12px;
             }
             
             /* 나머지 내용 숨김 */
@@ -232,7 +263,18 @@
 
         @media (max-width: 480px) {
             .icon { 
-                font-size: 3.5rem;
+                width: 50px;
+                height: 50px;
+                font-size: 26px;
+                border-radius: 10px;
+            }
+        }
+        
+        /* 태블릿/중간 화면 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .dashboard {
+                max-width: 95%;
+                gap: 15px;
             }
         }
         
@@ -250,7 +292,7 @@
 <body>
     <div class="header">
         <h1>MY SPORT</h1>
-        <div id="last-update" style="font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 5px;"></div>
+        <div id="last-update" class="last-update-text"></div>
     </div>
 
     <div class="dashboard" id="dashboard">
@@ -262,7 +304,7 @@
         <!-- 배구 카드 -->
         <div class="card volleyball-card" data-card-type="volleyball" onclick="location.href='public/html/volleyball.html'" style="cursor: pointer;">
             <div class="card-header">
-                <div class="icon">🏐</div>
+                <div class="icon">✓</div>
                 <div class="team-info">
                     <h2>현대캐피탈 스카이워커스</h2>
                     <div class="league">V-리그</div>
@@ -292,7 +334,7 @@
         <!-- 야구 카드 -->
         <div class="card baseball-card" data-card-type="baseball" onclick="location.href='public/html/baseball.html'" style="cursor: pointer;">
             <div class="card-header">
-                <div class="icon">⚾</div>
+                <div class="icon">✓</div>
                 <div class="team-info">
                     <h2>한화 이글스</h2>
                     <div class="league">KBO 리그</div>
@@ -315,7 +357,7 @@
         <!-- 주요 이벤트 카드 -->
         <div class="card events-card" data-card-type="events">
             <div class="card-header">
-                <div class="icon">📅</div>
+                <div class="icon">✓</div>
                 <div class="team-info">
                     <h2>주요 스포츠 이벤트</h2>
                     <div class="league">다가오는 대회</div>
@@ -324,7 +366,6 @@
             <div class="stats">
                 <div id="major-event">
                     <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 10px;">
-                        <div class="event-icon" style="font-size: 3rem;">📅</div>
                         <div class="event-info">
                             <div class="no-event">로딩 중...</div>
                         </div>
@@ -336,7 +377,7 @@
         <!-- 안세영 카드 -->
         <div class="card badminton-card" data-card-type="badminton" onclick="location.href='public/html/badminton.html'" style="cursor: pointer;">
             <div class="card-header">
-                <div class="icon">🏸</div>
+                <div class="icon">✓</div>
                 <div class="team-info">
                     <h2>안세영</h2>
                     <div class="league">세계 1위</div>
