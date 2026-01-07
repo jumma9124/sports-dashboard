@@ -34,12 +34,13 @@
     "country": "Malaysia",
     "startDate": "2026-01-06",
     "endDate": "2026-01-11",
-    "tournamentId": "5227"
+    "tournamentId": "5227",
+    "tournamentCode": "41287386-9043-4062-99C8-3FFBB9B26C1E"
   },
   "tournamentDays": {
     "type": "ongoing",
     "days": 1,
     "text": "D+1"
   },
-  "lastUpdated": "2026-01-07T05:48:01.879Z"
+  "lastUpdated": "2026-01-07T06:02:30.452Z"
 }
