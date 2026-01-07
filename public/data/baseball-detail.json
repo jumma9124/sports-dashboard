@@ -1,7 +1,188 @@
 {
-  "leagueStandings": [],
+  "leagueStandings": [
+    {
+      "rank": 1,
+      "team": "LG",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "wra0.603",
+      "gameDiff": "gameBehind0"
+    },
+    {
+      "rank": 2,
+      "team": "한화",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "wra0.593",
+      "gameDiff": "gameBehind1.5"
+    },
+    {
+      "rank": 3,
+      "team": "SSG",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "wra0.536",
+      "gameDiff": "gameBehind9.5"
+    },
+    {
+      "rank": 4,
+      "team": "삼성",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "wra0.521",
+      "gameDiff": "gameBehind11.5"
+    },
+    {
+      "rank": 5,
+      "team": "NC",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "wra0.514",
+      "gameDiff": "gameBehind12.5"
+    },
+    {
+      "rank": 6,
+      "team": "KT",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "wra0.511",
+      "gameDiff": "gameBehind13"
+    },
+    {
+      "rank": 7,
+      "team": "롯데",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "wra0.478",
+      "gameDiff": "gameBehind17.5"
+    },
+    {
+      "rank": 8,
+      "team": "KIA",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "wra0.464",
+      "gameDiff": "gameBehind19.5"
+    },
+    {
+      "rank": 9,
+      "team": "두산",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "wra0.442",
+      "gameDiff": "gameBehind22.5"
+    },
+    {
+      "rank": 10,
+      "team": "키움",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "wra0.336",
+      "gameDiff": "gameBehind37.5"
+    },
+    {
+      "rank": 1,
+      "team": "NC",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "lastTenGameResult9승 0무 1패",
+      "gameDiff": "lastTenGameOffenseHra0.294"
+    },
+    {
+      "rank": 2,
+      "team": "삼성",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "lastTenGameResult7승 0무 3패",
+      "gameDiff": "lastTenGameOffenseHra0.326"
+    },
+    {
+      "rank": 3,
+      "team": "SSG",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "lastTenGameResult6승 0무 4패",
+      "gameDiff": "lastTenGameOffenseHra0.256"
+    },
+    {
+      "rank": 4,
+      "team": "한화",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "lastTenGameResult5승 1무 4패",
+      "gameDiff": "lastTenGameOffenseHra0.254"
+    },
+    {
+      "rank": 4,
+      "team": "KT",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "lastTenGameResult5승 1무 4패",
+      "gameDiff": "lastTenGameOffenseHra0.260"
+    },
+    {
+      "rank": 6,
+      "team": "두산",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "lastTenGameResult5승 0무 5패",
+      "gameDiff": "lastTenGameOffenseHra0.258"
+    },
+    {
+      "rank": 7,
+      "team": "KIA",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "lastTenGameResult4승 0무 6패",
+      "gameDiff": "lastTenGameOffenseHra0.227"
+    },
+    {
+      "rank": 7,
+      "team": "LG",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "lastTenGameResult4승 0무 6패",
+      "gameDiff": "lastTenGameOffenseHra0.275"
+    },
+    {
+      "rank": 9,
+      "team": "키움",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "lastTenGameResult3승 0무 7패",
+      "gameDiff": "lastTenGameOffenseHra0.227"
+    },
+    {
+      "rank": 10,
+      "team": "롯데",
+      "wins": 0,
+      "losses": 0,
+      "draws": 0,
+      "winRate": "lastTenGameResult2승 0무 8패",
+      "gameDiff": "lastTenGameOffenseHra0.241"
+    }
+  ],
   "players": [],
   "headToHead": [],
   "lastWeekMatches": [],
-  "lastUpdated": "2026-01-06T13:59:26.646Z"
+  "lastUpdated": "2026-01-07T00:34:43.849Z"
 }
