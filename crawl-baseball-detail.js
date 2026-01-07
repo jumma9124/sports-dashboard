@@ -1,72 +1,58 @@
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const fs = require('fs').promises;
 const path = require('path');
 
-const DATA_DIR = path.join(__dirname, 'public', 'data');
-
-/**
- * 한화 이글스 상세 정보 크롤링
- */
 async function crawlBaseballDetail() {
-  let browser;
-  try {
-    console.log('⚾ [야구 상세] 크롤링 시작...');
-    
-    const launchOptions = {
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    };
-    
-    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-    } else {
-      launchOptions.executablePath = '/usr/bin/chromium-browser';
-    }
-    
-    browser = await puppeteer.launch(launchOptions);
-    const page = await browser.newPage();
+  console.log('야구 상세 데이터 크롤링 시작...');
+  
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu'
+    ]
+  });
 
-    // 1. 전체 순위 크롤링 (모바일 최신 버전)
-    console.log('[순위] 크롤링 중...');
-    await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&tab=teamRank', {
+  try {
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1');
+    await page.setViewport({ width: 375, height: 812 });
+
+    const data = {
+      lastUpdate: new Date().toISOString(),
+      standings: [],
+      pitchers: [],
+      batters: []
+    };
+
+    // 1. 순위 크롤링
+    console.log('\n팀 순위 크롤링 중...');
+    await page.goto('https://m.sports.naver.com/kbaseball/record/index?category=kbo', {
       waitUntil: 'networkidle2',
       timeout: 30000
     });
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await page.waitForTimeout(2000);
 
     const standings = await page.evaluate(() => {
-      // 첫 번째 테이블만 선택 (팀 순위)
-      const firstTable = document.querySelector('.TeamRanking_team_ranking__RxzeY .TableBody_table_body__DlwwS');
-      if (!firstTable) return [];
-      
-      const items = firstTable.querySelectorAll('li.TableBody_item__eCenH');
+      const rows = document.querySelectorAll('.StandingsTable_row__3q5-D');
       const result = [];
       
-      items.forEach(item => {
-        const rankEm = item.querySelector('.TeamInfo_ranking__MqHpq');
-        const teamDiv = item.querySelector('.TeamInfo_team_name__dni7F');
-        const cells = item.querySelectorAll('.TableBody_cell__rFrpm .TextInfo_text__ysEqh');
+      rows.forEach((row, index) => {
+        if (index === 0) return; // 헤더 제외
         
-        if (rankEm && teamDiv && cells.length >= 6) {
-          const rankText = rankEm.textContent.trim();
-          const rank = parseInt(rankText.replace(/[^0-9]/g, ''));
-          const team = teamDiv.textContent.trim();
-          
-          // cells 순서: 승률, 게임차, 승, 무, 패, 경기, ...
-          const winRate = cells[0]?.textContent.trim() || '.000';
-          const gameDiff = cells[1]?.textContent.trim() || '0';
-          const wins = cells[2]?.textContent.trim() || '0';
-          const draws = cells[3]?.textContent.trim() || '0';
-          const losses = cells[4]?.textContent.trim() || '0';
-          
+        const cells = row.querySelectorAll('.StandingsTable_cell__16aYp');
+        if (cells.length >= 8) {
           result.push({
-            rank: rank || 0,
-            team,
-            wins: parseInt(wins) || 0,
-            losses: parseInt(losses) || 0,
-            draws: parseInt(draws) || 0,
-            winRate: winRate,
-            gameDiff: gameDiff
+            rank: cells[0].textContent.trim(),
+            team: cells[1].textContent.trim(),
+            games: cells[2].textContent.trim(),
+            wins: cells[3].textContent.trim(),
+            losses: cells[4].textContent.trim(),
+            draws: cells[5].textContent.trim(),
+            winRate: cells[6].textContent.trim(),
+            gameBehind: cells[7].textContent.trim()
           });
         }
       });
@@ -74,38 +60,41 @@ async function crawlBaseballDetail() {
       return result;
     });
 
-    console.log(`[순위] ${standings.length}개 팀 크롤링 완료`);
+    data.standings = standings;
+    console.log(`순위: ${standings.length}팀 수집 완료`);
 
-    // 2. 한화 선수 기록 크롤링 (투수)
-    console.log('[기록] 투수 기록 크롤링 중...');
-    await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&category=pitcher&tab=player&teamId=6', {
+    // 2. 투수 기록 크롤링 (수정된 선택자)
+    console.log('\n투수 기록 크롤링 중...');
+    await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&tab=pitcher', {
       waitUntil: 'networkidle2',
       timeout: 30000
     });
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await page.waitForTimeout(2000);
 
     const pitchers = await page.evaluate(() => {
-      const items = document.querySelectorAll('.TableBody_item__eCenH');
+      const items = document.querySelectorAll('.TableBody_item__PeA\\+h');
       const result = [];
       
-      items.forEach(item => {
-        const nameDiv = item.querySelector('.PlayerInfo_player_name__m+tSp');
-        const cells = item.querySelectorAll('.TableBody_cell__rFrpm .TextInfo_text__ysEqh');
+      items.forEach((item, index) => {
+        if (index >= 10) return; // 상위 10명만
         
-        if (nameDiv && cells.length >= 3) {
-          const name = nameDiv.textContent.trim();
-          const wins = cells[1]?.textContent.trim() || '0';
-          const losses = cells[2]?.textContent.trim() || '0';
-          const era = cells[3]?.textContent.trim() || '0.00';
-          
+        const nameEl = item.querySelector('.PlayerInfo_name__GG7ms');
+        const teamEl = item.querySelector('.PlayerInfo_team__OYuwW');
+        const statCells = item.querySelectorAll('.TextInfo_text__y5AWv');
+        
+        if (nameEl && statCells.length >= 8) {
           result.push({
-            name,
-            position: '투수',
-            wins: parseInt(wins) || 0,
-            losses: parseInt(losses) || 0,
-            era: era,
-            avg: '-',
-            hits: '-'
+            rank: index + 1,
+            name: nameEl.textContent.trim(),
+            team: teamEl ? teamEl.textContent.trim() : '',
+            era: statCells[0].textContent.trim(),
+            games: statCells[1].textContent.trim(),
+            wins: statCells[2].textContent.trim(),
+            losses: statCells[3].textContent.trim(),
+            saves: statCells[4].textContent.trim(),
+            holds: statCells[5].textContent.trim(),
+            innings: statCells[6].textContent.trim(),
+            strikeouts: statCells[7].textContent.trim()
           });
         }
       });
@@ -113,37 +102,41 @@ async function crawlBaseballDetail() {
       return result;
     });
 
-    console.log(`[기록] 투수 ${pitchers.length}명 크롤링 완료`);
+    data.pitchers = pitchers;
+    console.log(`투수: ${pitchers.length}명 수집 완료`);
 
-    // 3. 한화 선수 기록 크롤링 (타자)
-    console.log('[기록] 타자 기록 크롤링 중...');
-    await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&category=hitter&tab=player&teamId=6', {
+    // 3. 타자 기록 크롤링 (동일한 방식으로 수정)
+    console.log('\n타자 기록 크롤링 중...');
+    await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&tab=batter', {
       waitUntil: 'networkidle2',
       timeout: 30000
     });
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await page.waitForTimeout(2000);
 
-    const hitters = await page.evaluate(() => {
-      const items = document.querySelectorAll('.TableBody_item__eCenH');
+    const batters = await page.evaluate(() => {
+      const items = document.querySelectorAll('.TableBody_item__PeA\\+h');
       const result = [];
       
-      items.forEach(item => {
-        const nameDiv = item.querySelector('.PlayerInfo_player_name__m+tSp');
-        const cells = item.querySelectorAll('.TableBody_cell__rFrpm .TextInfo_text__ysEqh');
+      items.forEach((item, index) => {
+        if (index >= 10) return; // 상위 10명만
         
-        if (nameDiv && cells.length >= 2) {
-          const name = nameDiv.textContent.trim();
-          const avg = cells[1]?.textContent.trim() || '.000';
-          const hits = cells[2]?.textContent.trim() || '0';
-          
+        const nameEl = item.querySelector('.PlayerInfo_name__GG7ms');
+        const teamEl = item.querySelector('.PlayerInfo_team__OYuwW');
+        const statCells = item.querySelectorAll('.TextInfo_text__y5AWv');
+        
+        if (nameEl && statCells.length >= 8) {
           result.push({
-            name,
-            position: '타자',
-            wins: '-',
-            losses: '-',
-            era: '-',
-            avg: avg,
-            hits: parseInt(hits) || 0
+            rank: index + 1,
+            name: nameEl.textContent.trim(),
+            team: teamEl ? teamEl.textContent.trim() : '',
+            avg: statCells[0].textContent.trim(),    // 타율
+            games: statCells[1].textContent.trim(),  // 경기수
+            ab: statCells[2].textContent.trim(),     // 타수
+            hits: statCells[3].textContent.trim(),   // 안타
+            doubles: statCells[4].textContent.trim(), // 2루타
+            triples: statCells[5].textContent.trim(), // 3루타
+            hr: statCells[6].textContent.trim(),     // 홈런
+            rbi: statCells[7].textContent.trim()     // 타점
           });
         }
       });
@@ -151,92 +144,36 @@ async function crawlBaseballDetail() {
       return result;
     });
 
-    console.log(`[기록] 타자 ${hitters.length}명 크롤링 완료`);
+    data.batters = batters;
+    console.log(`타자: ${batters.length}명 수집 완료`);
 
-    // 선수 합치기
-    const players = [...pitchers, ...hitters];
-
-
-    // 4. 상대전적 크롤링 (임시로 빈 배열)
-    console.log('[상대전적] 크롤링 중...');
-    const headToHead = [];
-    console.log(`[상대전적] ${headToHead.length}개 팀 크롤링 완료`);
-
-    // 5. 지난주 경기결과 크롤링 (임시로 빈 배열)
-    console.log('[경기결과] 크롤링 중...');
-    const lastWeekMatches = [];
-    console.log(`[경기결과] ${lastWeekMatches.length}경기 크롤링 완료`);
-
-    await browser.close();
-
-    // 데이터 조합
-    const detailData = {
-      leagueStandings: standings,
-      players: players.sort((a, b) => {
-        const order = { '투수': 1, '포수': 2, '내야수': 3, '외야수': 4 };
-        return (order[a.position] || 5) - (order[b.position] || 5);
-      }),
-      headToHead: headToHead,
-      lastWeekMatches: lastWeekMatches.map(m => ({
-        ...m,
-        date: new Date(m.date).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
-      })),
-      lastUpdated: new Date().toISOString()
-    };
-
-    console.log('[성공] 야구 상세 데이터 크롤링 완료');
-    return detailData;
-
-  } catch (error) {
-    if (browser) await browser.close();
-    console.error('[실패] 야구 상세 크롤링 오류:', error.message);
+    // 4. JSON 파일 저장
+    const outputDir = path.join(__dirname, 'public', 'data');
+    await fs.mkdir(outputDir, { recursive: true });
     
-    // 폴백 데이터
-    return {
-      leagueStandings: [],
-      players: [],
-      headToHead: [],
-      lastWeekMatches: [],
-      error: error.message,
-      lastUpdated: new Date().toISOString()
-    };
-  }
-}
-
-/**
- * 메인 실행
- */
-async function main() {
-  try {
-    console.log('\n' + '='.repeat(80));
-    console.log('야구 상세 데이터 크롤링 시작');
-    console.log('='.repeat(80) + '\n');
-
-    await fs.mkdir(DATA_DIR, { recursive: true });
-
-    const detailData = await crawlBaseballDetail();
-
-    const filePath = path.join(DATA_DIR, 'baseball-detail.json');
-    await fs.writeFile(filePath, JSON.stringify(detailData, null, 2), 'utf8');
-
-    console.log('\n' + '='.repeat(80));
-    console.log('크롤링 완료!');
-    console.log('파일:', filePath);
-    const hanwha = detailData.leagueStandings.find(t => t.team === '한화');
-    console.log('한화 순위:', hanwha ? hanwha.rank + '위' : '정보 없음');
-    console.log('선수 수:', detailData.players.length + '명');
-    console.log('상대전적:', detailData.headToHead.length + '개 팀');
-    console.log('지난주 경기:', detailData.lastWeekMatches.length + '경기');
-    console.log('='.repeat(80) + '\n');
+    const outputPath = path.join(outputDir, 'baseball-detail.json');
+    await fs.writeFile(outputPath, JSON.stringify(data, null, 2), 'utf-8');
+    
+    console.log(`\n크롤링 완료!`);
+    console.log(`저장 위치: ${outputPath}`);
+    console.log(`총 데이터: 순위 ${data.standings.length}팀, 투수 ${data.pitchers.length}명, 타자 ${data.batters.length}명`);
 
   } catch (error) {
-    console.error('\n에러 발생:', error);
-    process.exit(1);
+    console.error('크롤링 오류:', error);
+    throw error;
+  } finally {
+    await browser.close();
   }
 }
 
+// 실행
 if (require.main === module) {
-  main();
+  crawlBaseballDetail()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
 }
 
-module.exports = { crawlBaseballDetail };
+module.exports = crawlBaseballDetail;
