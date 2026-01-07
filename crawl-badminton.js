@@ -283,18 +283,28 @@ async function crawlAnSeYoungRecentMatches(page, tournament) {
       console.log(`[안세영 경기] ${dateStr} 페이지 로드...`);
       
       try {
+        // 실제 브라우저처럼 보이도록 User-Agent 설정
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        await page.setExtraHTTPHeaders({
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+        });
+        
         // 해당 날짜의 결과 페이지로 이동
         const tournamentSlug = tournament.name.toLowerCase().replace(/\s+/g, '-');
         const pageUrl = `https://bwfworldtour.bwfbadminton.com/tournament/${tournament.tournamentId}/${tournamentSlug}/results/${dateStr}`;
         
-        await page.goto(pageUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+        await page.goto(pageUrl, { waitUntil: 'networkidle0', timeout: 60000 });
         
-        // 경기 데이터가 로드될 때까지 대기 (최대 10초)
+        // JavaScript 렌더링 완료 대기
+        await new Promise(resolve => setTimeout(resolve, 8000));
+        
+        // 경기 데이터가 로드될 때까지 추가 대기
         try {
-          await page.waitForSelector('a[href*="match"]', { timeout: 10000 });
+          await page.waitForSelector('.match-card, .match-item, [class*="match"]', { timeout: 10000 });
         } catch (e) {
           // 선택자를 못 찾으면 추가 대기
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          await new Promise(resolve => setTimeout(resolve, 3000));
         }
         
         // 페이지에서 안세영 경기 찾기 (HTML 파싱)
@@ -379,17 +389,20 @@ async function crawlAnSeYoungRecentMatches(page, tournament) {
             }
           }
           
-          // 디버깅 정보 반환
+          // 디버깅 정보 반환 (페이지 내용 일부 포함)
+          const bodyText = document.body?.innerText?.substring(0, 500) || 'empty';
           return { 
             debug: true, 
             totalLinks: allLinks.length, 
-            wsCount: wsCount 
+            wsCount: wsCount,
+            pagePreview: bodyText.substring(0, 200)
           };
         });
         
         if (matchData) {
           if (matchData.debug) {
             console.log(`[안세영 경기] ${dateStr}: 디버그 - 총 ${matchData.totalLinks}개 링크, WS ${matchData.wsCount}개`);
+            console.log(`[안세영 경기] 페이지 미리보기: ${matchData.pagePreview?.substring(0, 100)}...`);
           } else if (matchData.opponent !== 'Unknown') {
             matchData.date = dateStr;
             matchData.tournament = tournament.name;
