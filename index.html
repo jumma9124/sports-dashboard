@@ -25,6 +25,9 @@
             position: relative;
             text-align: center;
             margin-bottom: 15px;
+            max-width: 75%;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .header h1 {
@@ -208,6 +211,9 @@
         /* 반응형 */
         @media (max-width: 768px) {
             body { padding: 10px; }
+            .header { 
+                max-width: 100%;
+            }
             .header h1 { font-size: 1.5rem; }
             .last-update-text { 
                 position: static;
@@ -290,6 +296,9 @@
         
         /* 태블릿/중간 화면 */
         @media (min-width: 769px) and (max-width: 1024px) {
+            .header {
+                max-width: 85%;
+            }
             .dashboard {
                 max-width: 85%;
                 gap: 15px;
@@ -298,6 +307,9 @@
         
         /* 대형 화면 */
         @media (min-width: 1400px) {
+            .header {
+                max-width: 70%;
+            }
             .dashboard {
                 max-width: 70%;
             }
