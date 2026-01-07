@@ -1,6 +1,10 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const fs = require('fs');
 const path = require('path');
+
+// Stealth 플러그인 사용 (Cloudflare 우회)
+puppeteer.use(StealthPlugin());
 
 // 리소스 차단으로 속도 향상
 async function setupPageOptimization(page) {
