@@ -182,14 +182,14 @@ async function crawlVolleyball() {
   }
 }
 
-// 최적화: 일별 일정 페이지에서 가져오기 (개선된 셀렉터)
+// 일별 일정 페이지에서 가져오기 (대기 시간 증가)
 async function crawlVolleyballNextMatch(browser) {
   try {
     console.log('[배구 다음 경기] 크롤링 시작...');
     const startTime = Date.now();
     
     const page = await browser.newPage();
-    await setupPageOptimization(page);
+    // 리소스 차단 제거 - 경기 일정 데이터 로드에 필요할 수 있음
     
     const today = new Date();
     
@@ -200,69 +200,65 @@ async function crawlVolleyballNextMatch(browser) {
       const dateStr = checkDate.toISOString().split('T')[0];
       
       const url = `https://m.sports.naver.com/volleyball/schedule/index?date=${dateStr}`;
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log(`[배구 다음 경기] ${dateStr} 확인 중...`);
       
-      const matchData = await page.evaluate((todayStr) => {
-        // 모든 listitem 찾기 (경기 정보 포함)
-        const listItems = document.querySelectorAll('li');
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+      // 데이터 로드 대기 시간 증가
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const pageText = await page.evaluate(() => document.body.textContent);
+      
+      // 현대캐피탈 경기가 있는지 먼저 확인
+      if ((pageText.includes('현대캐피탈') || pageText.includes('스카이워커스')) && 
+          pageText.includes('예정')) {
         
-        for (const item of listItems) {
-          const text = item.textContent || '';
+        const matchData = await page.evaluate(() => {
+          const bodyText = document.body.textContent || '';
           
-          // 현대캐피탈 경기이고 예정 상태인지 확인
-          if ((text.includes('현대캐피탈') || text.includes('스카이워커스')) && 
-              text.includes('예정') && !text.includes('종료')) {
-            
-            // 시간 추출
-            const timeMatch = text.match(/(\d{2}:\d{2})/);
-            const time = timeMatch ? timeMatch[1] : '19:00';
-            
-            // 상대팀 추출
-            const teams = ['우리카드', 'OK저축은행', '대한항공', '한국전력', '삼성화재', 'KB손해보험'];
-            let opponent = '';
-            for (const team of teams) {
-              if (text.includes(team)) {
-                opponent = team;
-                break;
-              }
-            }
-            
-            // 홈/어웨이 확인 (현대캐피탈 홈인지)
-            const isHome = text.includes('현대캐피탈') && text.includes('홈');
-            
-            // 경기장 추출
-            const teamStadiums = {
-              'OK저축은행': '부산강서체육관',
-              '현대캐피탈': '천안유관순체육관',
-              '한국전력': '수원체육관',
-              '대한항공': '인천계양체육관',
-              '우리카드': '장충체육관',
-              '삼성화재': '대전충무체육관',
-              'KB손해보험': '의정부체육관'
-            };
-            
-            let location = isHome ? '천안유관순체육관' : (teamStadiums[opponent] || '장소 미정');
-            
-            if (opponent) {
-              return {
-                time,
-                opponent,
-                location,
-                isHome
-              };
+          // 시간 추출
+          const timeMatch = bodyText.match(/(\d{2}:\d{2})/);
+          const time = timeMatch ? timeMatch[1] : '19:00';
+          
+          // 상대팀 추출
+          const teams = ['우리카드', 'OK저축은행', '대한항공', '한국전력', '삼성화재', 'KB손해보험'];
+          let opponent = '';
+          for (const team of teams) {
+            if (bodyText.includes(team)) {
+              opponent = team;
+              break;
             }
           }
-        }
+          
+          // 홈/어웨이 확인
+          // "OK저축은행 홈 현대캐피탈" 형태면 현대캐피탈이 어웨이
+          // "현대캐피탈 홈" 형태면 현대캐피탈이 홈
+          let isHome = false;
+          if (bodyText.includes('현대캐피탈 홈') || bodyText.includes('현대캐피탈홈')) {
+            isHome = true;
+          }
+          
+          // 경기장 추출
+          const teamStadiums = {
+            'OK저축은행': '부산강서체육관',
+            '현대캐피탈': '천안유관순체육관',
+            '한국전력': '수원체육관',
+            '대한항공': '인천계양체육관',
+            '우리카드': '장충체육관',
+            '삼성화재': '대전충무체육관',
+            'KB손해보험': '의정부체육관'
+          };
+          
+          let location = isHome ? '천안유관순체육관' : (teamStadiums[opponent] || '장소 미정');
+          
+          return { time, opponent, location, isHome };
+        });
         
-        return null;
-      }, dateStr);
-      
-      if (matchData && matchData.opponent) {
-        await page.close();
-        const result = { date: dateStr, ...matchData };
-        console.log(`[배구 다음 경기] 성공 (${Date.now() - startTime}ms):`, result);
-        return result;
+        if (matchData && matchData.opponent) {
+          await page.close();
+          const result = { date: dateStr, ...matchData };
+          console.log(`[배구 다음 경기] 성공 (${Date.now() - startTime}ms):`, result);
+          return result;
+        }
       }
     }
 
@@ -282,7 +278,7 @@ async function crawlVolleyballPastMatches(browser) {
     const startTime = Date.now();
     
     const page = await browser.newPage();
-    await setupPageOptimization(page);
+    // 리소스 차단 제거 - 데이터 로드에 필요할 수 있음
     
     const matches = [];
     const today = new Date();
@@ -294,132 +290,107 @@ async function crawlVolleyballPastMatches(browser) {
       const dateStr = checkDate.toISOString().split('T')[0];
       
       const url = `https://m.sports.naver.com/volleyball/schedule/index?date=${dateStr}`;
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+      // 대기 시간 증가
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const matchData = await page.evaluate(() => {
-        // 모든 listitem 찾기
-        const listItems = document.querySelectorAll('li');
+      const pageText = await page.evaluate(() => document.body.textContent);
+      
+      // 현대캐피탈 경기가 있고 종료된 경기인지 확인
+      if ((pageText.includes('현대캐피탈') || pageText.includes('스카이워커스')) && 
+          pageText.includes('종료')) {
         
-        for (const item of listItems) {
-          const text = item.textContent || '';
+        const matchData = await page.evaluate(() => {
+          const bodyText = document.body.textContent || '';
           
-          // 현대캐피탈 경기이고 종료된 경기인지 확인
-          if ((text.includes('현대캐피탈') || text.includes('스카이워커스')) && 
-              text.includes('종료')) {
+          // 상대팀 추출
+          const teams = ['우리카드', 'OK저축은행', '대한항공', '한국전력', '삼성화재', 'KB손해보험'];
+          let opponent = '';
+          for (const team of teams) {
+            if (bodyText.includes(team)) {
+              opponent = team;
+              break;
+            }
+          }
+          
+          // 스코어 추출 - "스코어 0 현대캐피탈 스코어 3" 형식
+          let homeScore = 0, awayScore = 0;
+          let isHome = false;
+          
+          // "대한항공 홈 스코어 0 현대캐피탈 스코어 3" 형식 파싱
+          const scoreMatch = bodyText.match(/(\S+)\s*홈\s*스코어\s*(\d)\s*(\S+)\s*스코어\s*(\d)/);
+          if (scoreMatch) {
+            const homeTeam = scoreMatch[1];
+            const score1 = parseInt(scoreMatch[2]);
+            const score2 = parseInt(scoreMatch[4]);
             
-            // 상대팀 추출
-            const teams = ['우리카드', 'OK저축은행', '대한항공', '한국전력', '삼성화재', 'KB손해보험'];
-            let opponent = '';
-            for (const team of teams) {
-              if (text.includes(team)) {
-                opponent = team;
+            homeScore = score1;
+            awayScore = score2;
+            
+            // 현대캐피탈이 홈팀인지 확인
+            if (homeTeam.includes('현대캐피탈') || homeTeam.includes('스카이워커스')) {
+              isHome = true;
+            }
+          } else {
+            // 단순 스코어 형식 시도
+            const simpleScore = bodyText.match(/(\d)\s*[-:]\s*(\d)/);
+            if (simpleScore) {
+              homeScore = parseInt(simpleScore[1]);
+              awayScore = parseInt(simpleScore[2]);
+            }
+          }
+          
+          // 현대캐피탈 기준 승/패 결과
+          let result = null;
+          if (isHome) {
+            result = homeScore > awayScore ? '승' : '패';
+          } else {
+            result = awayScore > homeScore ? '승' : '패';
+          }
+          
+          // 경기장 추출
+          const teamStadiums = {
+            'OK저축은행': '부산강서체육관',
+            '현대캐피탈': '천안유관순체육관',
+            '한국전력': '수원체육관',
+            '대한항공': '인천계양체육관',
+            '우리카드': '장충체육관',
+            '삼성화재': '대전충무체육관',
+            'KB손해보험': '의정부체육관'
+          };
+          
+          let location = isHome ? '천안유관순체육관' : (teamStadiums[opponent] || '미정');
+          
+          // matchId 추출
+          let matchId = null;
+          const links = document.querySelectorAll('a');
+          for (const link of links) {
+            const href = link.getAttribute('href');
+            if (href && href.includes('/game/')) {
+              const match = href.match(/\/game\/([0-9A-Z]+)/i);
+              if (match && match[1]) {
+                matchId = match[1];
                 break;
               }
             }
-            
-            // 스코어 추출 - "스코어 0 현대캐피탈 스코어 3" 또는 "0 - 3" 형식
-            let homeScore = 0, awayScore = 0;
-            let isHome = false;
-            
-            // "대한항공 홈 스코어 0 현대캐피탈 스코어 3" 형식 파싱
-            const scoreMatch = text.match(/(\S+)\s*홈?\s*스코어\s*(\d)\s*(\S+)\s*스코어\s*(\d)/);
-            if (scoreMatch) {
-              const team1 = scoreMatch[1];
-              const score1 = parseInt(scoreMatch[2]);
-              const team2 = scoreMatch[3];
-              const score2 = parseInt(scoreMatch[4]);
-              
-              if (team1.includes('현대캐피탈') || team1.includes('스카이워커스')) {
-                isHome = true;
-                homeScore = score1;
-                awayScore = score2;
-              } else {
-                isHome = false;
-                homeScore = score1;
-                awayScore = score2;
-              }
-            } else {
-              // 단순 스코어 형식
-              const simpleScore = text.match(/(\d)\s*[-:]\s*(\d)/);
-              if (simpleScore) {
-                homeScore = parseInt(simpleScore[1]);
-                awayScore = parseInt(simpleScore[2]);
-              }
-            }
-            
-            // 현대캐피탈 기준 승/패 결과
-            let result = null;
-            if (isHome) {
-              // 현대캐피탈이 홈팀인 경우
-              result = homeScore > awayScore ? '승' : '패';
-            } else {
-              // 현대캐피탈이 원정팀인 경우
-              result = awayScore > homeScore ? '승' : '패';
-            }
-            
-            // 경기장 추출
-            const teamStadiums = {
-              'OK저축은행': '부산강서체육관',
-              '현대캐피탈': '천안유관순체육관',
-              '한국전력': '수원체육관',
-              '대한항공': '인천계양체육관',
-              '우리카드': '장충체육관',
-              '삼성화재': '대전충무체육관',
-              'KB손해보험': '의정부체육관'
-            };
-            
-            let location = '';
-            if (text.includes('홈') && text.indexOf('현대캐피탈') < text.indexOf('홈')) {
-              location = '천안유관순체육관';
-              isHome = true;
-            } else if (opponent) {
-              // 상대팀 홈 경기장
-              location = teamStadiums[opponent] || '미정';
-            }
-            
-            // matchId 추출
-            let matchId = null;
-            const links = item.querySelectorAll('a');
-            for (const link of links) {
-              const href = link.getAttribute('href');
-              if (href && href.includes('/game/')) {
-                const match = href.match(/\/game\/([0-9A-Z]+)/i);
-                if (match && match[1]) {
-                  matchId = match[1];
-                  break;
-                }
-              }
-            }
-            
-            if (opponent && result) {
-              return {
-                opponent,
-                isHome,
-                homeScore,
-                awayScore,
-                result,
-                location: location || '미정',
-                matchId
-              };
-            }
           }
-        }
-        
-        return null;
-      });
-      
-      if (matchData && matchData.opponent) {
-        matches.push({
-          date: dateStr,
-          homeTeam: matchData.isHome ? '현대캐피탈' : matchData.opponent,
-          awayTeam: matchData.isHome ? matchData.opponent : '현대캐피탈',
-          result: matchData.result,
-          score: `${matchData.homeScore}-${matchData.awayScore}`,
-          location: matchData.location,
-          matchId: matchData.matchId,
-          setScores: null  // 세트 스코어는 상세 페이지에서 가져와야 함
+          
+          return { opponent, isHome, homeScore, awayScore, result, location, matchId };
         });
+        
+        if (matchData && matchData.opponent && matchData.result) {
+          matches.push({
+            date: dateStr,
+            homeTeam: matchData.isHome ? '현대캐피탈' : matchData.opponent,
+            awayTeam: matchData.isHome ? matchData.opponent : '현대캐피탈',
+            result: matchData.result,
+            score: `${matchData.homeScore}-${matchData.awayScore}`,
+            location: matchData.location,
+            matchId: matchData.matchId,
+            setScores: null
+          });
+          console.log(`[배구 지난 경기] ${dateStr}: vs ${matchData.opponent} (${matchData.result})`);
+        }
       }
     }
 
