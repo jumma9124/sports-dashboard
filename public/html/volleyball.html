@@ -561,8 +561,8 @@
                     const pastMatchesList = document.getElementById('pastMatchesList');
                     if (vb.pastMatches && vb.pastMatches.length > 0) {
                         pastMatchesList.innerHTML = vb.pastMatches.map((match, index) => {
-                            // 상세 정보가 있는지 체크
-                            const hasDetails = match.setScores || match.startTime || match.endTime;
+                            // 상세 정보가 있는지 체크 (location, score, setScores 중 하나라도 있으면 토글 표시)
+                            const hasDetails = match.location || match.score || match.setScores || match.startTime || match.endTime;
                             
                             // 상세 정보 HTML 생성
                             let detailHTML = '';
@@ -570,12 +570,10 @@
                                 detailHTML = `
                                     <div class="match-detail-panel">
                                         <div class="match-detail-content">
-                                            ${match.startTime || match.endTime ? `
+                                            ${match.score ? `
                                             <div class="detail-row">
-                                                <span class="detail-label">⏰ 경기 시간</span>
-                                                <span class="detail-value time-range">
-                                                    ${match.startTime || '-'} ${match.endTime ? '~ ' + match.endTime : ''}
-                                                </span>
+                                                <span class="detail-label">🏐 최종 스코어</span>
+                                                <span class="detail-value" style="font-size: 1.2rem; font-weight: 700;">${match.score}</span>
                                             </div>
                                             ` : ''}
                                             ${match.location ? `
@@ -584,9 +582,17 @@
                                                 <span class="detail-value">${match.location}</span>
                                             </div>
                                             ` : ''}
+                                            ${match.startTime || match.endTime ? `
+                                            <div class="detail-row">
+                                                <span class="detail-label">⏰ 경기 시간</span>
+                                                <span class="detail-value time-range">
+                                                    ${match.startTime || '-'} ${match.endTime ? '~ ' + match.endTime : ''}
+                                                </span>
+                                            </div>
+                                            ` : ''}
                                             ${match.setScores && match.setScores.length > 0 ? `
                                             <div class="detail-row">
-                                                <span class="detail-label">🏐 세트별 스코어</span>
+                                                <span class="detail-label">📊 세트별 스코어</span>
                                                 <div class="set-scores">
                                                     ${match.setScores.map(scoreObj => `
                                                         <div class="set-score">${scoreObj.set}세트: ${scoreObj.home}-${scoreObj.away}</div>
