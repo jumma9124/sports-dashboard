@@ -3,90 +3,13 @@
     "name": "AN Se Young",
     "rank": 1,
     "country": "KOR",
-    "points": 121370,
-    "tournaments": 12
+    "points": 0,
+    "tournaments": 0
   },
-  "womenSingles": [
-    {
-      "rank": 1,
-      "name": "AN Se Young",
-      "country": "KOR",
-      "points": 121370
-    },
-    {
-      "rank": 2,
-      "name": "WANG Zhi Yi",
-      "country": "CHN",
-      "points": 95289
-    },
-    {
-      "rank": 3,
-      "name": "Akane YAMAGUCHI",
-      "country": "JPN",
-      "points": 88102
-    }
-  ],
-  "menDoubles": [
-    {
-      "rank": 1,
-      "players": "LIANG Wei Keng / WANG Chang",
-      "country": "CHN",
-      "points": 108740
-    },
-    {
-      "rank": 2,
-      "players": "Aaron CHIA / SOH Wooi Yik",
-      "country": "MAS",
-      "points": 104890
-    },
-    {
-      "rank": 3,
-      "players": "Fajar ALFIAN / Muhammad Rian ARDIANTO",
-      "country": "INA",
-      "points": 99520
-    },
-    {
-      "rank": 8,
-      "players": "강민혁 / 서승재",
-      "country": "KOR",
-      "points": 78230
-    }
-  ],
-  "womenDoubles": [
-    {
-      "rank": 1,
-      "players": "CHEN Qing Chen / JIA Yi Fan",
-      "country": "CHN",
-      "points": 117620
-    },
-    {
-      "rank": 2,
-      "players": "LIU Sheng Shu / TAN Ning",
-      "country": "CHN",
-      "points": 99870
-    },
-    {
-      "rank": 3,
-      "players": "Apriyani RAHAYU / Siti Fadia Silva RAMADHANTI",
-      "country": "INA",
-      "points": 92340
-    },
-    {
-      "rank": 9,
-      "players": "김소영 / 공희용",
-      "country": "KOR",
-      "points": 71450
-    }
-  ],
+  "womenSingles": [],
+  "menDoubles": [],
+  "womenDoubles": [],
   "recentMatches": [
-    {
-      "date": "2026-01-06",
-      "tournament": "PETRONAS Malaysia Open 2026",
-      "round": "32강",
-      "opponent": "Michelle LI (CAN)",
-      "result": "승",
-      "score": "2-1 (19-21, 21-16, 21-18)"
-    },
     {
       "date": "2025-12-21",
       "tournament": "HSBC BWF World Tour Finals 2025",
@@ -102,16 +25,17 @@
       "opponent": "Akane YAMAGUCHI",
       "result": "승",
       "score": "2-0"
-    }
-  ],
-  "upcomingMatches": [
+    },
     {
-      "date": "2026-01-08",
-      "tournament": "PETRONAS Malaysia Open 2026",
-      "round": "16강",
-      "opponent": "TBD"
+      "date": "2025-12-19",
+      "tournament": "HSBC BWF World Tour Finals 2025",
+      "round": "조별리그",
+      "opponent": "Ratchanok INTANON",
+      "result": "승",
+      "score": "2-1"
     }
   ],
+  "upcomingMatches": [],
   "nextTournament": {
     "name": "PETRONAS Malaysia Open 2026",
     "category": "Super 1000",
@@ -126,5 +50,5 @@
     "days": 1,
     "text": "D+1"
   },
-  "lastUpdated": "2026-01-07T15:00:00.000Z"
+  "lastUpdated": "2026-01-07T07:17:16.407Z"
 }
