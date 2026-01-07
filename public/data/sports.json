@@ -9,7 +9,7 @@
     "games": "19",
     "points": "38",
     "setRatio": "1.517",
-    "lastUpdated": "2026-01-07T04:54:38.733Z",
+    "lastUpdated": "2026-01-07T05:10:29.182Z",
     "fullRankings": [
       {
         "rank": "1위",
@@ -67,6 +67,55 @@
         "points": "12",
         "setRatio": "0.480"
       }
+    ],
+    "nextMatch": {
+      "date": "2026-01-09",
+      "time": "19:00",
+      "opponent": "OK저축은행",
+      "location": "부산강서체육관",
+      "isHome": false
+    },
+    "pastMatches": [
+      {
+        "date": "2026-01-04",
+        "homeTeam": "대한항공",
+        "awayTeam": "현대캐피탈",
+        "result": "승",
+        "score": "0-3",
+        "location": "인천계양체육관",
+        "matchId": "20260104022M134",
+        "setScores": null
+      },
+      {
+        "date": "2025-12-31",
+        "homeTeam": "현대캐피탈",
+        "awayTeam": "KB손해보험",
+        "result": "승",
+        "score": "3-1",
+        "location": "천안유관순체육관",
+        "matchId": "20251231022M126",
+        "setScores": null
+      },
+      {
+        "date": "2025-12-27",
+        "homeTeam": "한국전력",
+        "awayTeam": "현대캐피탈",
+        "result": "패",
+        "score": "3-1",
+        "location": "수원체육관",
+        "matchId": "20251227022M120",
+        "setScores": null
+      },
+      {
+        "date": "2025-12-24",
+        "homeTeam": "현대캐피탈",
+        "awayTeam": "우리카드",
+        "result": "승",
+        "score": "3-1",
+        "location": "천안유관순체육관",
+        "matchId": "20251224022M114",
+        "setScores": null
+      }
     ]
   },
   "baseball": {
@@ -76,8 +125,8 @@
     "rank": "2위",
     "record": "83승 57패 4무",
     "winRate": ".593",
-    "lastUpdated": "2026-01-07T04:54:33.657Z",
+    "lastUpdated": "2026-01-07T05:10:24.462Z",
     "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
   },
-  "lastUpdated": "2026-01-07T04:54:56.507Z"
+  "lastUpdated": "2026-01-07T05:11:23.807Z"
 }
