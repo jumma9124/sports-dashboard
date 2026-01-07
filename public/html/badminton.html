@@ -377,7 +377,10 @@
     <script>
         async function loadBadmintonData() {
             try {
-                const response = await fetch('../../public/data/badminton.json');
+                const cacheBuster = new Date().getTime();
+                const response = await fetch(`../../public/data/badminton.json?t=${cacheBuster}`, {
+                    cache: 'no-store'
+                });
                 const data = await response.json();
                 
                 // 안세영 랭킹 표시
