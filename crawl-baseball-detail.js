@@ -35,35 +35,34 @@ async function crawlBaseballDetail() {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     const standings = await page.evaluate(() => {
-      const rows = document.querySelectorAll('table tbody tr');
+      const items = document.querySelectorAll('ol.TableBody_list__P8yRn > li.TableBody_item__eCenH');
       const result = [];
       
-      rows.forEach(row => {
-        const rankTd = row.querySelector('td:nth-child(1)');
-        const teamTd = row.querySelector('td:nth-child(2)');
-        const winsTd = row.querySelector('td:nth-child(3)');
-        const lossesTd = row.querySelector('td:nth-child(4)');
-        const drawsTd = row.querySelector('td:nth-child(5)');
-        const winRateTd = row.querySelector('td:nth-child(6)');
-        const gameDiffTd = row.querySelector('td:nth-child(7)');
+      items.forEach(item => {
+        const rankEm = item.querySelector('.TeamInfo_ranking__MqHpq');
+        const teamDiv = item.querySelector('.TeamInfo_team_name__dni7F');
+        const cells = item.querySelectorAll('.TableBody_cell__rFrpm .TextInfo_text__ysEqh');
         
-        if (rankTd && teamTd) {
-          const rank = rankTd.textContent.trim();
-          const team = teamTd.textContent.trim();
-          const wins = winsTd?.textContent.trim();
-          const losses = lossesTd?.textContent.trim();
-          const draws = drawsTd?.textContent.trim();
-          const winRate = winRateTd?.textContent.trim();
-          const gameDiff = gameDiffTd?.textContent.trim();
+        if (rankEm && teamDiv && cells.length >= 6) {
+          const rankText = rankEm.textContent.trim();
+          const rank = parseInt(rankText.replace(/[^0-9]/g, ''));
+          const team = teamDiv.textContent.trim();
+          
+          // cells 순서: 승률, 게임차, 승, 무, 패, 경기, ...
+          const winRate = cells[0]?.textContent.trim() || '.000';
+          const gameDiff = cells[1]?.textContent.trim() || '0';
+          const wins = cells[2]?.textContent.trim() || '0';
+          const draws = cells[3]?.textContent.trim() || '0';
+          const losses = cells[4]?.textContent.trim() || '0';
           
           result.push({
-            rank: parseInt(rank) || 0,
+            rank: rank || 0,
             team,
             wins: parseInt(wins) || 0,
             losses: parseInt(losses) || 0,
             draws: parseInt(draws) || 0,
-            winRate: winRate || '.000',
-            gameDiff: gameDiff || '-'
+            winRate: winRate,
+            gameDiff: gameDiff
           });
         }
       });
