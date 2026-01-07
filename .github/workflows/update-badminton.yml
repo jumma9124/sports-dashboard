@@ -36,7 +36,8 @@ jobs:
 
     - name: Commit and push if changed
       run: |
-        git restore --staged .
-        git add -f public/data/ahn-seyoung-matches.json
+        git restore --staged . || true
+        git add -f public/data/ahn-seyoung-matches.json public/data/badminton.json || true
         git diff --staged --quiet || git commit -m "Update badminton data (auto)"
-        git push
+        git pull --rebase origin main || true
+        git push origin main || git push --force-with-lease origin main

@@ -113,7 +113,10 @@ jobs:
             fi
             
             git commit -m "$COMMIT_MSG"
-            git push
+            
+            # 원격 변경사항 가져온 후 push (충돌 방지)
+            git pull --rebase origin main || true
+            git push origin main
             
             echo "✅ 데이터 업데이트 완료"
           fi
