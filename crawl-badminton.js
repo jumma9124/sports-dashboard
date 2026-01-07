@@ -215,11 +215,11 @@ function getBWFSchedule() {
   
   // 2026년 주요 BWF 대회 일정
   const tournaments = [
-    { name: 'PETRONAS Malaysia Open 2026', category: 'Super 1000', country: 'Malaysia', startDate: '2026-01-06', endDate: '2026-01-11' },
-    { name: 'Indonesia Masters 2026', category: 'Super 500', country: 'Indonesia', startDate: '2026-01-14', endDate: '2026-01-19' },
-    { name: 'India Open 2026', category: 'Super 750', country: 'India', startDate: '2026-01-21', endDate: '2026-01-26' },
-    { name: 'Thailand Masters 2026', category: 'Super 300', country: 'Thailand', startDate: '2026-02-04', endDate: '2026-02-09' },
-    { name: 'Korea Open 2026', category: 'Super 500', country: 'Korea', startDate: '2026-04-01', endDate: '2026-04-06' }
+    { name: 'PETRONAS Malaysia Open 2026', category: 'Super 1000', country: 'Malaysia', startDate: '2026-01-06', endDate: '2026-01-11', tournamentId: '5227' },
+    { name: 'Indonesia Masters 2026', category: 'Super 500', country: 'Indonesia', startDate: '2026-01-14', endDate: '2026-01-19', tournamentId: '5228' },
+    { name: 'India Open 2026', category: 'Super 750', country: 'India', startDate: '2026-01-21', endDate: '2026-01-26', tournamentId: '5229' },
+    { name: 'Thailand Masters 2026', category: 'Super 300', country: 'Thailand', startDate: '2026-02-04', endDate: '2026-02-09', tournamentId: '5230' },
+    { name: 'Korea Open 2026', category: 'Super 500', country: 'Korea', startDate: '2026-04-01', endDate: '2026-04-06', tournamentId: '5231' }
   ];
   
   // 진행 중인 대회 찾기
@@ -253,6 +253,121 @@ function getBWFSchedule() {
   console.log('[BWF 일정] 완료:', displayTournament?.name || '대회 없음');
   
   return { displayTournament, daysInfo, allTournaments: tournaments };
+}
+
+// 안세영 최근 경기 결과 크롤링 (BWF World Tour 사이트에서)
+async function crawlAnSeYoungRecentMatches(page, tournament) {
+  try {
+    if (!tournament || !tournament.tournamentId) {
+      console.log('[안세영 경기] 진행 중인 대회 없음');
+      return [];
+    }
+    
+    console.log('[안세영 경기] 크롤링 시작...');
+    const startTime = Date.now();
+    const matches = [];
+    
+    // 대회 기간 동안의 날짜들을 체크
+    const startDate = new Date(tournament.startDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // 최대 5일 전까지만 확인
+    for (let i = 0; i < 5; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      
+      if (checkDate < startDate) break;
+      
+      const dateStr = checkDate.toISOString().split('T')[0];
+      const url = `https://bwfworldtour.bwfbadminton.com/tournament/${tournament.tournamentId}/${tournament.name.toLowerCase().replace(/\s+/g, '-')}/results/${dateStr}`;
+      
+      try {
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // 페이지에서 안세영 경기 찾기
+        const matchData = await page.evaluate(() => {
+          const links = document.querySelectorAll('a');
+          for (const link of links) {
+            const text = link.textContent || '';
+            // AN Se Young 이름이 포함된 경기 찾기
+            if (text.includes('AN Se Young') || text.includes('AN Se young')) {
+              // 경기 정보 파싱: "Match X [Player1] [Player2] [scores] [date] [time] [category] [round] [court]"
+              const parts = text.split(/\s+/);
+              
+              // 상대 선수 찾기 (AN Se Young 뒤에 나오는 이름)
+              let opponent = '';
+              let isWin = false;
+              let score = '';
+              
+              // 스코어 패턴 찾기 (예: 19 21 21 16 21 18)
+              const scoreMatch = text.match(/(\d{1,2}\s+\d{1,2}(?:\s+\d{1,2}\s+\d{1,2})?(?:\s+\d{1,2}\s+\d{1,2})?)/);
+              if (scoreMatch) {
+                const scores = scoreMatch[1].split(/\s+/).map(Number);
+                let anSeYoungSets = 0;
+                let opponentSets = 0;
+                
+                // 세트별 승패 계산
+                for (let j = 0; j < scores.length; j += 2) {
+                  if (scores[j] > scores[j + 1]) anSeYoungSets++;
+                  else opponentSets++;
+                }
+                
+                isWin = anSeYoungSets > opponentSets;
+                score = `${anSeYoungSets}-${opponentSets}`;
+              }
+              
+              // 상대 선수 이름 추출
+              const anSeYoungIndex = text.indexOf('AN Se Young');
+              if (anSeYoungIndex !== -1) {
+                // AN Se Young 뒤의 텍스트에서 상대 선수 추출
+                const afterAnSeYoung = text.substring(anSeYoungIndex + 15);
+                const opponentMatch = afterAnSeYoung.match(/([A-Z][a-z]+\s+[A-Z]+)/);
+                if (opponentMatch) {
+                  opponent = opponentMatch[1];
+                }
+              }
+              
+              // 라운드 정보 찾기
+              let round = 'R32';
+              if (text.includes('R16')) round = '16강';
+              else if (text.includes('QF')) round = '8강';
+              else if (text.includes('SF')) round = '준결승';
+              else if (text.includes('F ') || text.includes('Final')) round = '결승';
+              else if (text.includes('R32')) round = '32강';
+              
+              return {
+                opponent: opponent || 'Unknown',
+                result: isWin ? '승' : '패',
+                score: score,
+                round: round,
+                rawText: text.substring(0, 200)
+              };
+            }
+          }
+          return null;
+        });
+        
+        if (matchData) {
+          matchData.date = dateStr;
+          matchData.tournament = tournament.name;
+          matches.push(matchData);
+          console.log(`[안세영 경기] ${dateStr}: vs ${matchData.opponent} ${matchData.result} (${matchData.score})`);
+        }
+        
+      } catch (e) {
+        console.log(`[안세영 경기] ${dateStr} 페이지 로드 실패:`, e.message);
+      }
+    }
+    
+    console.log(`[안세영 경기] 완료 (${Date.now() - startTime}ms): ${matches.length}경기`);
+    return matches;
+    
+  } catch (error) {
+    console.error('[안세영 경기] 크롤링 실패:', error.message);
+    return [];
+  }
 }
 
 async function crawlAhnSeYoungData() {
@@ -307,33 +422,44 @@ async function crawlAhnSeYoungData() {
     // 대회 일정 (하드코딩으로 빠르게)
     const schedule = getBWFSchedule();
     
-    // 최근 경기 데이터 (폴백)
-    const recentMatches = [
-      {
-        date: '2025-12-21',
-        tournament: 'HSBC BWF World Tour Finals 2025',
-        round: '결승',
-        opponent: 'WANG Zhi Yi',
-        result: '승',
-        score: '2-1'
-      },
-      {
-        date: '2025-12-20',
-        tournament: 'HSBC BWF World Tour Finals 2025',
-        round: '준결승',
-        opponent: 'Akane YAMAGUCHI',
-        result: '승',
-        score: '2-0'
-      },
-      {
-        date: '2025-12-19',
-        tournament: 'HSBC BWF World Tour Finals 2025',
-        round: '조별리그',
-        opponent: 'Ratchanok INTANON',
-        result: '승',
-        score: '2-1'
-      }
-    ];
+    // 안세영 최근 경기 크롤링 (진행 중인 대회가 있을 경우)
+    let recentMatches = [];
+    if (schedule.displayTournament && schedule.daysInfo?.type === 'ongoing') {
+      const matchPage = await browser.newPage();
+      await setupPageOptimization(matchPage);
+      recentMatches = await crawlAnSeYoungRecentMatches(matchPage, schedule.displayTournament);
+      await matchPage.close();
+    }
+    
+    // 최근 경기가 없으면 폴백 데이터 사용
+    if (recentMatches.length === 0) {
+      recentMatches = [
+        {
+          date: '2025-12-21',
+          tournament: 'HSBC BWF World Tour Finals 2025',
+          round: '결승',
+          opponent: 'WANG Zhi Yi',
+          result: '승',
+          score: '2-1'
+        },
+        {
+          date: '2025-12-20',
+          tournament: 'HSBC BWF World Tour Finals 2025',
+          round: '준결승',
+          opponent: 'Akane YAMAGUCHI',
+          result: '승',
+          score: '2-0'
+        },
+        {
+          date: '2025-12-19',
+          tournament: 'HSBC BWF World Tour Finals 2025',
+          round: '조별리그',
+          opponent: 'Ratchanok INTANON',
+          result: '승',
+          score: '2-1'
+        }
+      ];
+    }
 
     // 통합 JSON 파일로 저장
     const badmintonData = {

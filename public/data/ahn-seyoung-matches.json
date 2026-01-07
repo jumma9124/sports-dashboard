@@ -1,15 +1,7 @@
 {
   "ranking": 1,
-  "points": 112734,
+  "points": 0,
   "recent": [
-    {
-      "date": "2026-01-07",
-      "tournament": "PETRONAS Malaysia Open 2026",
-      "round": "32강",
-      "opponent": "Supanida KATETHONG",
-      "result": "승",
-      "score": "2-0"
-    },
     {
       "date": "2025-12-21",
       "tournament": "HSBC BWF World Tour Finals 2025",
@@ -25,27 +17,29 @@
       "opponent": "Akane YAMAGUCHI",
       "result": "승",
       "score": "2-0"
+    },
+    {
+      "date": "2025-12-19",
+      "tournament": "HSBC BWF World Tour Finals 2025",
+      "round": "조별리그",
+      "opponent": "Ratchanok INTANON",
+      "result": "승",
+      "score": "2-1"
     }
   ],
-  "upcomingMatch": {
-    "date": "01.08",
-    "tournament": "PETRONAS Malaysia Open 2026",
-    "round": "16강",
-    "opponent": "TBD"
-  },
   "upcoming": [],
   "nextTournament": {
     "name": "PETRONAS Malaysia Open 2026",
-    "category": "HSBC BWF World Tour Super 1000",
-    "country": "Kuala Lumpur, Malaysia",
+    "category": "Super 1000",
+    "country": "Malaysia",
     "startDate": "2026-01-06",
     "endDate": "2026-01-11",
-    "dateText": "06 - 11 Jan"
+    "tournamentId": "5227"
   },
   "tournamentDays": {
     "type": "ongoing",
     "days": 1,
     "text": "D+1"
   },
-  "lastUpdated": "2026-01-07T14:00:00.000Z"
+  "lastUpdated": "2026-01-07T05:48:01.879Z"
 }
