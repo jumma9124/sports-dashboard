@@ -76,252 +76,95 @@ async function crawlBaseballDetail() {
 
     console.log(`[순위] ${standings.length}개 팀 크롤링 완료`);
 
-    // 한화 이글스 정보 추출
-    const hanwhaStanding = standings.find(t => t.team === '한화');
-    
-    if (!hanwhaStanding) {
-      console.warn('[경고] 한화 이글스 순위를 찾을 수 없습니다');
-    }
-
-    // 2. 한화 선수 명단 크롤링 (KBO 공식)
-    console.log('[선수] 크롤링 중...');
-    await page.goto('https://www.koreabaseball.com/Player/RegisterAll.aspx', {
-      waitUntil: 'networkidle2',
-      timeout: 30000
-    });
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    const players = await page.evaluate(() => {
-      const result = [];
-      
-      // 한화 선수 찾기
-      const teamHeaders = document.querySelectorAll('h3.tit');
-      let hanwhaTable = null;
-      
-      for (const header of teamHeaders) {
-        if (header.textContent.includes('한화')) {
-          hanwhaTable = header.nextElementSibling;
-          break;
-        }
-      }
-      
-      if (!hanwhaTable) return result;
-      
-      const rows = hanwhaTable.querySelectorAll('tbody tr');
-      
-      rows.forEach(row => {
-        const backNumber = row.querySelector('td:nth-child(1)')?.textContent.trim();
-        const name = row.querySelector('td:nth-child(2)')?.textContent.trim();
-        const position = row.querySelector('td:nth-child(3)')?.textContent.trim();
-        
-        if (name) {
-          let positionType = '외야수';
-          
-          if (position) {
-            if (position.includes('투수')) positionType = '투수';
-            else if (position.includes('포수')) positionType = '포수';
-            else if (['내야수', '1루수', '2루수', '3루수', '유격수'].some(p => position.includes(p))) {
-              positionType = '내야수';
-            } else if (position.includes('외야수')) {
-              positionType = '외야수';
-            }
-          }
-          
-          result.push({
-            backNumber: backNumber || '-',
-            name,
-            position: positionType,
-            // 기록은 나중에 추가 크롤링 필요
-            wins: 0,
-            losses: 0,
-            era: '-',
-            avg: '.000',
-            hits: 0
-          });
-        }
-      });
-      
-      return result;
-    });
-
-    console.log(`[선수] ${players.length}명 크롤링 완료`);
-
-    // 3. 선수 기록 크롤링 (네이버 스포츠)
-    if (players.length > 0) {
-      console.log('[기록] 선수 기록 크롤링 중...');
-      
-      // 투수 기록
-      await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&category=pitcher&tab=player&teamId=6', {
-        waitUntil: 'networkidle2',
-        timeout: 30000
-      });
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const pitcherStats = await page.evaluate(() => {
-        const stats = {};
-        const rows = document.querySelectorAll('table tbody tr');
-        
-        rows.forEach(row => {
-          const name = row.querySelector('td:nth-child(2)')?.textContent.trim();
-          const wins = row.querySelector('td:nth-child(5)')?.textContent.trim();
-          const losses = row.querySelector('td:nth-child(6)')?.textContent.trim();
-          const era = row.querySelector('td:nth-child(8)')?.textContent.trim();
-          
-          if (name) {
-            stats[name] = {
-              wins: parseInt(wins) || 0,
-              losses: parseInt(losses) || 0,
-              era: era || '-'
-            };
-          }
-        });
-        
-        return stats;
-      });
-
-      // 타자 기록
-      await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&category=hitter&tab=player&teamId=6', {
-        waitUntil: 'networkidle2',
-        timeout: 30000
-      });
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const hitterStats = await page.evaluate(() => {
-        const stats = {};
-        const rows = document.querySelectorAll('table tbody tr');
-        
-        rows.forEach(row => {
-          const name = row.querySelector('td:nth-child(2)')?.textContent.trim();
-          const avg = row.querySelector('td:nth-child(4)')?.textContent.trim();
-          const hits = row.querySelector('td:nth-child(6)')?.textContent.trim();
-          
-          if (name) {
-            stats[name] = {
-              avg: avg || '.000',
-              hits: parseInt(hits) || 0
-            };
-          }
-        });
-        
-        return stats;
-      });
-
-      // 선수 기록 병합
-      players.forEach(player => {
-        if (player.position === '투수' && pitcherStats[player.name]) {
-          Object.assign(player, pitcherStats[player.name]);
-        } else if (hitterStats[player.name]) {
-          Object.assign(player, hitterStats[player.name]);
-        }
-      });
-
-      console.log('[기록] 선수 기록 크롤링 완료');
-    }
-
-    // 4. 상대전적 크롤링
-    console.log('[상대전적] 크롤링 중...');
-    await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&category=team&tab=rank', {
+    // 2. 한화 선수 기록 크롤링 (투수)
+    console.log('[기록] 투수 기록 크롤링 중...');
+    await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&category=pitcher&tab=player&teamId=6', {
       waitUntil: 'networkidle2',
       timeout: 30000
     });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const headToHead = await page.evaluate(() => {
-      // 한화의 상대전적 찾기 (테이블에서 한화 행 찾기)
-      const rows = document.querySelectorAll('table tbody tr');
-      const teamNames = ['SSG', '삼성', 'LG', 'KT', '두산', 'KIA', '롯데', '키움', 'NC'];
+    const pitchers = await page.evaluate(() => {
+      const items = document.querySelectorAll('.TableBody_item__eCenH');
       const result = [];
       
-      for (const row of rows) {
-        const teamCell = row.querySelector('td:nth-child(2)');
-        if (teamCell && teamCell.textContent.includes('한화')) {
-          // 한화 행을 찾았으면 각 팀별 전적 추출
-          const cells = row.querySelectorAll('td');
+      items.forEach(item => {
+        const nameDiv = item.querySelector('.PlayerInfo_player_name__m+tSp');
+        const cells = item.querySelectorAll('.TableBody_cell__rFrpm .TextInfo_text__ysEqh');
+        
+        if (nameDiv && cells.length >= 3) {
+          const name = nameDiv.textContent.trim();
+          const wins = cells[1]?.textContent.trim() || '0';
+          const losses = cells[2]?.textContent.trim() || '0';
+          const era = cells[3]?.textContent.trim() || '0.00';
           
-          teamNames.forEach((opponent, index) => {
-            const recordCell = cells[index + 3]; // 첫 3개 셀은 순위/팀/게임수
-            if (recordCell) {
-              const record = recordCell.textContent.trim();
-              const match = record.match(/(\d+)-(\d+)/);
-              if (match) {
-                result.push({
-                  opponent,
-                  wins: parseInt(match[1]) || 0,
-                  losses: parseInt(match[2]) || 0
-                });
-              }
-            }
+          result.push({
+            name,
+            position: '투수',
+            wins: parseInt(wins) || 0,
+            losses: parseInt(losses) || 0,
+            era: era,
+            avg: '-',
+            hits: '-'
           });
-          break;
         }
-      }
+      });
       
       return result;
     });
 
+    console.log(`[기록] 투수 ${pitchers.length}명 크롤링 완료`);
+
+    // 3. 한화 선수 기록 크롤링 (타자)
+    console.log('[기록] 타자 기록 크롤링 중...');
+    await page.goto('https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2025&category=hitter&tab=player&teamId=6', {
+      waitUntil: 'networkidle2',
+      timeout: 30000
+    });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const hitters = await page.evaluate(() => {
+      const items = document.querySelectorAll('.TableBody_item__eCenH');
+      const result = [];
+      
+      items.forEach(item => {
+        const nameDiv = item.querySelector('.PlayerInfo_player_name__m+tSp');
+        const cells = item.querySelectorAll('.TableBody_cell__rFrpm .TextInfo_text__ysEqh');
+        
+        if (nameDiv && cells.length >= 2) {
+          const name = nameDiv.textContent.trim();
+          const avg = cells[1]?.textContent.trim() || '.000';
+          const hits = cells[2]?.textContent.trim() || '0';
+          
+          result.push({
+            name,
+            position: '타자',
+            wins: '-',
+            losses: '-',
+            era: '-',
+            avg: avg,
+            hits: parseInt(hits) || 0
+          });
+        }
+      });
+      
+      return result;
+    });
+
+    console.log(`[기록] 타자 ${hitters.length}명 크롤링 완료`);
+
+    // 선수 합치기
+    const players = [...pitchers, ...hitters];
+
+
+    // 4. 상대전적 크롤링 (임시로 빈 배열)
+    console.log('[상대전적] 크롤링 중...');
+    const headToHead = [];
     console.log(`[상대전적] ${headToHead.length}개 팀 크롤링 완료`);
 
-    // 5. 지난주 경기결과 크롤링 (지난 화요일 ~ 일요일)
+    // 5. 지난주 경기결과 크롤링 (임시로 빈 배열)
     console.log('[경기결과] 크롤링 중...');
-    
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const daysFromMonday = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
-    const thisMonday = new Date(today);
-    thisMonday.setDate(today.getDate() - daysFromMonday);
-    
-    const lastTuesday = new Date(thisMonday);
-    lastTuesday.setDate(thisMonday.getDate() - 6);
-    
-    const lastSunday = new Date(thisMonday);
-    lastSunday.setDate(thisMonday.getDate() - 1);
-    
     const lastWeekMatches = [];
-    
-    // 지난주 화~일 각 날짜별로 크롤링
-    for (let d = new Date(lastTuesday); d <= lastSunday; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0];
-      const scheduleUrl = `https://m.sports.naver.com/kbaseball/schedule/index?date=${dateStr}`;
-      
-      await page.goto(scheduleUrl, {
-        waitUntil: 'networkidle2',
-        timeout: 30000
-      });
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const dayMatches = await page.evaluate((targetDate) => {
-        const matches = [];
-        const matchItems = document.querySelectorAll('.MatchBox_match_item__3_D3q');
-        
-        matchItems.forEach(item => {
-          const homeTeam = item.querySelector('.MatchBoxTeamArea_team__3aWvl:first-child .MatchBoxTeamArea_team_name__3aEHO')?.textContent.trim();
-          const awayTeam = item.querySelector('.MatchBoxTeamArea_team__3aWvl:last-child .MatchBoxTeamArea_team_name__3aEHO')?.textContent.trim();
-          const homeScore = item.querySelector('.MatchBoxTeamArea_team__3aWvl:first-child .MatchBoxTeamArea_score__3vv7C')?.textContent.trim();
-          const awayScore = item.querySelector('.MatchBoxTeamArea_team__3aWvl:last-child .MatchBoxTeamArea_score__3vv7C')?.textContent.trim();
-          
-          if ((homeTeam && homeTeam.includes('한화')) || (awayTeam && awayTeam.includes('한화'))) {
-            const isHome = homeTeam && homeTeam.includes('한화');
-            const opponent = isHome ? awayTeam : homeTeam;
-            const hanwhaScore = isHome ? parseInt(homeScore) : parseInt(awayScore);
-            const opponentScore = isHome ? parseInt(awayScore) : parseInt(homeScore);
-            
-            if (!isNaN(hanwhaScore) && !isNaN(opponentScore)) {
-              matches.push({
-                date: targetDate,
-                opponent: opponent.replace('한화', '').trim(),
-                result: hanwhaScore > opponentScore ? '승' : '패',
-                score: `${hanwhaScore}-${opponentScore}`
-              });
-            }
-          }
-        });
-        
-        return matches;
-      }, dateStr);
-      
-      lastWeekMatches.push(...dayMatches);
-    }
-
     console.log(`[경기결과] ${lastWeekMatches.length}경기 크롤링 완료`);
 
     await browser.close();
