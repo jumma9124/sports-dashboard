@@ -288,18 +288,32 @@ async function crawlAnSeYoungRecentMatches(page, tournament) {
         const pageUrl = `https://bwfworldtour.bwfbadminton.com/tournament/${tournament.tournamentId}/${tournamentSlug}/results/${dateStr}`;
         
         await page.goto(pageUrl, { waitUntil: 'networkidle2', timeout: 30000 });
-        await new Promise(resolve => setTimeout(resolve, 3000)); // 데이터 로딩 대기
+        
+        // 경기 데이터가 로드될 때까지 대기 (최대 10초)
+        try {
+          await page.waitForSelector('a[href*="match"]', { timeout: 10000 });
+        } catch (e) {
+          // 선택자를 못 찾으면 추가 대기
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
         
         // 페이지에서 안세영 경기 찾기 (HTML 파싱)
         const matchData = await page.evaluate(() => {
           // 모든 경기 링크/카드 찾기
           const allLinks = document.querySelectorAll('a');
+          let foundCount = 0;
+          let wsCount = 0;
           
           for (const link of allLinks) {
             const text = link.textContent || '';
             
-            // AN Se Young 이름이 포함된 경기 찾기
-            if (text.includes('AN Se Young') || text.includes('AN Se young')) {
+            // 디버깅: WS 경기 수 카운트
+            if (text.includes('WS')) wsCount++;
+            
+            // AN Se Young 이름이 포함된 경기 찾기 (대소문자 구분 없이)
+            const textLower = text.toLowerCase();
+            if (textLower.includes('an se young') || textLower.includes('an, se young') || textLower.includes('se young an')) {
+              foundCount++;
               // 스코어 추출 (예: "19 21 21 16 21 18" 또는 "2-1")
               const scorePattern = /(\d{1,2})\s+(\d{1,2})(?:\s+(\d{1,2})\s+(\d{1,2}))?(?:\s+(\d{1,2})\s+(\d{1,2}))?/;
               const scoreMatch = text.match(scorePattern);
@@ -352,29 +366,38 @@ async function crawlAnSeYoungRecentMatches(page, tournament) {
               else if (text.includes(' F ') || text.includes('Final')) round = '결승';
               else if (text.includes('R32') || text.includes('R 32')) round = '32강';
               
-              // WS (Women's Singles) 확인
-              if (!text.includes('WS')) continue;
-              
               return {
                 opponent: opponent || 'Unknown',
                 result: anSeYoungSets > opponentSets ? '승' : '패',
                 score: `${anSeYoungSets}-${opponentSets}`,
                 setScores: setScores.join(', '),
                 round: round,
-                rawText: text.substring(0, 300)
+                rawText: text.substring(0, 300),
+                wsCount: wsCount,
+                foundCount: foundCount
               };
             }
           }
-          return null;
+          
+          // 디버깅 정보 반환
+          return { 
+            debug: true, 
+            totalLinks: allLinks.length, 
+            wsCount: wsCount 
+          };
         });
         
-        if (matchData && matchData.opponent !== 'Unknown') {
-          matchData.date = dateStr;
-          matchData.tournament = tournament.name;
-          matches.push(matchData);
-          console.log(`[안세영 경기] ✓ ${dateStr}: vs ${matchData.opponent} ${matchData.result} (${matchData.score}) - ${matchData.setScores}`);
-        } else if (matchData) {
-          console.log(`[안세영 경기] ${dateStr}: 안세영 경기 발견 (파싱 실패) - ${matchData.rawText?.substring(0, 100)}`);
+        if (matchData) {
+          if (matchData.debug) {
+            console.log(`[안세영 경기] ${dateStr}: 디버그 - 총 ${matchData.totalLinks}개 링크, WS ${matchData.wsCount}개`);
+          } else if (matchData.opponent !== 'Unknown') {
+            matchData.date = dateStr;
+            matchData.tournament = tournament.name;
+            matches.push(matchData);
+            console.log(`[안세영 경기] ✓ ${dateStr}: vs ${matchData.opponent} ${matchData.result} (${matchData.score}) - ${matchData.setScores}`);
+          } else {
+            console.log(`[안세영 경기] ${dateStr}: 안세영 경기 발견 (파싱 실패) - ${matchData.rawText?.substring(0, 100)}`);
+          }
         }
         
       } catch (e) {
