@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
@@ -259,15 +260,15 @@ function getBWFSchedule() {
   return { displayTournament, daysInfo, allTournaments: tournaments };
 }
 
-// BWF 페이지에서 안세영 최근 경기 결과 크롤링 (HTML 파싱)
+// BWF API를 직접 호출하여 안세영 경기 결과 가져오기 (서버 사이드, CORS 없음)
 async function crawlAnSeYoungRecentMatches(page, tournament) {
   try {
-    if (!tournament || !tournament.tournamentId) {
+    if (!tournament || !tournament.tournamentCode) {
       console.log('[안세영 경기] 진행 중인 대회 없음');
       return [];
     }
     
-    console.log('[안세영 경기] HTML 파싱 방식 크롤링 시작...');
+    console.log('[안세영 경기] API 직접 호출 방식 시작...');
     const startTime = Date.now();
     const matches = [];
     
@@ -284,141 +285,112 @@ async function crawlAnSeYoungRecentMatches(page, tournament) {
       if (checkDate < startDate) break;
       
       const dateStr = checkDate.toISOString().split('T')[0];
-      console.log(`[안세영 경기] ${dateStr} 페이지 로드...`);
+      console.log(`[안세영 경기] ${dateStr} API 호출...`);
       
       try {
-        // 실제 브라우저처럼 보이도록 User-Agent 설정
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        await page.setExtraHTTPHeaders({
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+        // BWF API 직접 호출 (서버 사이드에서는 CORS 제한 없음)
+        const apiUrl = `https://extranet-lv.bwfbadminton.com/api/tournaments/day-matches?tournamentCode=${tournament.tournamentCode}&date=${dateStr}&order=2&court=0`;
+        
+        const response = await axios.get(apiUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json',
+            'Referer': 'https://bwfworldtour.bwfbadminton.com/',
+            'Origin': 'https://bwfworldtour.bwfbadminton.com'
+          },
+          timeout: 15000
         });
         
-        // 해당 날짜의 결과 페이지로 이동
-        const tournamentSlug = tournament.name.toLowerCase().replace(/\s+/g, '-');
-        const pageUrl = `https://bwfworldtour.bwfbadminton.com/tournament/${tournament.tournamentId}/${tournamentSlug}/results/${dateStr}`;
+        const apiData = response.data;
         
-        await page.goto(pageUrl, { waitUntil: 'networkidle0', timeout: 60000 });
-        
-        // JavaScript 렌더링 완료 대기
-        await new Promise(resolve => setTimeout(resolve, 8000));
-        
-        // 경기 데이터가 로드될 때까지 추가 대기
-        try {
-          await page.waitForSelector('.match-card, .match-item, [class*="match"]', { timeout: 10000 });
-        } catch (e) {
-          // 선택자를 못 찾으면 추가 대기
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        }
-        
-        // 페이지에서 안세영 경기 찾기 (HTML 파싱)
-        const matchData = await page.evaluate(() => {
-          // 모든 경기 링크/카드 찾기
-          const allLinks = document.querySelectorAll('a');
-          let foundCount = 0;
-          let wsCount = 0;
+        if (apiData && Array.isArray(apiData)) {
+          console.log(`[안세영 경기] ${dateStr}: ${apiData.length}개 경기 데이터 수신`);
           
-          for (const link of allLinks) {
-            const text = link.textContent || '';
+          // 안세영 경기 찾기
+          for (const match of apiData) {
+            const team1Players = match.Team1?.Players || [];
+            const team2Players = match.Team2?.Players || [];
             
-            // 디버깅: WS 경기 수 카운트
-            if (text.includes('WS')) wsCount++;
+            let isAnSeYoung = false;
+            let anSeYoungIsTeam1 = false;
             
-            // AN Se Young 이름이 포함된 경기 찾기 (대소문자 구분 없이)
-            const textLower = text.toLowerCase();
-            if (textLower.includes('an se young') || textLower.includes('an, se young') || textLower.includes('se young an')) {
-              foundCount++;
-              // 스코어 추출 (예: "19 21 21 16 21 18" 또는 "2-1")
-              const scorePattern = /(\d{1,2})\s+(\d{1,2})(?:\s+(\d{1,2})\s+(\d{1,2}))?(?:\s+(\d{1,2})\s+(\d{1,2}))?/;
-              const scoreMatch = text.match(scorePattern);
+            for (const player of team1Players) {
+              const lastName = (player.LastName || '').toUpperCase();
+              const firstName = (player.FirstName || '').toLowerCase();
+              if (lastName === 'AN' && firstName.includes('se') && firstName.includes('young')) {
+                isAnSeYoung = true;
+                anSeYoungIsTeam1 = true;
+                break;
+              }
+            }
+            
+            if (!isAnSeYoung) {
+              for (const player of team2Players) {
+                const lastName = (player.LastName || '').toUpperCase();
+                const firstName = (player.FirstName || '').toLowerCase();
+                if (lastName === 'AN' && firstName.includes('se') && firstName.includes('young')) {
+                  isAnSeYoung = true;
+                  anSeYoungIsTeam1 = false;
+                  break;
+                }
+              }
+            }
+            
+            if (isAnSeYoung) {
+              const opponentTeam = anSeYoungIsTeam1 ? match.Team2 : match.Team1;
               
-              let setScores = [];
+              // 상대 선수 이름
+              const opponentPlayer = opponentTeam?.Players?.[0];
+              const opponentName = opponentPlayer ? 
+                `${opponentPlayer.FirstName || ''} ${opponentPlayer.LastName || ''}`.trim() : 'Unknown';
+              const opponentCountry = opponentPlayer?.CountryCode || '';
+              
+              // 세트 스코어
+              const sets = match.Sets || [];
               let anSeYoungSets = 0;
               let opponentSets = 0;
+              const setScores = [];
               
-              if (scoreMatch) {
-                // 세트 스코어 파싱
-                const scores = scoreMatch.slice(1).filter(s => s !== undefined).map(Number);
+              for (const set of sets) {
+                const anSeYoungScore = anSeYoungIsTeam1 ? set.Team1 : set.Team2;
+                const opponentScore = anSeYoungIsTeam1 ? set.Team2 : set.Team1;
                 
-                for (let j = 0; j < scores.length; j += 2) {
-                  if (scores[j] !== undefined && scores[j+1] !== undefined) {
-                    // AN Se Young이 첫 번째 선수인지 확인
-                    const anSeYoungFirst = text.indexOf('AN Se Young') < text.indexOf(scoreMatch[0]);
-                    
-                    const score1 = anSeYoungFirst ? scores[j] : scores[j+1];
-                    const score2 = anSeYoungFirst ? scores[j+1] : scores[j];
-                    
-                    setScores.push(`${score1}-${score2}`);
-                    if (score1 > score2) anSeYoungSets++;
-                    else opponentSets++;
-                  }
+                if (anSeYoungScore !== undefined && opponentScore !== undefined) {
+                  if (anSeYoungScore > opponentScore) anSeYoungSets++;
+                  else if (opponentScore > anSeYoungScore) opponentSets++;
+                  setScores.push(`${anSeYoungScore}-${opponentScore}`);
                 }
               }
               
-              // 상대 선수 이름 추출
-              let opponent = '';
+              // 승패 판정
+              const isWin = match.Winner === (anSeYoungIsTeam1 ? 1 : 2);
               
-              // "AN Se Young (1) Michelle LI" 패턴에서 상대 추출
-              const anSeYoungIndex = text.indexOf('AN Se Young');
-              if (anSeYoungIndex !== -1) {
-                // AN Se Young 뒤의 텍스트에서 상대 선수 추출
-                const afterAnSeYoung = text.substring(anSeYoungIndex + 12);
-                // (1) 같은 시드 제거
-                const cleanedText = afterAnSeYoung.replace(/\(\d+\)/g, '').trim();
-                // 첫 번째 이름 패턴 찾기
-                const nameMatch = cleanedText.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]*)*\s+[A-Z]+)/);
-                if (nameMatch) {
-                  opponent = nameMatch[1].trim();
-                }
-              }
+              // 라운드 정보
+              let round = match.Round || '';
+              if (round.includes('32') || round === 'R32') round = '32강';
+              else if (round.includes('16') || round === 'R16') round = '16강';
+              else if (round === 'QF') round = '8강';
+              else if (round === 'SF') round = '준결승';
+              else if (round === 'F') round = '결승';
               
-              // 라운드 정보 찾기
-              let round = '32강';
-              if (text.includes('R16') || text.includes('R 16')) round = '16강';
-              else if (text.includes('QF')) round = '8강';
-              else if (text.includes('SF')) round = '준결승';
-              else if (text.includes(' F ') || text.includes('Final')) round = '결승';
-              else if (text.includes('R32') || text.includes('R 32')) round = '32강';
-              
-              return {
-                opponent: opponent || 'Unknown',
-                result: anSeYoungSets > opponentSets ? '승' : '패',
+              const matchData = {
+                date: dateStr,
+                tournament: tournament.name,
+                opponent: opponentCountry ? `${opponentName} (${opponentCountry})` : opponentName,
+                result: isWin ? '승' : '패',
                 score: `${anSeYoungSets}-${opponentSets}`,
                 setScores: setScores.join(', '),
-                round: round,
-                rawText: text.substring(0, 300),
-                wsCount: wsCount,
-                foundCount: foundCount
+                round: round
               };
+              
+              matches.push(matchData);
+              console.log(`[안세영 경기] ✓ ${dateStr}: vs ${matchData.opponent} ${matchData.result} (${matchData.score}) - ${matchData.setScores}`);
             }
-          }
-          
-          // 디버깅 정보 반환 (페이지 내용 일부 포함)
-          const bodyText = document.body?.innerText?.substring(0, 500) || 'empty';
-          return { 
-            debug: true, 
-            totalLinks: allLinks.length, 
-            wsCount: wsCount,
-            pagePreview: bodyText.substring(0, 200)
-          };
-        });
-        
-        if (matchData) {
-          if (matchData.debug) {
-            console.log(`[안세영 경기] ${dateStr}: 디버그 - 총 ${matchData.totalLinks}개 링크, WS ${matchData.wsCount}개`);
-            console.log(`[안세영 경기] 페이지 미리보기: ${matchData.pagePreview?.substring(0, 100)}...`);
-          } else if (matchData.opponent !== 'Unknown') {
-            matchData.date = dateStr;
-            matchData.tournament = tournament.name;
-            matches.push(matchData);
-            console.log(`[안세영 경기] ✓ ${dateStr}: vs ${matchData.opponent} ${matchData.result} (${matchData.score}) - ${matchData.setScores}`);
-          } else {
-            console.log(`[안세영 경기] ${dateStr}: 안세영 경기 발견 (파싱 실패) - ${matchData.rawText?.substring(0, 100)}`);
           }
         }
         
       } catch (e) {
-        console.log(`[안세영 경기] ${dateStr} 페이지 로드 실패:`, e.message);
+        console.log(`[안세영 경기] ${dateStr} API 호출 실패:`, e.message);
       }
     }
     
@@ -486,10 +458,8 @@ async function crawlAhnSeYoungData() {
     // 안세영 최근 경기 크롤링 (진행 중인 대회가 있을 경우)
     let recentMatches = [];
     if (schedule.displayTournament && schedule.daysInfo?.type === 'ongoing') {
-      const matchPage = await browser.newPage();
-      // 경기 데이터 크롤링용 페이지는 리소스 차단하지 않음 (API 응답 캡처 필요)
-      recentMatches = await crawlAnSeYoungRecentMatches(matchPage, schedule.displayTournament);
-      await matchPage.close();
+      // API 직접 호출 방식 (Puppeteer 페이지 필요 없음)
+      recentMatches = await crawlAnSeYoungRecentMatches(null, schedule.displayTournament);
     }
     
     // 최근 경기가 없으면 폴백 데이터 사용
