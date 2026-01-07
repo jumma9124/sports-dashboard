@@ -9,7 +9,7 @@
     "games": "19",
     "points": "38",
     "setRatio": "1.517",
-    "lastUpdated": "2026-01-07T09:31:26.069Z",
+    "lastUpdated": "2026-01-07T12:34:20.439Z",
     "fullRankings": [
       {
         "rank": "1위",
@@ -29,19 +29,19 @@
       },
       {
         "rank": "3위",
+        "team": "KB손해보험",
+        "record": "11승 10패",
+        "winRate": "0.524",
+        "points": "34",
+        "setRatio": "1.025"
+      },
+      {
+        "rank": "4위",
         "team": "한국전력",
         "record": "12승 8패",
         "winRate": "0.600",
         "points": "33",
         "setRatio": "1.171"
-      },
-      {
-        "rank": "4위",
-        "team": "KB손해보험",
-        "record": "10승 10패",
-        "winRate": "0.500",
-        "points": "31",
-        "setRatio": "0.974"
       },
       {
         "rank": "5위",
@@ -62,10 +62,10 @@
       {
         "rank": "7위",
         "team": "삼성화재",
-        "record": "4승 15패",
-        "winRate": "0.211",
+        "record": "4승 16패",
+        "winRate": "0.200",
         "points": "12",
-        "setRatio": "0.480"
+        "setRatio": "0.472"
       }
     ],
     "nextMatch": {
@@ -125,8 +125,8 @@
     "rank": "2위",
     "record": "83승 57패 4무",
     "winRate": ".593",
-    "lastUpdated": "2026-01-07T09:31:21.965Z",
+    "lastUpdated": "2026-01-07T12:34:04.867Z",
     "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
   },
-  "lastUpdated": "2026-01-07T09:32:18.957Z"
+  "lastUpdated": "2026-01-07T12:35:12.272Z"
 }
