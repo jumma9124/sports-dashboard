@@ -35,7 +35,11 @@ async function crawlBaseballDetail() {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     const standings = await page.evaluate(() => {
-      const items = document.querySelectorAll('ol.TableBody_list__P8yRn > li.TableBody_item__eCenH');
+      // 첫 번째 테이블만 선택 (팀 순위)
+      const firstTable = document.querySelector('.TeamRanking_team_ranking__RxzeY .TableBody_table_body__DlwwS');
+      if (!firstTable) return [];
+      
+      const items = firstTable.querySelectorAll('li.TableBody_item__eCenH');
       const result = [];
       
       items.forEach(item => {
