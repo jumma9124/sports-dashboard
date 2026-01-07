@@ -80,15 +80,10 @@ jobs:
 
       - name: Crawl major events
         if: steps.check_event.outputs.ACTIVE_EVENTS == 'true' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true
         run: |
-          echo "주요 이벤트 크롤링 시작..."
-          node crawl-events.js
-          
-          # 크롤링 결과가 있으면 major-events.json 업데이트
-          if [ -f public/data/major-events-updated.json ]; then
-            mv public/data/major-events-updated.json public/data/major-events.json
-            echo "주요 이벤트 데이터 업데이트 완료"
-          fi
+          echo "주요 이벤트 크롤링 스킵 (하드코딩 데이터 사용)"
+          # node crawl-major-events.js  # 필요시 활성화
 
       - name: Crawl sports data (volleyball, baseball)
         run: |
