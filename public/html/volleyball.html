@@ -550,16 +550,20 @@
                     // 다음 경기
                     const nextMatchContainer = document.getElementById('nextMatchContainer');
                     if (vb.nextMatch) {
-                        // 날짜를 YY.MM.DD 형식으로 변환
+                        // 날짜 형식
                         const dateObj = new Date(vb.nextMatch.date);
-                        const shortDate = `${String(dateObj.getFullYear()).slice(2)}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}`;
+                        const formattedDate = `${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일`;
+                        const time = vb.nextMatch.time || '19:00';
                         const location = vb.nextMatch.location || '장소 미정';
                         
                         nextMatchContainer.innerHTML = `
                             <div class="next-match">
-                                <div class="match-badge">NEXT</div>
-                                <div class="next-match-info">vs ${vb.nextMatch.opponent} (${location})</div>
-                                <div class="next-match-date">${shortDate}</div>
+                                <div class="match-badge">NEXT GAME</div>
+                                <div class="next-match-info">
+                                    <div style="font-size: 1.1rem; font-weight: 600;">vs ${vb.nextMatch.opponent}</div>
+                                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-top: 5px;">${formattedDate} · ${time}</div>
+                                    <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-top: 3px;">${location}</div>
+                                </div>
                             </div>
                         `;
                     } else {

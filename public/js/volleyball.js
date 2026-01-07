@@ -89,19 +89,15 @@ function displayVolleyballNextMatch(match) {
 
   // 오늘 이후 경기만 표시 (오늘 포함)
   if (matchDate >= today) {
-    const formattedDate = `${matchDate.getMonth() + 1}월 ${matchDate.getDate()}일`;
-    const formattedTime = match.time || '19:00';
+    // YY.MM.DD 형식
+    const shortDate = `${String(matchDate.getFullYear()).slice(2)}.${String(matchDate.getMonth() + 1).padStart(2, '0')}.${String(matchDate.getDate()).padStart(2, '0')}`;
+    const location = match.location || '장소 미정';
     
     nextMatchElement.innerHTML = `
       <div class="next-match-label">다음 경기</div>
-      <div class="next-match-info">
-        <div class="opponent">vs ${match.opponent}</div>
-        <div class="match-details">
-          <span class="match-date">${formattedDate}</span>
-          <span class="match-separator">•</span>
-          <span class="match-time">${formattedTime}</span>
-        </div>
-        <div class="match-location">${match.location}</div>
+      <div class="next-match-info" style="display: flex; align-items: center; justify-content: space-between;">
+        <div class="opponent">vs ${match.opponent} (${location})</div>
+        <div class="match-date" style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">${shortDate}</div>
       </div>
     `;
   } else {
