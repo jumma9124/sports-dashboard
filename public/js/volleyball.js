@@ -1,9 +1,40 @@
 // public/js/volleyball.js
 // 배구팀 (현대캐피탈) 데이터 로딩 및 표시
 
-// 시즌 체크 (10월~4월이 시즌)
+let volleyballSeasonConfig = null;
+
+// 시즌 설정 로드
+async function loadVolleyballSeasonConfig() {
+  try {
+    const response = await fetch('./public/data/season-config.json');
+    const config = await response.json();
+    volleyballSeasonConfig = config.volleyball;
+    return volleyballSeasonConfig;
+  } catch (error) {
+    console.error('🏐 [배구] 시즌 설정 로드 실패:', error);
+    return null;
+  }
+}
+
+// 시즌 체크 (season-config.json 우선, 없으면 월 기반)
 function isVolleyballSeason() {
-  const month = new Date().getMonth() + 1; // 1-12
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1-12
+  
+  if (volleyballSeasonConfig && volleyballSeasonConfig.seasons) {
+    // 설정 파일에서 시즌 확인
+    const seasons = volleyballSeasonConfig.seasons;
+    for (const [key, season] of Object.entries(seasons)) {
+      const start = new Date(season.start);
+      const end = new Date(season.end);
+      if (now >= start && now <= end) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  // 기본값: 10월~4월
   return month >= 10 || month <= 4;
 }
 
@@ -11,6 +42,9 @@ async function loadVolleyballData() {
   console.log('🏐 [배구] 데이터 로딩 시작...');
   
   try {
+    // 시즌 설정 먼저 로드
+    await loadVolleyballSeasonConfig();
+    
     const response = await fetch('./public/data/sports.json');
     console.log('🏐 [배구] API 응답:', response.status);
     

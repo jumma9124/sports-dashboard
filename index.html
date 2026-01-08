@@ -523,8 +523,8 @@
                 order.push('events');
             }
             
-            // 4. 안세영은 항상 4번(마지막) 고정
-            order.push('badminton');
+            // 4. 빈 카드 (추후 추가 예정)
+            order.push('empty');
             
             return order;
         }
@@ -545,9 +545,6 @@
             if (month >= 3 && month <= 10) {
                 inSeason.push('baseball');
             }
-            
-            // 배드민턴: 연중 진행
-            inSeason.push('badminton');
             
             return inSeason;
         }
@@ -612,7 +609,6 @@
     <!-- 외부 JavaScript 파일 로드 -->
     <script src="./public/js/volleyball.js"></script>
     <script src="./public/js/baseball.js"></script>
-    <script src="./public/js/badminton.js"></script>
     <script src="./public/js/events.js"></script>
 </body>
 </html>
