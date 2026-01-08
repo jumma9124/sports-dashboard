@@ -38,23 +38,50 @@ async function loadBaseballData() {
 
 // 시즌 중 UI 표시
 function updateBaseballSeasonMode(baseball) {
+  // 테스트용 목업 데이터 (2025년 7월 3일 기준)
+  const mockData = {
+    rank: '1위',
+    yesterdayGame: {
+      date: '2025-07-02',
+      opponent: '키움',
+      score: '8:3',
+      result: '승',
+      location: '대전'
+    },
+    nextGame: {
+      date: '2025-07-03',
+      opponent: '삼성',
+      time: '18:30',
+      location: '대전'
+    },
+    weekGames: [
+      { date: '2025-06-30', opponent: '키움', score: '5:2', result: '승' },
+      { date: '2025-07-01', opponent: '키움', score: '4:3', result: '승' },
+      { date: '2025-07-02', opponent: '키움', score: '8:3', result: '승' }
+    ]
+  };
+
+  // 테스트 모드: 실제 데이터가 없으면 목업 사용
+  const data = baseball.yesterdayGame ? baseball : mockData;
+
   // 순위 (항상 현재 순위)
   const rankElement = document.getElementById('baseball-rank');
-  if (rankElement && baseball.rank) {
-    rankElement.textContent = baseball.rank;
+  if (rankElement) {
+    rankElement.textContent = data.rank || baseball.rank;
   }
 
-  // 어제 경기 결과 표시 (stat-row 영역 대체)
+  // 어제 경기 결과 표시 (stat-row 영역 대체) - 날짜 포함
   const statRowElement = document.querySelector('.baseball-card .stat-row');
-  if (statRowElement && baseball.yesterdayGame) {
-    const game = baseball.yesterdayGame;
+  if (statRowElement && data.yesterdayGame) {
+    const game = data.yesterdayGame;
     const resultClass = game.result === '승' ? 'win' : 'loss';
+    const dateStr = game.date ? `(${game.date.substring(5).replace('-', '/')})` : '';
     statRowElement.innerHTML = `
       <span class="stat-label">어제 경기</span>
       <span class="stat-value">
         ${game.opponent} ${game.score} 
         <span class="result ${resultClass}" style="margin-left: 8px;">${game.result}</span>
-        <span style="margin-left: 8px; color: rgba(255,255,255,0.6);">${game.location}</span>
+        <span style="margin-left: 8px; color: rgba(255,255,255,0.6);">${game.location} ${dateStr}</span>
       </span>
     `;
   } else if (statRowElement) {
@@ -64,10 +91,27 @@ function updateBaseballSeasonMode(baseball) {
     `;
   }
 
+  // 다음 경기 표시
+  const nextMatchElement = document.getElementById('baseball-next-match');
+  if (nextMatchElement && data.nextGame) {
+    const game = data.nextGame;
+    const dateStr = game.date ? game.date.substring(5).replace('-', '.') : '';
+    nextMatchElement.style.display = 'block';
+    nextMatchElement.innerHTML = `
+      <div class="next-match-label">다음 경기</div>
+      <div class="next-match-info" style="display: flex; align-items: center; justify-content: space-between;">
+        <div class="opponent">vs ${game.opponent}</div>
+        <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">${dateStr}</div>
+      </div>
+    `;
+  } else if (nextMatchElement) {
+    nextMatchElement.style.display = 'none';
+  }
+
   // 마지막 시리즈 영역을 지난주 경기로 대체
   const lastSeriesElement = document.getElementById('baseball-last-series');
-  if (lastSeriesElement && baseball.weekGames && baseball.weekGames.length > 0) {
-    const gamesHTML = baseball.weekGames.map(game => {
+  if (lastSeriesElement && data.weekGames && data.weekGames.length > 0) {
+    const gamesHTML = data.weekGames.map(game => {
       const resultClass = game.result === '승' ? 'win' : 'loss';
       const dateStr = game.date.substring(5).replace('-', '/'); // MM/DD 형식
       return `

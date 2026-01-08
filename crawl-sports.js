@@ -506,7 +506,10 @@ async function crawlBaseball() {
     
     const yesterdayGame = await crawlBaseballGame(browser, yesterdayStr);
     
-    // 3. 지난주 경기 크롤링
+    // 3. 다음 경기 크롤링
+    const nextGame = await crawlBaseballNextGame(browser);
+    
+    // 4. 지난주 경기 크롤링
     const weekGames = await crawlBaseballWeekGames(browser);
     
     await browser.close();
@@ -519,6 +522,7 @@ async function crawlBaseball() {
       record: rankData.record,
       winRate: rankData.winRate,
       yesterdayGame: yesterdayGame,
+      nextGame: nextGame,
       weekGames: weekGames,
       lastUpdated: new Date().toISOString()
     };
@@ -622,6 +626,83 @@ async function crawlBaseballGame(browser, dateStr) {
     return null;
   } catch (error) {
     console.error('[야구 경기 크롤링] 실패:', error.message);
+    return null;
+  }
+}
+
+// 다음 경기 크롤링 (오늘~7일 이내)
+async function crawlBaseballNextGame(browser) {
+  try {
+    const page = await browser.newPage();
+    const today = new Date();
+    
+    // 7일간 검색
+    for (let i = 0; i < 7; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(checkDate.getDate() + i);
+      const dateStr = checkDate.toISOString().split('T')[0];
+      
+      const url = `https://m.sports.naver.com/kbaseball/schedule/index?date=${dateStr}`;
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const pageText = await page.evaluate(() => document.body.textContent);
+      
+      // 한화 경기가 있고 예정된 경기인지 확인
+      if ((pageText.includes('한화') || pageText.includes('이글스')) && 
+          pageText.includes('예정')) {
+        
+        const gameData = await page.evaluate(() => {
+          const bodyText = document.body.textContent || '';
+          
+          // KBO 팀 목록
+          const teams = ['삼성', 'LG', 'KT', 'SSG', 'NC', '두산', '키움', '롯데', 'KIA'];
+          let opponent = '';
+          
+          for (const team of teams) {
+            if (bodyText.includes(team)) {
+              opponent = team;
+              break;
+            }
+          }
+          
+          // 시간 추출
+          const timeMatch = bodyText.match(/(\d{2}:\d{2})/);
+          const time = timeMatch ? timeMatch[1] : '';
+          
+          // 경기장 추출
+          const stadiums = ['잠실', '고척', '사직', '광주', '대전', '수원', '대구', '문학', '창원', '인천'];
+          let location = '';
+          for (const stadium of stadiums) {
+            if (bodyText.includes(stadium)) {
+              location = stadium;
+              break;
+            }
+          }
+          
+          return { opponent, time, location };
+        });
+        
+        await page.close();
+        
+        if (gameData && gameData.opponent) {
+          console.log(`[야구 다음 경기] ${dateStr}: vs ${gameData.opponent}`);
+          return {
+            date: dateStr,
+            opponent: gameData.opponent,
+            time: gameData.time,
+            location: gameData.location
+          };
+        }
+      }
+    }
+    
+    await page.close();
+    console.log('[야구 다음 경기] 7일 이내 경기 없음');
+    return null;
+    
+  } catch (error) {
+    console.error('[야구 다음 경기] 실패:', error.message);
     return null;
   }
 }
