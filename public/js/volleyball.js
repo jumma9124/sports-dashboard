@@ -1,6 +1,12 @@
 // public/js/volleyball.js
 // 배구팀 (현대캐피탈) 데이터 로딩 및 표시
 
+// 시즌 체크 (10월~4월이 시즌)
+function isVolleyballSeason() {
+  const month = new Date().getMonth() + 1; // 1-12
+  return month >= 10 || month <= 4;
+}
+
 async function loadVolleyballData() {
   console.log('🏐 [배구] 데이터 로딩 시작...');
   
@@ -12,21 +18,89 @@ async function loadVolleyballData() {
     const volleyball = data.volleyball;
     
     console.log('🏐 [배구] 데이터:', volleyball);
+    console.log('🏐 [배구] 시즌 중:', isVolleyballSeason());
 
-    // 팀 정보 표시
-    updateVolleyballTeamInfo(volleyball);
-    
-    // 최근 경기 표시
-    displayVolleyballRecentMatch(volleyball.pastMatches);
-    
-    // 다음 경기 로딩
-    await loadVolleyballNextMatch();
+    if (isVolleyballSeason()) {
+      // 시즌 중 UI
+      updateVolleyballSeasonMode(volleyball);
+    } else {
+      // 시즌 종료 UI
+      updateVolleyballOffseasonMode(volleyball);
+    }
     
     console.log('🏐 [배구] 데이터 로딩 완료!');
     
   } catch (error) {
     console.error('❌ [배구] 데이터 로딩 실패:', error);
     displayVolleyballError();
+  }
+}
+
+// 시즌 중 UI (현재 상태)
+function updateVolleyballSeasonMode(volleyball) {
+  // 팀 정보 표시
+  updateVolleyballTeamInfo(volleyball);
+  
+  // 최근 경기 표시
+  displayVolleyballRecentMatch(volleyball.pastMatches);
+  
+  // 다음 경기 로딩
+  loadVolleyballNextMatch();
+}
+
+// 시즌 종료 UI (야구처럼)
+function updateVolleyballOffseasonMode(volleyball) {
+  // 순위 (최종 순위)
+  const rankElement = document.getElementById('volleyball-rank');
+  if (rankElement && volleyball.rank) {
+    rankElement.textContent = volleyball.rank;
+  }
+
+  // 전적/승률/승점으로 변경
+  const statRowElement = document.querySelector('.volleyball-card .stat-row');
+  if (statRowElement && volleyball.record) {
+    statRowElement.innerHTML = `
+      <span class="stat-label">전적 / 승률 / 승점</span>
+      <span class="stat-value">
+        <span>${volleyball.record}</span>
+        <span style="margin: 0 8px; color: rgba(255,255,255,0.4);">/</span>
+        <span>승률 ${volleyball.winRate || '-'}</span>
+        <span style="margin: 0 8px; color: rgba(255,255,255,0.4);">/</span>
+        <span>${volleyball.points || '-'}점</span>
+      </span>
+    `;
+  }
+
+  // 최근 경기 영역을 마지막 시리즈로 변경
+  const recentMatchElement = document.getElementById('volleyball-recent-match');
+  if (recentMatchElement) {
+    // 마지막 시리즈 데이터 (시즌 종료 시 설정 필요)
+    const lastSeries = volleyball.lastSeries || {
+      name: '2024-25 V-리그',
+      opponent: '-',
+      result: '-'
+    };
+
+    recentMatchElement.innerHTML = `
+      <div class="recent-match-label">마지막 시리즈</div>
+      <div class="recent-match-info" style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="opponent" style="margin-bottom: 0;">vs ${lastSeries.opponent}</span>
+          <span class="result ${lastSeries.wins > lastSeries.losses ? 'win' : 'loss'}">${lastSeries.wins || 0}승 ${lastSeries.losses || 0}패</span>
+        </div>
+        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">${lastSeries.name}</div>
+      </div>
+    `;
+  }
+
+  // 다음 경기 영역을 시즌 정보로 변경
+  const nextMatchElement = document.getElementById('volleyball-next-match');
+  if (nextMatchElement) {
+    nextMatchElement.innerHTML = `
+      <div class="season-note" style="text-align: center; padding: 10px; color: rgba(255,255,255,0.6); font-size: 0.9rem;">
+        2024-25 시즌 최종 순위 (2025년 10월 재개)
+      </div>
+    `;
   }
 }
 
