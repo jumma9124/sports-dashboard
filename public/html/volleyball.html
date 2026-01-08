@@ -509,6 +509,50 @@
     </div>
 
     <script>
+        // 시즌 체크 (10월~4월이 시즌)
+        function isVolleyballSeason() {
+            const month = new Date().getMonth() + 1; // 1-12
+            return month >= 10 || month <= 4;
+        }
+
+        // 시즌 이름 계산 (예: 24-25, 25-26)
+        function getSeasonName() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            
+            // 10월~12월이면 올해-내년, 1월~4월이면 작년-올해
+            if (month >= 10) {
+                return `${year % 100}-${(year + 1) % 100}`;
+            } else {
+                return `${(year - 1) % 100}-${year % 100}`;
+            }
+        }
+
+        // 탭 전환 함수 (남자부/여자부)
+        function switchRankingTab(tab) {
+            const menTab = document.getElementById('menTab');
+            const womenTab = document.getElementById('womenTab');
+            const menRankings = document.getElementById('menRankings');
+            const womenRankings = document.getElementById('womenRankings');
+            
+            if (tab === 'men') {
+                menTab.style.background = 'rgba(102, 126, 234, 0.3)';
+                menTab.style.color = 'white';
+                womenTab.style.background = 'rgba(255, 255, 255, 0.1)';
+                womenTab.style.color = 'rgba(255,255,255,0.6)';
+                menRankings.style.display = 'block';
+                womenRankings.style.display = 'none';
+            } else {
+                womenTab.style.background = 'rgba(102, 126, 234, 0.3)';
+                womenTab.style.color = 'white';
+                menTab.style.background = 'rgba(255, 255, 255, 0.1)';
+                menTab.style.color = 'rgba(255,255,255,0.6)';
+                menRankings.style.display = 'none';
+                womenRankings.style.display = 'block';
+            }
+        }
+
         function toggleMatchDetail(matchElement) {
             const detailPanel = matchElement.querySelector('.match-detail-panel');
             const isExpanded = matchElement.classList.contains('expanded');
@@ -539,7 +583,24 @@
                 if (data.volleyball) {
                     const vb = data.volleyball;
                     
-                    // 전체 순위 표시
+                    // 시즌 중/종료에 따라 다른 UI 표시
+                    if (isVolleyballSeason()) {
+                        displaySeasonMode(vb, data);
+                    } else {
+                        displayOffseasonMode(vb, data);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                document.getElementById('nextMatchContainer').innerHTML = '<div class="no-match">데이터를 불러올 수 없습니다.</div>';
+                document.getElementById('pastMatchesList').innerHTML = '<div class="no-match">데이터를 불러올 수 없습니다.</div>';
+            }
+        }
+
+        // 시즌 중 UI
+        function displaySeasonMode(vb, data) {
+            // 전체 순위 표시
                     if (vb.fullRankings && vb.fullRankings.length > 0) {
                         const rankingsTableBody = document.querySelector('#rankingsTable tbody');
                         rankingsTableBody.innerHTML = vb.fullRankings.map(team => {
@@ -645,18 +706,217 @@
                         pastMatchesList.innerHTML = '<div class="no-match">지난 경기 기록이 없습니다.</div>';
                     }
                     
-                    // 마지막 업데이트
-                    if (data.lastUpdated) {
-                        const date = new Date(data.lastUpdated);
-                        const formatted = `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}. 오전 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-                        document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${formatted}`;
-                    }
-                }
-                
-            } catch (error) {
-                console.error('데이터 로드 실패:', error);
-                document.getElementById('nextMatchContainer').innerHTML = '<div class="no-match">데이터를 불러올 수 없습니다.</div>';
-                document.getElementById('pastMatchesList').innerHTML = '<div class="no-match">데이터를 불러올 수 없습니다.</div>';
+            // 마지막 업데이트
+            if (data.lastUpdated) {
+                const date = new Date(data.lastUpdated);
+                const formatted = `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}. 오전 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${formatted}`;
+            }
+        }
+
+        // 시즌 종료 UI
+        function displayOffseasonMode(vb, data) {
+            const seasonName = getSeasonName();
+            const mainGrid = document.querySelector('.main-grid');
+            
+            // 시즌 종료 알림 추가
+            const leagueBadge = document.querySelector('.league-badge');
+            if (leagueBadge) {
+                leagueBadge.innerHTML = `V-리그 남자부 <span style="color: #ff9800; margin-left: 10px;">${seasonName}시즌 종료</span>`;
+            }
+            
+            // 왼쪽 컬럼 변경: 최종 순위 (탭으로 남자부/여자부 전환)
+            const leftColumn = document.querySelector('.left-column');
+            leftColumn.innerHTML = `
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-title-icon">✓</span>
+                        ${seasonName}시즌 최종순위
+                    </div>
+                    
+                    <!-- 탭 버튼 -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button id="menTab" onclick="switchRankingTab('men')" style="flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; background: rgba(102, 126, 234, 0.3); color: white;">남자부</button>
+                        <button id="womenTab" onclick="switchRankingTab('women')" style="flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; background: rgba(255, 255, 255, 0.1); color: rgba(255,255,255,0.6);">여자부</button>
+                    </div>
+                    
+                    <!-- 남자부 순위 -->
+                    <div id="menRankings">
+                        <table class="rankings-table">
+                            <thead>
+                                <tr>
+                                    <th class="rank-col">순위</th>
+                                    <th class="team-col">팀</th>
+                                    <th class="record-col">승점</th>
+                                    <th class="record-col">전적</th>
+                                </tr>
+                            </thead>
+                            <tbody id="menRankingsBody">
+                                <tr><td colspan="4" class="loading">로딩 중...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 여자부 순위 (숨김) -->
+                    <div id="womenRankings" style="display: none;">
+                        <table class="rankings-table">
+                            <thead>
+                                <tr>
+                                    <th class="rank-col">순위</th>
+                                    <th class="team-col">팀</th>
+                                    <th class="record-col">승점</th>
+                                    <th class="record-col">전적</th>
+                                </tr>
+                            </thead>
+                            <tbody id="womenRankingsBody">
+                                <tr><td colspan="4" class="loading">로딩 중...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            // 오른쪽 컬럼 변경: 선수 기록 순위
+            const rightColumn = document.querySelector('.past-matches-card');
+            rightColumn.innerHTML = `
+                <div class="card-title">
+                    <span class="card-title-icon">✓</span>
+                    ${seasonName}시즌 선수 기록
+                </div>
+                <div id="playerStats">
+                    <div class="loading">로딩 중...</div>
+                </div>
+            `;
+            
+            // 남자부 순위 표시
+            if (vb.fullRankings && vb.fullRankings.length > 0) {
+                const menRankingsBody = document.getElementById('menRankingsBody');
+                menRankingsBody.innerHTML = vb.fullRankings.map(team => {
+                    const rankNumber = team.rank.replace('위', '');
+                    const recordMatch = team.record.match(/(\d+)승\s*(\d+)패/);
+                    const simpleRecord = recordMatch ? `${recordMatch[1]}-${recordMatch[2]}` : team.record;
+                    
+                    return `
+                        <tr class="${team.team.includes('현대캐피탈') ? 'highlight' : ''}">
+                            <td class="rank-col">${rankNumber}</td>
+                            <td class="team-col">${team.team}</td>
+                            <td class="record-col">${team.points || '-'}</td>
+                            <td class="record-col">${simpleRecord}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            // 여자부 순위 (목업 데이터 - 실제로는 크롤링 필요)
+            const womenTeams = [
+                { rank: '1', team: '흥국생명', points: '52', record: '18-3' },
+                { rank: '2', team: '현대건설', points: '48', record: '16-5' },
+                { rank: '3', team: 'IBK기업은행', points: '42', record: '14-7' },
+                { rank: '4', team: 'GS칼텍스', points: '36', record: '12-9' },
+                { rank: '5', team: 'KGC인삼공사', points: '30', record: '10-11' },
+                { rank: '6', team: '페퍼저축은행', points: '24', record: '8-13' },
+                { rank: '7', team: '한국도로공사', points: '18', record: '6-15' }
+            ];
+            
+            const womenRankingsBody = document.getElementById('womenRankingsBody');
+            womenRankingsBody.innerHTML = womenTeams.map(team => `
+                <tr>
+                    <td class="rank-col">${team.rank}</td>
+                    <td class="team-col">${team.team}</td>
+                    <td class="record-col">${team.points}</td>
+                    <td class="record-col">${team.record}</td>
+                </tr>
+            `).join('');
+            
+            // 선수 기록 (목업 데이터 - 실제로는 크롤링 필요)
+            // 득점 기준 정렬, 각 기록 컬럼으로 표시
+            const playerStatsDiv = document.getElementById('playerStats');
+            playerStatsDiv.innerHTML = `
+                <table class="rankings-table">
+                    <thead>
+                        <tr>
+                            <th class="rank-col">순위</th>
+                            <th class="team-col">선수 (팀)</th>
+                            <th class="record-col">득점</th>
+                            <th class="record-col">블로킹</th>
+                            <th class="record-col">서브</th>
+                            <th class="record-col">범실</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="highlight">
+                            <td class="rank-col">1</td>
+                            <td class="team-col">레오 (현대캐피탈)</td>
+                            <td class="record-col" style="font-weight: 700;">892</td>
+                            <td class="record-col">98</td>
+                            <td class="record-col">76</td>
+                            <td class="record-col">124</td>
+                        </tr>
+                        <tr>
+                            <td class="rank-col">2</td>
+                            <td class="team-col">산티아고 (OK저축은행)</td>
+                            <td class="record-col" style="font-weight: 700;">845</td>
+                            <td class="record-col">67</td>
+                            <td class="record-col">89</td>
+                            <td class="record-col">156</td>
+                        </tr>
+                        <tr>
+                            <td class="rank-col">3</td>
+                            <td class="team-col">임동혁 (삼성화재)</td>
+                            <td class="record-col" style="font-weight: 700;">723</td>
+                            <td class="record-col">85</td>
+                            <td class="record-col">68</td>
+                            <td class="record-col">98</td>
+                        </tr>
+                        <tr>
+                            <td class="rank-col">4</td>
+                            <td class="team-col">라브 (KB손해보험)</td>
+                            <td class="record-col" style="font-weight: 700;">698</td>
+                            <td class="record-col">112</td>
+                            <td class="record-col">45</td>
+                            <td class="record-col">87</td>
+                        </tr>
+                        <tr>
+                            <td class="rank-col">5</td>
+                            <td class="team-col">정지석 (대한항공)</td>
+                            <td class="record-col" style="font-weight: 700;">654</td>
+                            <td class="record-col">78</td>
+                            <td class="record-col">52</td>
+                            <td class="record-col">102</td>
+                        </tr>
+                        <tr class="highlight">
+                            <td class="rank-col">6</td>
+                            <td class="team-col">진성태 (현대캐피탈)</td>
+                            <td class="record-col" style="font-weight: 700;">589</td>
+                            <td class="record-col">156</td>
+                            <td class="record-col">34</td>
+                            <td class="record-col">76</td>
+                        </tr>
+                        <tr>
+                            <td class="rank-col">7</td>
+                            <td class="team-col">나경복 (대한항공)</td>
+                            <td class="record-col" style="font-weight: 700;">523</td>
+                            <td class="record-col">142</td>
+                            <td class="record-col">28</td>
+                            <td class="record-col">65</td>
+                        </tr>
+                        <tr>
+                            <td class="rank-col">8</td>
+                            <td class="team-col">문성민 (한국전력)</td>
+                            <td class="record-col" style="font-weight: 700;">498</td>
+                            <td class="record-col">45</td>
+                            <td class="record-col">62</td>
+                            <td class="record-col">89</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+            
+            // 마지막 업데이트
+            if (data.lastUpdated) {
+                const date = new Date(data.lastUpdated);
+                const formatted = `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}. 오전 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${formatted}`;
             }
         }
 
