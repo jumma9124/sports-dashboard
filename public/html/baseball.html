@@ -373,6 +373,215 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
+        /* 시즌 중 배너 */
+        .season-live-banner {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.4);
+            border-radius: 15px;
+            padding: 20px 25px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .season-live-banner .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        .season-live-banner .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 지난 경기 섹션 */
+        .past-games-section {
+            margin-top: 20px;
+        }
+
+        .past-game-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            border-left: 3px solid rgba(255, 159, 64, 0.5);
+        }
+
+        .past-game-item.win {
+            border-left-color: #4ade80;
+        }
+
+        .past-game-item.loss {
+            border-left-color: #f87171;
+        }
+
+        .past-game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .past-game-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .past-game-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .past-game-date {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            min-width: 90px;
+        }
+
+        .past-game-opponent {
+            font-weight: 600;
+        }
+
+        .past-game-result {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .past-game-score {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .past-game-score.win {
+            color: #4ade80;
+        }
+
+        .past-game-score.loss {
+            color: #f87171;
+        }
+
+        .past-game-badge {
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .past-game-badge.win {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+
+        .past-game-badge.loss {
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+        }
+
+        .past-game-toggle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.4);
+            transition: transform 0.3s;
+        }
+
+        .past-game-item.expanded .past-game-toggle {
+            transform: rotate(180deg);
+        }
+
+        /* 경기 상세 정보 */
+        .past-game-detail {
+            display: none;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .past-game-item.expanded .past-game-detail {
+            display: block;
+        }
+
+        /* 이닝 스코어보드 */
+        .inning-scoreboard {
+            overflow-x: auto;
+            margin-bottom: 15px;
+        }
+
+        .inning-table {
+            width: 100%;
+            min-width: 500px;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .inning-table th,
+        .inning-table td {
+            padding: 8px 6px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .inning-table th {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+        }
+
+        .inning-table td.team-name {
+            text-align: left;
+            font-weight: 600;
+            min-width: 80px;
+        }
+
+        .inning-table td.total {
+            background: rgba(255, 159, 64, 0.1);
+            font-weight: 700;
+            color: #ff9f40;
+        }
+
+        /* 경기 기록 */
+        .game-records {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .game-record-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .game-record-title {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .game-record-content {
+            font-size: 0.9rem;
+        }
+
+        .game-record-content .player-name {
+            font-weight: 600;
+            color: #4ade80;
+        }
+
         /* 반응형 */
         @media (max-width: 1024px) {
             .main-grid {
@@ -418,27 +627,8 @@
             </a>
         </div>
 
-        <!-- 시즌 종료 배너 (간소화) -->
-        <div class="season-banner">
-            <div class="season-banner-left">
-                <h2>🏆 2025 시즌 종료</h2>
-                <p>2026 시즌은 3월에 개막합니다</p>
-            </div>
-            <div class="season-stats">
-                <div class="season-stat">
-                    <div class="season-stat-value">2위</div>
-                    <div class="season-stat-label">최종 순위</div>
-                </div>
-                <div class="season-stat">
-                    <div class="season-stat-value">83-57-4</div>
-                    <div class="season-stat-label">승-패-무</div>
-                </div>
-                <div class="season-stat">
-                    <div class="season-stat-value">.593</div>
-                    <div class="season-stat-label">승률</div>
-                </div>
-            </div>
-        </div>
+        <!-- 배너 영역 (동적으로 변경) -->
+        <div id="banner-area"></div>
 
         <!-- 메인 그리드 -->
         <div class="main-grid">
@@ -491,21 +681,46 @@
         </div>
 
         <!-- 상대전적 -->
-        <div class="card">
+        <div class="card" id="h2h-card">
             <div class="card-title">
                 <span class="card-title-icon">✓</span>
-                2025 시즌 상대 전적
+                <span id="h2h-title">2025 시즌 상대 전적</span>
             </div>
             <div class="h2h-grid" id="h2hSection">
+                <div class="loading">로딩 중...</div>
+            </div>
+        </div>
+
+        <!-- 지난 경기 (시즌 중에만 표시) -->
+        <div class="card past-games-section" id="past-games-card" style="display: none;">
+            <div class="card-title">
+                <span class="card-title-icon">✓</span>
+                지난 2주 경기 결과
+            </div>
+            <div id="pastGamesSection">
                 <div class="loading">로딩 중...</div>
             </div>
         </div>
     </div>
 
     <script>
-        // 2025 시즌 최종 순위 (KBO 공식 데이터 - 2025.10.04 기준)
-        // 출처: https://www.koreabaseball.com/Record/TeamRank/TeamRankDaily.aspx
-        const finalStandings = [
+        // 시즌 체크 (3월~10월이 시즌)
+        function isBaseballSeason() {
+            const month = new Date().getMonth() + 1; // 1-12
+            return month >= 3 && month <= 10;
+        }
+
+        // 현재 시즌 연도 계산
+        function getCurrentSeason() {
+            const now = new Date();
+            const year = now.getFullYear();
+            // 시즌 중(3월~10월)이면 현재 연도가 시즌 연도
+            // 시즌 종료(11월~2월)여도 표시할 때는 그 해 시즌으로 표시
+            return year;
+        }
+
+        // 2025 시즌 최종 순위 (시즌 종료 시 폴백용)
+        const finalStandings20252025 = [
             { rank: 1, team: 'LG', wins: 85, losses: 56, draws: 3, winRate: '.603' },
             { rank: 2, team: '한화', wins: 83, losses: 57, draws: 4, winRate: '.593' },
             { rank: 3, team: 'SSG', wins: 75, losses: 65, draws: 4, winRate: '.536' },
@@ -518,9 +733,8 @@
             { rank: 10, team: '키움', wins: 47, losses: 93, draws: 4, winRate: '.336' }
         ];
 
-        // 2025 시즌 한화 상대전적 (KBO 공식 데이터 - 2025.10.04 기준)
-        // 출처: https://www.koreabaseball.com/Record/TeamRank/TeamRankDaily.aspx
-        const headToHead = [
+        // 2025 시즌 한화 상대전적 (시즌 종료 시 폴백용)
+        const headToHead2025 = [
             { team: 'LG', wins: 7, losses: 8, draws: 1 },
             { team: 'SSG', wins: 8, losses: 8, draws: 0 },
             { team: '삼성', wins: 8, losses: 8, draws: 0 },
@@ -532,14 +746,194 @@
             { team: '키움', wins: 14, losses: 2, draws: 0 }
         ];
 
+        // 배너 렌더링
+        function renderBanner(isSeason, data) {
+            const bannerArea = document.getElementById('banner-area');
+            
+            if (isSeason) {
+                // 시즌 중: 현재 순위 표시
+                const rank = data?.rank || '-';
+                const record = data?.record || '-';
+                const winRate = data?.winRate || '-';
+                const nextOpponent = data?.nextOpponent || '';
+                
+                bannerArea.innerHTML = `
+                    <div class="season-live-banner">
+                        <div class="season-banner-left">
+                            <div class="live-indicator">
+                                <span class="live-dot"></span>
+                                ${getCurrentSeason()} 시즌 진행중
+                                ${nextOpponent ? `<span style="margin-left: 15px; color: rgba(255,255,255,0.7); font-weight: 400;">(다음 시리즈: ${nextOpponent})</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="season-stats">
+                            <div class="season-stat">
+                                <div class="season-stat-value" style="color: #667eea;">${rank}위</div>
+                                <div class="season-stat-label">현재 순위</div>
+                            </div>
+                            <div class="season-stat">
+                                <div class="season-stat-value" style="color: #667eea;">${record}</div>
+                                <div class="season-stat-label">승-패-무</div>
+                            </div>
+                            <div class="season-stat">
+                                <div class="season-stat-value" style="color: #667eea;">${winRate}</div>
+                                <div class="season-stat-label">승률</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 시즌 종료: 최종 순위 표시
+                bannerArea.innerHTML = `
+                    <div class="season-banner">
+                        <div class="season-banner-left">
+                            <h2>🏆 2025 시즌 종료</h2>
+                            <p>2026 시즌은 3월에 개막합니다</p>
+                        </div>
+                        <div class="season-stats">
+                            <div class="season-stat">
+                                <div class="season-stat-value">2위</div>
+                                <div class="season-stat-label">최종 순위</div>
+                            </div>
+                            <div class="season-stat">
+                                <div class="season-stat-value">83-57-4</div>
+                                <div class="season-stat-label">승-패-무</div>
+                            </div>
+                            <div class="season-stat">
+                                <div class="season-stat-value">.593</div>
+                                <div class="season-stat-label">승률</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 지난 경기 토글
+        function toggleGameDetail(element) {
+            const gameItem = element.closest('.past-game-item');
+            gameItem.classList.toggle('expanded');
+        }
+
+        // 지난 경기 렌더링
+        function renderPastGames(games) {
+            const container = document.getElementById('pastGamesSection');
+            
+            if (!games || games.length === 0) {
+                container.innerHTML = '<div class="no-data">경기 데이터가 없습니다</div>';
+                return;
+            }
+
+            const gamesHtml = games.map(game => {
+                const isWin = game.result === '승';
+                const resultClass = isWin ? 'win' : 'loss';
+                
+                // 이닝별 점수 테이블
+                const inningHeaders = game.innings ? 
+                    game.innings.map((_, i) => `<th>${i + 1}</th>`).join('') : '';
+                const hanwaInnings = game.innings ? 
+                    game.innings.map(inn => `<td>${inn.hanwha}</td>`).join('') : '';
+                const opponentInnings = game.innings ? 
+                    game.innings.map(inn => `<td>${inn.opponent}</td>`).join('') : '';
+
+                return `
+                    <div class="past-game-item ${resultClass}">
+                        <div class="past-game-header" onclick="toggleGameDetail(this)">
+                            <div class="past-game-info">
+                                <span class="past-game-date">${game.date}</span>
+                                <span class="past-game-opponent">vs ${game.opponent}</span>
+                                <span style="color: rgba(255,255,255,0.4); font-size: 0.85rem;">${game.location || ''}</span>
+                            </div>
+                            <div class="past-game-result">
+                                <span class="past-game-score ${resultClass}">${game.score}</span>
+                                <span class="past-game-badge ${resultClass}">${game.result}</span>
+                                <span class="past-game-toggle">▼</span>
+                            </div>
+                        </div>
+                        <div class="past-game-detail">
+                            ${game.innings ? `
+                            <div class="inning-scoreboard">
+                                <table class="inning-table">
+                                    <thead>
+                                        <tr>
+                                            <th>팀</th>
+                                            ${inningHeaders}
+                                            <th>R</th>
+                                            <th>H</th>
+                                            <th>E</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="team-name">${game.opponent}</td>
+                                            ${opponentInnings}
+                                            <td class="total">${game.opponentScore || '-'}</td>
+                                            <td>${game.opponentHits || '-'}</td>
+                                            <td>${game.opponentErrors || '-'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="team-name">한화</td>
+                                            ${hanwaInnings}
+                                            <td class="total">${game.hanwaScore || '-'}</td>
+                                            <td>${game.hanwaHits || '-'}</td>
+                                            <td>${game.hanwaErrors || '-'}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            ` : ''}
+                            <div class="game-records">
+                                ${game.homerun ? `
+                                <div class="game-record-item">
+                                    <div class="game-record-title">홈런</div>
+                                    <div class="game-record-content">${game.homerun}</div>
+                                </div>
+                                ` : ''}
+                                ${game.keyHits ? `
+                                <div class="game-record-item">
+                                    <div class="game-record-title">주요 안타</div>
+                                    <div class="game-record-content">${game.keyHits}</div>
+                                </div>
+                                ` : ''}
+                                ${game.winningPitcher ? `
+                                <div class="game-record-item">
+                                    <div class="game-record-title">승리투수</div>
+                                    <div class="game-record-content"><span class="player-name">${game.winningPitcher}</span></div>
+                                </div>
+                                ` : ''}
+                                ${game.losingPitcher ? `
+                                <div class="game-record-item">
+                                    <div class="game-record-title">패전투수</div>
+                                    <div class="game-record-content">${game.losingPitcher}</div>
+                                </div>
+                                ` : ''}
+                                ${game.savePitcher ? `
+                                <div class="game-record-item">
+                                    <div class="game-record-title">세이브</div>
+                                    <div class="game-record-content"><span class="player-name">${game.savePitcher}</span></div>
+                                </div>
+                                ` : ''}
+                                ${game.strikeouts ? `
+                                <div class="game-record-item">
+                                    <div class="game-record-title">탈삼진</div>
+                                    <div class="game-record-content">${game.strikeouts}</div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = gamesHtml;
+        }
+
         // 탭 전환
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                // 탭 활성화
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 
-                // 콘텐츠 전환
                 const tabId = tab.dataset.tab;
                 document.querySelectorAll('.tab-content').forEach(content => {
                     content.classList.remove('active');
@@ -549,16 +943,55 @@
         });
 
         async function loadBaseballData() {
+            const isSeason = isBaseballSeason();
+            const seasonYear = getCurrentSeason();
+
             try {
-                const response = await fetch('../data/baseball-detail.json');
+                const response = await fetch('../data/baseball-detail.json?t=' + Date.now());
                 const data = await response.json();
                 
-                // 투수 순위 표시 (ERA, 승, 패)
+                // 배너 렌더링
+                if (isSeason) {
+                    // 시즌 중: 현재 순위 데이터
+                    const standings = (data.standings && data.standings.length > 0) ? data.standings : finalStandings2025;
+                    const hanwaStanding = standings.find(t => t.team === '한화') || {};
+                    const bannerData = {
+                        rank: hanwaStanding.rank || '-',
+                        record: hanwaStanding.wins && hanwaStanding.losses ? 
+                            `${hanwaStanding.wins}-${hanwaStanding.losses}-${hanwaStanding.draws || 0}` : '-',
+                        winRate: hanwaStanding.winRate || '-',
+                        nextOpponent: data.nextGame?.opponent || null
+                    };
+                    renderBanner(true, bannerData);
+                    
+                    // 시즌 중 제목 변경
+                    document.querySelector('.card-title').innerHTML = `
+                        <span class="card-title-icon">✓</span>
+                        ${seasonYear} 시즌 현재 순위
+                    `;
+                    document.getElementById('h2h-title').textContent = `${seasonYear} 시즌 상대 전적`;
+                    
+                    // 지난 경기 섹션 표시
+                    document.getElementById('past-games-card').style.display = 'block';
+                    
+                    // 지난 경기 렌더링 (크롤링 데이터 사용)
+                    if (data.pastGames && data.pastGames.length > 0) {
+                        renderPastGames(data.pastGames);
+                    } else {
+                        document.getElementById('pastGamesSection').innerHTML = '<div class="no-data">경기 데이터를 불러오는 중...</div>';
+                    }
+                } else {
+                    // 시즌 종료
+                    renderBanner(false, null);
+                    document.getElementById('past-games-card').style.display = 'none';
+                }
+
+                // 투수 순위 표시
                 if (data.pitchers && data.pitchers.length > 0) {
                     const pitchersHtml = data.pitchers.map(p => {
-                        const era = p.era.replace('평균자책', '');
-                        const wins = p.wins.replace('승', '');
-                        const losses = p.losses.replace('패', '');
+                        const era = p.era?.replace('평균자책', '') || p.era;
+                        const wins = p.wins?.replace('승', '') || p.wins;
+                        const losses = p.losses?.replace('패', '') || p.losses;
                         const isHanwha = p.team === '한화';
                         return `
                             <div class="player-item ${isHanwha ? 'hanwha' : ''}">
@@ -589,12 +1022,12 @@
                     document.getElementById('pitchersList').innerHTML = '<div class="no-data">데이터가 없습니다</div>';
                 }
 
-                // 타자 순위 표시 (타율, 안타, 타점)
+                // 타자 순위 표시
                 if (data.batters && data.batters.length > 0) {
                     const battersHtml = data.batters.map(b => {
-                        const avg = b.avg.replace('타율', '');
-                        const hits = b.hits.replace('안타', '');
-                        const rbi = b.rbi.replace('타점', '');
+                        const avg = b.avg?.replace('타율', '') || b.avg;
+                        const hits = b.hits?.replace('안타', '') || b.hits;
+                        const rbi = b.rbi?.replace('타점', '') || b.rbi;
                         const isHanwha = b.team === '한화';
                         return `
                             <div class="player-item ${isHanwha ? 'hanwha' : ''}">
@@ -626,7 +1059,7 @@
                 }
 
                 // 순위 표시
-                const standings = (data.standings && data.standings.length > 0) ? data.standings : finalStandings;
+                const standings = (data.standings && data.standings.length > 0) ? data.standings : finalStandings2025;
                 const standingsHtml = standings.map(team => `
                     <tr class="${team.team === '한화' ? 'highlight' : ''}">
                         <td>${team.rank}</td>
@@ -639,6 +1072,20 @@
                 `).join('');
                 document.getElementById('standingsBody').innerHTML = standingsHtml;
 
+                // 상대전적 표시
+                const h2h = (isSeason && data.headToHead) ? data.headToHead : headToHead2025;
+                const h2hHtml = h2h.map(h => `
+                    <div class="h2h-item">
+                        <div class="h2h-team">${h.team}</div>
+                        <div class="h2h-record">
+                            <span class="h2h-wins">${h.wins}승</span>
+                            <span class="h2h-losses">${h.losses}패</span>
+                            ${h.draws > 0 ? `<span class="h2h-draws">${h.draws}무</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('h2hSection').innerHTML = h2hHtml;
+
                 // 마지막 업데이트 시간
                 if (data.lastUpdate) {
                     const date = new Date(data.lastUpdate);
@@ -649,8 +1096,10 @@
             } catch (error) {
                 console.error('데이터 로드 실패:', error);
                 
-                // 폴백: 하드코딩된 순위 표시
-                const standingsHtml = finalStandings.map(team => `
+                // 폴백: 시즌 종료 모드
+                renderBanner(false, null);
+                
+                const standingsHtml = finalStandings2025.map(team => `
                     <tr class="${team.team === '한화' ? 'highlight' : ''}">
                         <td>${team.rank}</td>
                         <td>${team.team}</td>
@@ -664,20 +1113,25 @@
                 document.getElementById('pitchersList').innerHTML = '<div class="no-data">데이터를 불러올 수 없습니다</div>';
                 document.getElementById('battersList').innerHTML = '<div class="no-data">데이터를 불러올 수 없습니다</div>';
                 document.getElementById('lastUpdated').textContent = '2025 시즌 최종 데이터';
-            }
-
-            // 상대전적 표시
-            const h2hHtml = headToHead.map(h => `
-                <div class="h2h-item">
-                    <div class="h2h-team">${h.team}</div>
-                    <div class="h2h-record">
-                        <span class="h2h-wins">${h.wins}승</span>
-                        <span class="h2h-losses">${h.losses}패</span>
-                        ${h.draws > 0 ? `<span class="h2h-draws">${h.draws}무</span>` : ''}
+                
+                // 상대전적 (2025 데이터)
+                const h2hHtml = headToHead2025.map(h => `
+                    <div class="h2h-item">
+                        <div class="h2h-team">${h.team}</div>
+                        <div class="h2h-record">
+                            <span class="h2h-wins">${h.wins}승</span>
+                            <span class="h2h-losses">${h.losses}패</span>
+                            ${h.draws > 0 ? `<span class="h2h-draws">${h.draws}무</span>` : ''}
+                        </div>
                     </div>
-                </div>
-            `).join('');
-            document.getElementById('h2hSection').innerHTML = h2hHtml;
+                `).join('');
+                document.getElementById('h2hSection').innerHTML = h2hHtml;
+            }
+        }
+
+        // 다음 상대팀 (크롤링 데이터 없을 때 폴백)
+        function getNextOpponentFallback() {
+            return null; // 크롤링 데이터 없으면 표시 안함
         }
 
         // 페이지 로드시 데이터 가져오기

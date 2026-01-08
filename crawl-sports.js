@@ -459,7 +459,7 @@ async function crawlBaseball() {
     const page = await browser.newPage();
     await setupPageOptimization(page);
     
-    // 1. 순위 크롤링
+    // 1. 전체 팀 순위 크롤링
     const rankUrl = 'https://m.sports.naver.com/kbaseball/record/teamRank';
     await page.goto(rankUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
     
@@ -469,20 +469,34 @@ async function crawlBaseball() {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
-    const rankData = await page.evaluate(() => {
+    const { standings, hanwaData } = await page.evaluate(() => {
       const rows = document.querySelectorAll('.TeamRank_table__gCKFN tbody tr');
+      const allTeams = [];
+      let hanwa = null;
+      
       for (const row of rows) {
         const teamName = row.querySelector('.TeamRank_name__xhUAb')?.textContent?.trim() || '';
+        const cells = row.querySelectorAll('td');
+        const rank = parseInt(cells[0]?.textContent?.trim()) || 0;
+        const games = parseInt(cells[2]?.textContent?.trim()) || 0;
+        const wins = parseInt(cells[3]?.textContent?.trim()) || 0;
+        const losses = parseInt(cells[4]?.textContent?.trim()) || 0;
+        const draws = parseInt(cells[5]?.textContent?.trim()) || 0;
+        const winRate = cells[6]?.textContent?.trim() || '-';
+        
+        const teamData = {
+          rank: rank,
+          team: teamName,
+          wins: wins,
+          losses: losses,
+          draws: draws,
+          winRate: winRate
+        };
+        
+        allTeams.push(teamData);
+        
         if (teamName.includes('한화')) {
-          const cells = row.querySelectorAll('td');
-          const rank = cells[0]?.textContent?.trim() || '-';
-          const games = cells[2]?.textContent?.trim() || '-';
-          const wins = cells[3]?.textContent?.trim() || '-';
-          const losses = cells[4]?.textContent?.trim() || '-';
-          const draws = cells[5]?.textContent?.trim() || '0';
-          const winRate = cells[6]?.textContent?.trim() || '-';
-          
-          return {
+          hanwa = {
             rank: rank + '위',
             record: `${wins}승 ${losses}패 ${draws}무`,
             winRate: winRate,
@@ -490,27 +504,39 @@ async function crawlBaseball() {
           };
         }
       }
-      return null;
+      
+      return { standings: allTeams, hanwaData: hanwa };
     });
     
-    if (!rankData) {
+    if (!hanwaData) {
       throw new Error('한화 이글스 순위 데이터를 찾을 수 없음');
     }
     
-    console.log('[야구] 순위:', rankData.rank);
+    console.log('[야구] 순위:', hanwaData.rank);
     
-    // 2. 어제 경기 크롤링
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-    
-    const yesterdayGame = await crawlBaseballGame(browser, yesterdayStr);
-    
-    // 3. 다음 경기 크롤링
-    const nextGame = await crawlBaseballNextGame(browser);
-    
-    // 4. 지난주 경기 크롤링
-    const weekGames = await crawlBaseballWeekGames(browser);
+    // 병렬로 크롤링 실행
+    const [pitchers, batters, nextGame, pastGames, headToHead] = await Promise.all([
+      crawlBaseballPitchers(browser).catch(err => {
+        console.error('[야구 투수 순위] 실패:', err.message);
+        return [];
+      }),
+      crawlBaseballBatters(browser).catch(err => {
+        console.error('[야구 타자 순위] 실패:', err.message);
+        return [];
+      }),
+      crawlBaseballNextGame(browser).catch(err => {
+        console.error('[야구 다음 경기] 실패:', err.message);
+        return null;
+      }),
+      crawlBaseballPastGames(browser, 14).catch(err => {
+        console.error('[야구 지난 경기] 실패:', err.message);
+        return [];
+      }),
+      crawlBaseballHeadToHead(browser).catch(err => {
+        console.error('[야구 상대전적] 실패:', err.message);
+        return [];
+      })
+    ]);
     
     await browser.close();
     
@@ -518,14 +544,30 @@ async function crawlBaseball() {
       sport: '야구',
       team: '한화 이글스',
       league: 'KBO',
-      rank: rankData.rank,
-      record: rankData.record,
-      winRate: rankData.winRate,
-      yesterdayGame: yesterdayGame,
+      rank: hanwaData.rank,
+      record: hanwaData.record,
+      winRate: hanwaData.winRate,
+      standings: standings,
+      pitchers: pitchers,
+      batters: batters,
+      headToHead: headToHead,
       nextGame: nextGame,
-      weekGames: weekGames,
+      pastGames: pastGames,
       lastUpdated: new Date().toISOString()
     };
+    
+    // 상세 페이지용 별도 파일 저장
+    const detailFilePath = path.join(DATA_DIR, 'baseball-detail.json');
+    await fs.writeFile(detailFilePath, JSON.stringify({
+      standings: standings,
+      pitchers: pitchers,
+      batters: batters,
+      headToHead: headToHead,
+      nextGame: nextGame,
+      pastGames: pastGames,
+      lastUpdate: new Date().toISOString()
+    }, null, 2), 'utf8');
+    console.log('[야구] 상세 데이터 저장:', detailFilePath);
     
     console.log(`[야구] 크롤링 완료 (${Date.now() - startTime}ms)`);
     return baseball;
@@ -534,7 +576,6 @@ async function crawlBaseball() {
     if (browser) await browser.close();
     console.error('[야구] 크롤링 실패:', error.message);
     
-    // 실패 시 정적 데이터 반환
     return {
       sport: '야구',
       team: '한화 이글스',
@@ -548,8 +589,181 @@ async function crawlBaseball() {
   }
 }
 
-// 특정 날짜 야구 경기 크롤링
-async function crawlBaseballGame(browser, dateStr) {
+// 투수 순위 크롤링
+async function crawlBaseballPitchers(browser) {
+  try {
+    console.log('[야구 투수 순위] 크롤링 시작...');
+    const page = await browser.newPage();
+    
+    const url = 'https://m.sports.naver.com/kbaseball/record/pitcherEra';
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const pitchers = await page.evaluate(() => {
+      const rows = document.querySelectorAll('table tbody tr');
+      const result = [];
+      
+      for (let i = 0; i < Math.min(rows.length, 10); i++) {
+        const row = rows[i];
+        const cells = row.querySelectorAll('td');
+        const rank = i + 1;
+        const name = row.querySelector('.Record_name__B8aFd')?.textContent?.trim() || '';
+        const team = row.querySelector('.Record_team__rMsv7')?.textContent?.trim() || '';
+        const era = cells[2]?.textContent?.trim() || '-';
+        const games = cells[3]?.textContent?.trim() || '-';
+        const wins = cells[4]?.textContent?.trim() || '-';
+        const losses = cells[5]?.textContent?.trim() || '-';
+        
+        result.push({
+          rank: rank,
+          name: name,
+          team: team,
+          era: era,
+          games: games,
+          wins: wins,
+          losses: losses
+        });
+      }
+      
+      return result;
+    });
+    
+    await page.close();
+    console.log(`[야구 투수 순위] ${pitchers.length}명`);
+    return pitchers;
+    
+  } catch (error) {
+    console.error('[야구 투수 순위] 실패:', error.message);
+    return [];
+  }
+}
+
+// 타자 순위 크롤링
+async function crawlBaseballBatters(browser) {
+  try {
+    console.log('[야구 타자 순위] 크롤링 시작...');
+    const page = await browser.newPage();
+    
+    const url = 'https://m.sports.naver.com/kbaseball/record/batterHra';
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const batters = await page.evaluate(() => {
+      const rows = document.querySelectorAll('table tbody tr');
+      const result = [];
+      
+      for (let i = 0; i < Math.min(rows.length, 10); i++) {
+        const row = rows[i];
+        const cells = row.querySelectorAll('td');
+        const rank = i + 1;
+        const name = row.querySelector('.Record_name__B8aFd')?.textContent?.trim() || '';
+        const team = row.querySelector('.Record_team__rMsv7')?.textContent?.trim() || '';
+        const avg = cells[2]?.textContent?.trim() || '-';
+        const games = cells[3]?.textContent?.trim() || '-';
+        const hits = cells[5]?.textContent?.trim() || '-';
+        const rbi = cells[8]?.textContent?.trim() || '-';
+        
+        result.push({
+          rank: rank,
+          name: name,
+          team: team,
+          avg: avg,
+          games: games,
+          hits: hits,
+          rbi: rbi
+        });
+      }
+      
+      return result;
+    });
+    
+    await page.close();
+    console.log(`[야구 타자 순위] ${batters.length}명`);
+    return batters;
+    
+  } catch (error) {
+    console.error('[야구 타자 순위] 실패:', error.message);
+    return [];
+  }
+}
+
+// 상대전적 크롤링
+async function crawlBaseballHeadToHead(browser) {
+  try {
+    console.log('[야구 상대전적] 크롤링 시작...');
+    const page = await browser.newPage();
+    
+    // 한화 이글스 상대전적 페이지
+    const url = 'https://m.sports.naver.com/kbaseball/record/teamVs?category=hra';
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // 한화 이글스 선택 (팀 선택 드롭다운)
+    // 페이지 구조에 따라 달라질 수 있음
+    
+    const h2h = await page.evaluate(() => {
+      const teams = ['삼성', 'LG', 'KT', 'SSG', 'NC', '두산', '키움', '롯데', 'KIA'];
+      const result = [];
+      
+      // 상대전적 테이블에서 데이터 추출
+      const rows = document.querySelectorAll('table tbody tr');
+      
+      for (const row of rows) {
+        const teamName = row.querySelector('td:first-child')?.textContent?.trim() || '';
+        
+        // 한화 기준 상대전적 찾기
+        if (teams.some(t => teamName.includes(t))) {
+          const cells = row.querySelectorAll('td');
+          const wins = parseInt(cells[1]?.textContent?.trim()) || 0;
+          const losses = parseInt(cells[2]?.textContent?.trim()) || 0;
+          const draws = parseInt(cells[3]?.textContent?.trim()) || 0;
+          
+          result.push({
+            team: teamName,
+            wins: wins,
+            losses: losses,
+            draws: draws
+          });
+        }
+      }
+      
+      return result;
+    });
+    
+    await page.close();
+    console.log(`[야구 상대전적] ${h2h.length}팀`);
+    return h2h;
+    
+  } catch (error) {
+    console.error('[야구 상대전적] 실패:', error.message);
+    return [];
+  }
+}
+
+// 지난 경기 크롤링 (일수 지정)
+async function crawlBaseballPastGames(browser, days) {
+  const games = [];
+  const today = new Date();
+  
+  console.log(`[야구 지난 경기] 최근 ${days}일 크롤링 시작...`);
+  
+  for (let i = 1; i <= days && games.length < 14; i++) {
+    const checkDate = new Date(today);
+    checkDate.setDate(checkDate.getDate() - i);
+    const dateStr = checkDate.toISOString().split('T')[0];
+    
+    const game = await crawlBaseballGameDetail(browser, dateStr);
+    if (game) {
+      games.push(game);
+    }
+  }
+  
+  console.log(`[야구 지난 경기] 총 ${games.length}경기`);
+  return games;
+}
+
+// 경기 상세 정보 크롤링 (이닝별 스코어, 주요 기록)
+async function crawlBaseballGameDetail(browser, dateStr) {
   try {
     const page = await browser.newPage();
     const url = `https://m.sports.naver.com/kbaseball/schedule/index?date=${dateStr}`;
@@ -564,15 +778,19 @@ async function crawlBaseballGame(browser, dateStr) {
       return null;
     }
     
-    const gameData = await page.evaluate(() => {
+    if (!pageText.includes('종료')) {
+      await page.close();
+      return null;
+    }
+    
+    const gameData = await page.evaluate((dateStr) => {
       const bodyText = document.body.textContent || '';
       
-      // KBO 팀 목록
-      const teams = ['삼성', 'LG', 'KT', 'SSG', 'NC', '두산', '키움', '롯데', 'KIA', '한화'];
+      const teams = ['삼성', 'LG', 'KT', 'SSG', 'NC', '두산', '키움', '롯데', 'KIA'];
       let opponent = '';
       
       for (const team of teams) {
-        if (team !== '한화' && bodyText.includes(team)) {
+        if (bodyText.includes(team)) {
           opponent = team;
           break;
         }
@@ -580,21 +798,21 @@ async function crawlBaseballGame(browser, dateStr) {
       
       // 스코어 추출
       const scoreMatch = bodyText.match(/(\d+)\s*:\s*(\d+)/);
-      let score = '';
+      let hanwaScore = 0, opponentScore = 0;
       let result = '';
       
       if (scoreMatch) {
         const score1 = parseInt(scoreMatch[1]);
         const score2 = parseInt(scoreMatch[2]);
         
-        // 한화가 홈인지 원정인지에 따라 결과 판단
         if (bodyText.indexOf('한화') < bodyText.indexOf(opponent)) {
-          score = `${score1}:${score2}`;
-          result = score1 > score2 ? '승' : (score1 < score2 ? '패' : '무');
+          hanwaScore = score1;
+          opponentScore = score2;
         } else {
-          score = `${score2}:${score1}`;
-          result = score2 > score1 ? '승' : (score2 < score1 ? '패' : '무');
+          hanwaScore = score2;
+          opponentScore = score1;
         }
+        result = hanwaScore > opponentScore ? '승' : (hanwaScore < opponentScore ? '패' : '무');
       }
       
       // 경기장 추출
@@ -607,28 +825,49 @@ async function crawlBaseballGame(browser, dateStr) {
         }
       }
       
-      return { opponent, score, result, location };
-    });
+      // 날짜 포맷팅
+      const date = new Date(dateStr);
+      const days = ['일', '월', '화', '수', '목', '금', '토'];
+      const formattedDate = `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} (${days[date.getDay()]})`;
+      
+      return {
+        date: formattedDate,
+        rawDate: dateStr,
+        opponent: opponent,
+        score: `${hanwaScore} : ${opponentScore}`,
+        result: result,
+        location: location,
+        hanwaScore: hanwaScore,
+        opponentScore: opponentScore,
+        // 상세 정보는 별도 페이지에서 크롤링 필요 (시간 관계상 생략)
+        innings: null,
+        hanwaHits: null,
+        hanwaErrors: null,
+        opponentHits: null,
+        opponentErrors: null,
+        homerun: null,
+        keyHits: null,
+        winningPitcher: null,
+        losingPitcher: null,
+        savePitcher: null,
+        strikeouts: null
+      };
+    }, dateStr);
     
     await page.close();
     
     if (gameData && gameData.opponent && gameData.result) {
-      console.log(`[야구] ${dateStr} 경기:`, gameData.opponent, gameData.score, gameData.result);
-      return {
-        date: dateStr,
-        opponent: gameData.opponent,
-        score: gameData.score,
-        result: gameData.result,
-        location: gameData.location
-      };
+      console.log(`[야구 경기] ${dateStr}: vs ${gameData.opponent} (${gameData.result})`);
+      return gameData;
     }
     
     return null;
   } catch (error) {
-    console.error('[야구 경기 크롤링] 실패:', error.message);
+    console.error('[야구 경기 상세] 실패:', error.message);
     return null;
   }
 }
+
 
 // 다음 경기 크롤링 (오늘~7일 이내)
 async function crawlBaseballNextGame(browser) {
@@ -707,44 +946,6 @@ async function crawlBaseballNextGame(browser) {
   }
 }
 
-// 지난주 경기 크롤링 (이번 주 월요일부터 어제까지)
-async function crawlBaseballWeekGames(browser) {
-  const games = [];
-  const today = new Date();
-  const dayOfWeek = today.getDay(); // 0=일, 1=월, ...
-  
-  // 이번 주 월요일 계산 (일요일이면 지난주 월요일)
-  const monday = new Date(today);
-  if (dayOfWeek === 0) {
-    // 일요일이면 지난주 월요일 (6일 전)
-    monday.setDate(monday.getDate() - 6);
-  } else {
-    // 월~토면 이번주 월요일
-    monday.setDate(monday.getDate() - (dayOfWeek - 1));
-  }
-  
-  // 어제까지의 경기 가져오기
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  
-  console.log(`[야구 주간 경기] ${monday.toISOString().split('T')[0]} ~ ${yesterday.toISOString().split('T')[0]}`);
-  
-  // 월요일부터 어제까지 순회
-  const currentDate = new Date(monday);
-  while (currentDate <= yesterday && games.length < 7) {
-    const dateStr = currentDate.toISOString().split('T')[0];
-    const game = await crawlBaseballGame(browser, dateStr);
-    
-    if (game) {
-      games.push(game);
-    }
-    
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-  
-  console.log(`[야구 주간 경기] 총 ${games.length}경기`);
-  return games;
-}
 
 async function main() {
   try {
