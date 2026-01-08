@@ -49,6 +49,39 @@ function updateBaseballTeamInfo(baseball) {
       <div class="season-note">${baseball.note}</div>
     `;
   }
+
+  // 마지막 시리즈 표시 (2025 한국시리즈)
+  displayLastSeries();
+}
+
+function displayLastSeries() {
+  const lastSeriesElement = document.getElementById('baseball-last-series');
+  if (!lastSeriesElement) return;
+
+  // 2025 한국시리즈 데이터 (한화 vs LG, 1승 4패 패배)
+  const lastSeries = {
+    name: '2025 한국시리즈',
+    opponent: 'LG 트윈스',
+    wins: 1,
+    losses: 4,
+    result: '준우승'
+  };
+
+  const resultClass = lastSeries.wins > lastSeries.losses ? 'win' : 'loss';
+  const resultText = `${lastSeries.wins}승 ${lastSeries.losses}패`;
+
+  lastSeriesElement.innerHTML = `
+    <div class="recent-match-label">마지막 시리즈</div>
+    <div class="recent-match-info" style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span class="opponent" style="margin-bottom: 0;">vs ${lastSeries.opponent}</span>
+        <span class="result ${resultClass}">${resultText}</span>
+      </div>
+      <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">${lastSeries.name}</div>
+    </div>
+  `;
+  
+  console.log('⚾ [야구 마지막 시리즈]', lastSeries.opponent, resultText);
 }
 
 function displayBaseballError() {
