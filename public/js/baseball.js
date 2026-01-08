@@ -1,30 +1,102 @@
 // public/js/baseball.js
 // 야구팀 (한화 이글스) 데이터 로딩 및 표시
 
-// 시즌 체크 (3월~10월이 시즌)
+let baseballSeasonConfig = null;
+
+// 시즌 설정 로드
+async function loadBaseballSeasonConfig() {
+  try {
+    const response = await fetch('./public/data/season-config.json');
+    const config = await response.json();
+    baseballSeasonConfig = config.baseball;
+    return baseballSeasonConfig;
+  } catch (error) {
+    console.error('⚾ [야구] 시즌 설정 로드 실패:', error);
+    return null;
+  }
+}
+
+// 현재 시즌 정보 가져오기
+function getCurrentBaseballSeason() {
+  if (!baseballSeasonConfig) return null;
+  
+  const now = new Date();
+  const year = now.getFullYear();
+  
+  // 올해 시즌 또는 다음 시즌
+  const currentSeasonKey = String(year);
+  const nextSeasonKey = String(year + 1);
+  
+  // 올해 시즌이 있으면 반환
+  if (baseballSeasonConfig.seasons[currentSeasonKey]) {
+    return { key: currentSeasonKey, ...baseballSeasonConfig.seasons[currentSeasonKey] };
+  }
+  // 다음 시즌이 있으면 반환
+  if (baseballSeasonConfig.seasons[nextSeasonKey]) {
+    return { key: nextSeasonKey, ...baseballSeasonConfig.seasons[nextSeasonKey] };
+  }
+  return null;
+}
+
+// 시즌 상태 체크
+function getBaseballSeasonStatus() {
+  const season = getCurrentBaseballSeason();
+  if (!season) {
+    // 설정 없으면 기본값 사용
+    const month = new Date().getMonth() + 1;
+    return { status: month >= 3 && month <= 10 ? 'in-season' : 'off-season', dDay: null };
+  }
+  
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const start = new Date(season.start);
+  const end = new Date(season.end);
+  
+  if (now < start) {
+    // 시즌 시작 전: D-day 계산
+    const diffTime = start - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return { status: 'pre-season', dDay: diffDays, startDate: season.start };
+  } else if (now >= start && now <= end) {
+    // 시즌 중
+    return { status: 'in-season', dDay: null };
+  } else {
+    // 시즌 종료
+    return { status: 'off-season', dDay: null };
+  }
+}
+
+// 시즌 체크 (호환성 유지)
 function isBaseballSeason() {
-  const month = new Date().getMonth() + 1; // 1-12
-  return month >= 3 && month <= 10;
+  const status = getBaseballSeasonStatus();
+  return status.status === 'in-season';
 }
 
 async function loadBaseballData() {
   console.log('⚾ [야구] 데이터 로딩 시작...');
   
   try {
+    // 시즌 설정 먼저 로드
+    await loadBaseballSeasonConfig();
+    
     const response = await fetch('./public/data/sports.json');
     console.log('⚾ [야구] API 응답:', response.status);
     
     const data = await response.json();
     const baseball = data.baseball;
     
+    const seasonStatus = getBaseballSeasonStatus();
     console.log('⚾ [야구] 데이터:', baseball);
-    console.log('⚾ [야구] 시즌 중:', isBaseballSeason());
+    console.log('⚾ [야구] 시즌 상태:', seasonStatus);
 
-    if (isBaseballSeason()) {
+    // 팀명에 D-day 표시 (시즌 시작 전)
+    updateBaseballTitle(seasonStatus);
+
+    if (seasonStatus.status === 'in-season') {
       // 시즌 중 UI
       updateBaseballSeasonMode(baseball);
     } else {
-      // 시즌 종료 UI
+      // 시즌 종료/시작 전 UI
       updateBaseballOffseasonMode(baseball);
     }
     
@@ -33,6 +105,19 @@ async function loadBaseballData() {
   } catch (error) {
     console.error('❌ [야구] 데이터 로딩 실패:', error);
     displayBaseballError();
+  }
+}
+
+// 팀명에 D-day 표시
+function updateBaseballTitle(seasonStatus) {
+  const titleElement = document.querySelector('.baseball-card .team-info h2');
+  if (!titleElement) return;
+  
+  if (seasonStatus.status === 'pre-season' && seasonStatus.dDay) {
+    titleElement.innerHTML = `한화 이글스 <span style="color: #ff9800; font-size: 0.8em; font-weight: 600;">(D-${seasonStatus.dDay})</span>`;
+    console.log(`⚾ [야구] 시즌 시작까지 D-${seasonStatus.dDay}`);
+  } else {
+    titleElement.textContent = '한화 이글스';
   }
 }
 

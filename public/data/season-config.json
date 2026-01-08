@@ -1,0 +1,38 @@
+{
+  "volleyball": {
+    "name": "V-리그",
+    "seasons": {
+      "2025-26": {
+        "start": "2025-10-19",
+        "end": "2026-04-15",
+        "confirmed": true
+      },
+      "2026-27": {
+        "start": "2026-10-17",
+        "end": "2027-04-14",
+        "confirmed": false
+      }
+    },
+    "crawlMonth": 9,
+    "crawlUrl": "https://www.kovo.co.kr"
+  },
+  "baseball": {
+    "name": "KBO 리그",
+    "seasons": {
+      "2025": {
+        "start": "2025-03-29",
+        "end": "2025-10-14",
+        "confirmed": true
+      },
+      "2026": {
+        "start": "2026-03-28",
+        "end": "2026-10-13",
+        "confirmed": false
+      }
+    },
+    "crawlMonth": 2,
+    "crawlUrl": "https://www.koreabaseball.com"
+  },
+  "lastUpdated": "2026-01-08T00:00:00.000Z"
+}
+
