@@ -16,6 +16,9 @@ async function loadVolleyballData() {
     // 팀 정보 표시
     updateVolleyballTeamInfo(volleyball);
     
+    // 최근 경기 표시
+    displayVolleyballRecentMatch(volleyball.pastMatches);
+    
     // 다음 경기 로딩
     await loadVolleyballNextMatch();
     
@@ -105,6 +108,40 @@ function displayVolleyballNextMatch(match) {
       <div class="next-match-label">다음 경기</div>
       <div class="next-match-info">
         <div class="no-match">예정된 경기 없음</div>
+      </div>
+    `;
+  }
+}
+
+function displayVolleyballRecentMatch(pastMatches) {
+  const recentMatchElement = document.getElementById('volleyball-recent-match');
+  if (!recentMatchElement) return;
+
+  if (pastMatches && pastMatches.length > 0) {
+    const match = pastMatches[0]; // 가장 최근 경기
+    const matchDate = new Date(match.date);
+    const shortDate = `${String(matchDate.getFullYear()).slice(2)}.${String(matchDate.getMonth() + 1).padStart(2, '0')}.${String(matchDate.getDate()).padStart(2, '0')}`;
+    
+    // 상대팀 이름 (현대캐피탈이 아닌 팀)
+    const opponent = match.homeTeam.includes('현대캐피탈') ? match.awayTeam : match.homeTeam;
+    const resultClass = match.result === '승' ? 'win' : 'loss';
+    
+    recentMatchElement.innerHTML = `
+      <div class="recent-match-label">최근 경기</div>
+      <div class="recent-match-info" style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="opponent" style="margin-bottom: 0;">vs ${opponent}</span>
+          <span class="result ${resultClass}">${match.result} (${match.score})</span>
+        </div>
+        <div class="match-date" style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">${shortDate}</div>
+      </div>
+    `;
+    console.log('🏐 [배구 최근 경기]', opponent, match.result, match.score);
+  } else {
+    recentMatchElement.innerHTML = `
+      <div class="recent-match-label">최근 경기</div>
+      <div class="recent-match-info">
+        <div class="no-data">최근 경기 기록 없음</div>
       </div>
     `;
   }
