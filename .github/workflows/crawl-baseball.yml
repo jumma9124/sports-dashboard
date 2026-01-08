@@ -1,0 +1,50 @@
+name: 야구 데이터 크롤링
+
+on:
+  schedule:
+    # 시즌 중 (3월~10월): 매일 10시, 22시 KST
+    - cron: '0 1,13 * 3-10 *'  # UTC 01:00, 13:00 = KST 10:00, 22:00
+    
+    # 비시즌 (11월~2월): 매주 월요일 10시 KST
+    - cron: '0 1 * 11-12,1-2 1'  # UTC 01:00 월요일 = KST 10:00 월요일
+
+  workflow_dispatch:  # 수동 실행 가능
+
+jobs:
+  crawl-baseball:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Chromium
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+
+      - name: Install dependencies
+        run: npm install puppeteer-core
+
+      - name: Run baseball crawling
+        run: node crawl-baseball.js
+        env:
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Commit and push if changed
+        run: |
+          git add public/data/sports.json public/data/baseball-detail.json || true
+          git diff --staged --quiet || git commit -m "Update baseball data (auto)"
+          git pull --rebase origin main || true
+          git push origin main || true
+

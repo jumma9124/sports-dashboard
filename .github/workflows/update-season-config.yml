@@ -1,0 +1,50 @@
+name: 시즌 날짜 자동 업데이트
+
+on:
+  schedule:
+    # 야구: 매년 2월 15일 10시 KST (시즌 시작 전)
+    - cron: '0 1 15 2 *'  # UTC 01:00 = KST 10:00
+    
+    # 배구: 매년 9월 15일 10시 KST (시즌 시작 전)
+    - cron: '0 1 15 9 *'  # UTC 01:00 = KST 10:00
+
+  workflow_dispatch:  # 수동 실행 가능
+
+jobs:
+  update-season-config:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Chromium
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+
+      - name: Install dependencies
+        run: npm install puppeteer-core
+
+      - name: Run season config update
+        run: node crawl-season-dates.js
+        env:
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Commit and push if changed
+        run: |
+          git add public/data/season-config.json || true
+          git diff --staged --quiet || git commit -m "Update season config (auto)"
+          git pull --rebase origin main || true
+          git push origin main || true
+
