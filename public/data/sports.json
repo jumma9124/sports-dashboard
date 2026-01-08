@@ -9,7 +9,7 @@
     "games": "19",
     "points": "38",
     "setRatio": "1.517",
-    "lastUpdated": "2026-01-07T14:22:22.568Z",
+    "lastUpdated": "2026-01-08T02:09:17.185Z",
     "fullRankings": [
       {
         "rank": "1위",
@@ -105,16 +105,6 @@
         "location": "수원체육관",
         "matchId": "20251227022M120",
         "setScores": null
-      },
-      {
-        "date": "2025-12-24",
-        "homeTeam": "현대캐피탈",
-        "awayTeam": "우리카드",
-        "result": "승",
-        "score": "3-1",
-        "location": "천안유관순체육관",
-        "matchId": "20251224022M114",
-        "setScores": null
       }
     ]
   },
@@ -125,8 +115,8 @@
     "rank": "2위",
     "record": "83승 57패 4무",
     "winRate": ".593",
-    "lastUpdated": "2026-01-07T14:22:04.239Z",
+    "lastUpdated": "2026-01-08T02:08:57.967Z",
     "note": "2025 시즌 최종 순위 (2026년 3월 재개)"
   },
-  "lastUpdated": "2026-01-07T14:23:21.239Z"
+  "lastUpdated": "2026-01-08T02:10:14.989Z"
 }
