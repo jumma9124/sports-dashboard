@@ -232,7 +232,7 @@ function getOffseasonData() {
     record: '83승 57패 4무',
     winRate: '.593',
     isSeason: false,
-    note: '2025 시즌 최종 순위 (2026년 3월 재개)',
+    note: '',
     lastUpdated: new Date().toISOString()
   };
 }
