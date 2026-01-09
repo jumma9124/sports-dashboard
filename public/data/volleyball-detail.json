@@ -13,10 +13,10 @@
       "rank": 2,
       "team": "현대캐피탈",
       "wins": 12,
-      "losses": 7,
+      "losses": 8,
       "points": 38,
-      "winRate": "0.632",
-      "setRatio": "1.517"
+      "winRate": "0.600",
+      "setRatio": "1.375"
     },
     {
       "rank": 3,
@@ -39,11 +39,11 @@
     {
       "rank": 5,
       "team": "OK저축은행",
-      "wins": 9,
+      "wins": 10,
       "losses": 11,
-      "points": 28,
-      "winRate": "0.450",
-      "setRatio": "0.933"
+      "points": 31,
+      "winRate": "0.476",
+      "setRatio": "1.000"
     },
     {
       "rank": 6,
@@ -65,11 +65,11 @@
     }
   ],
   "nextMatch": {
-    "date": "2026-01-09",
+    "date": "2026-01-14",
     "time": "19:00",
-    "opponent": "OK저축은행",
-    "location": "부산강서체육관",
-    "isHome": false
+    "opponent": "삼성화재",
+    "location": "천안유관순체육관",
+    "isHome": true
   },
   "pastMatches": [
     {
@@ -97,5 +97,5 @@
       "location": "수원체육관"
     }
   ],
-  "lastUpdate": "2026-01-09T03:00:03.751Z"
+  "lastUpdate": "2026-01-09T13:38:59.683Z"
 }
