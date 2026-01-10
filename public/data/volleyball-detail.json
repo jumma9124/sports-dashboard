@@ -20,21 +20,21 @@
     },
     {
       "rank": 3,
+      "team": "한국전력",
+      "wins": 12,
+      "losses": 9,
+      "points": 34,
+      "winRate": "0.571",
+      "setRatio": "1.132"
+    },
+    {
+      "rank": 4,
       "team": "KB손해보험",
       "wins": 11,
       "losses": 10,
       "points": 34,
       "winRate": "0.524",
       "setRatio": "1.025"
-    },
-    {
-      "rank": 4,
-      "team": "한국전력",
-      "wins": 12,
-      "losses": 8,
-      "points": 33,
-      "winRate": "0.600",
-      "setRatio": "1.171"
     },
     {
       "rank": 5,
@@ -57,11 +57,11 @@
     {
       "rank": 7,
       "team": "삼성화재",
-      "wins": 4,
+      "wins": 5,
       "losses": 16,
-      "points": 12,
-      "winRate": "0.200",
-      "setRatio": "0.472"
+      "points": 14,
+      "winRate": "0.238",
+      "setRatio": "0.509"
     }
   ],
   "nextMatch": {
@@ -105,5 +105,5 @@
       "location": "수원체육관"
     }
   ],
-  "lastUpdate": "2026-01-10T02:54:08.086Z"
+  "lastUpdate": "2026-01-10T13:31:27.494Z"
 }
