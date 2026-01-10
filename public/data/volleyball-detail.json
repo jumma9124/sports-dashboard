@@ -73,6 +73,14 @@
   },
   "pastMatches": [
     {
+      "date": "2026-01-09",
+      "homeTeam": "OK저축은행",
+      "awayTeam": "현대캐피탈",
+      "result": "패",
+      "score": "3-0",
+      "location": "부산강서체육관"
+    },
+    {
       "date": "2026-01-04",
       "homeTeam": "대한항공",
       "awayTeam": "현대캐피탈",
@@ -97,5 +105,5 @@
       "location": "수원체육관"
     }
   ],
-  "lastUpdate": "2026-01-09T13:38:59.683Z"
+  "lastUpdate": "2026-01-10T02:54:08.086Z"
 }
