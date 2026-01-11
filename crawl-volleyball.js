@@ -211,6 +211,27 @@ async function crawlVolleyball() {
     await fs.writeFile(detailPath, JSON.stringify(detailData, null, 2), 'utf8');
     console.log('[배구] 상세 데이터 저장:', detailPath);
     
+    // 메인 페이지용 sports.json 업데이트
+    const sportsPath = path.join(DATA_DIR, 'sports.json');
+    let sportsData = { volleyball, lastUpdated: new Date().toISOString() };
+    
+    try {
+      // 기존 파일이 있으면 읽어서 baseball 데이터 유지
+      const existingData = await fs.readFile(sportsPath, 'utf8');
+      const existing = JSON.parse(existingData);
+      sportsData = {
+        ...existing,
+        volleyball: volleyball,
+        lastUpdated: new Date().toISOString()
+      };
+    } catch (err) {
+      // 파일이 없으면 새로 생성 (baseball 데이터 없이)
+      console.log('[배구] sports.json 파일 없음, 새로 생성');
+    }
+    
+    await fs.writeFile(sportsPath, JSON.stringify(sportsData, null, 2), 'utf8');
+    console.log('[배구] 메인 데이터 저장:', sportsPath);
+    
     console.log(`[배구] 크롤링 완료 (${Date.now() - startTime}ms)`);
     return volleyball;
 

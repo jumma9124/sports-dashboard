@@ -611,17 +611,43 @@
                 // 시즌 설정 먼저 로드
                 await loadVolleyballSeasonConfig();
                 
-                const response = await fetch('../../public/data/sports.json');
-                const data = await response.json();
+                // 상세 페이지용 데이터 로드
+                const detailResponse = await fetch('../../public/data/volleyball-detail.json?t=' + Date.now());
+                const detailData = await detailResponse.json();
                 
-                if (data.volleyball) {
-                    const vb = data.volleyball;
+                // 메인 페이지용 데이터도 로드 (순위 정보용)
+                const sportsResponse = await fetch('../../public/data/sports.json?t=' + Date.now());
+                const sportsData = await sportsResponse.json();
+                
+                if (sportsData.volleyball) {
+                    const vb = sportsData.volleyball;
+                    
+                    // 상세 페이지 데이터 병합
+                    if (detailData.nextMatch) {
+                        vb.nextMatch = detailData.nextMatch;
+                    }
+                    if (detailData.pastMatches && detailData.pastMatches.length > 0) {
+                        vb.pastMatches = detailData.pastMatches;
+                    }
+                    if (detailData.standings && detailData.standings.length > 0) {
+                        // fullRankings 형식으로 변환
+                        vb.fullRankings = detailData.standings.map(team => ({
+                            rank: team.rank + '위',
+                            team: team.team,
+                            wins: team.wins,
+                            losses: team.losses,
+                            points: team.points,
+                            winRate: team.winRate,
+                            setRatio: team.setRatio,
+                            record: `${team.wins}승 ${team.losses}패`
+                        }));
+                    }
                     
                     // 시즌 중/종료에 따라 다른 UI 표시
                     if (isVolleyballSeason()) {
-                        displaySeasonMode(vb, data);
+                        displaySeasonMode(vb, sportsData);
                     } else {
-                        displayOffseasonMode(vb, data);
+                        displayOffseasonMode(vb, sportsData);
                     }
                 }
                 
