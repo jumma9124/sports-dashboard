@@ -178,7 +178,7 @@ async function crawlVolleyball() {
       return [];
     });
     volleyball.womenRankings = womenRankings;
-    console.log('[諛곌뎄] ?ъ옄遺 ?쒖쐞 ?꾨즺:', womenRankings.length + '?');
+    console.log('[諛곌뎄] ?占쎌옄遺 ?占쎌쐞 ?占쎈즺:', womenRankings.length + '?占?);
     
     // 2. ?占쎌쓬 寃쎄린?占?吏??寃쎄린 蹂묐젹 ?占쎈·占?
     const [nextMatch, pastMatches] = await Promise.all([
@@ -354,7 +354,7 @@ async function crawlVolleyballNextMatch(browser) {
           const timeMatch = bodyText.match(/(\d{2}:\d{2})/);
           const time = timeMatch ? timeMatch[1] : '19:00';
           
-          const teams = ['?占쎈━移대뱶', 'OK?占쎌텞占???, '?占?占쏀빆占?, '?占쎄뎅?占쎈젰', '?占쎌꽦?占쎌옱', 'KB?占쏀빐蹂댄뿕'];
+          const teams = ['우리카드', 'OK저축은행', '대한항공', '한국전력', '삼성화재', 'KB손해보험'];
           let opponent = '';
           for (const team of teams) {
             if (bodyText.includes(team)) {
@@ -421,7 +421,7 @@ async function crawlVolleyballPastMatches(browser, count = 5) {
         const matchData = await page.evaluate(() => {
           const bodyText = document.body.textContent || '';
           
-          const teams = ['?占쎈━移대뱶', 'OK?占쎌텞占???, '?占?占쏀빆占?, '?占쎄뎅?占쎈젰', '?占쎌꽦?占쎌옱', 'KB?占쏀빐蹂댄뿕'];
+          const teams = ['우리카드', 'OK저축은행', '대한항공', '한국전력', '삼성화재', 'KB손해보험'];
           let opponent = '';
           for (const team of teams) {
             if (bodyText.includes(team)) {
