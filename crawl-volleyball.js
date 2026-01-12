@@ -142,13 +142,13 @@ async function crawlVolleyball() {
           setRatio: setRatio
         });
         
-        if (teamName.includes('?占쏙옙?罹먰뵾??)) {
+        if (teamName.includes('현대캐피탈')) {
           currentTeamData = {
-            sport: '諛곌뎄',
-            team: '?占쏙옙?罹먰뵾???占쎌뭅?占쎌썙而ㅼ뒪',
-            league: 'V-由ш렇',
-            rank: rank + '??,
-            record: wins + '??' + losses + '??,
+            sport: '배구',
+            team: '현대캐피탈 스카이워커스',
+            league: 'V-리그',
+            rank: rank + '위',
+            record: wins + '승 ' + losses + '패',
             winRate: winRate,
             games: games,
             points: points,
@@ -161,9 +161,9 @@ async function crawlVolleyball() {
     });
 
     const volleyball = volleyballData.currentTeam || {
-      sport: '諛곌뎄',
-      team: '?占쏙옙?罹먰뵾???占쎌뭅?占쎌썙而ㅼ뒪',
-      league: 'V-由ш렇',
+      sport: '배구',
+      team: '현대캐피탈 스카이워커스',
+      league: 'V-리그',
       rank: '-',
       record: '?占쎌씠???占쎌쓬',
       winRate: '-'
@@ -248,9 +248,9 @@ async function crawlVolleyball() {
     if (browser) await browser.close();
     console.error('[諛곌뎄] ?占쎈·占??占쏀뙣:', error.message);
     return {
-      sport: '諛곌뎄',
-      team: '?占쏙옙?罹먰뵾???占쎌뭅?占쎌썙而ㅼ뒪',
-      league: 'V-由ш렇',
+      sport: '배구',
+      team: '현대캐피탈 스카이워커스',
+      league: 'V-리그',
       rank: '-',
       record: '?占쎈·占??占쏀뙣',
       winRate: '-',
@@ -346,7 +346,7 @@ async function crawlVolleyballNextMatch(browser) {
       
       const pageText = await page.evaluate(() => document.body.textContent);
       
-      if ((pageText.includes('?占쏙옙?罹먰뵾??) || pageText.includes('?占쎌뭅?占쎌썙而ㅼ뒪')) && 
+      if ((pageText.includes('현대캐피탈') || pageText.includes('스카이워커스')) && 
           pageText.includes('?占쎌젙')) {
         
         const matchData = await page.evaluate(() => {
@@ -363,7 +363,7 @@ async function crawlVolleyballNextMatch(browser) {
             }
           }
           
-          let isHome = bodyText.includes('?占쏙옙?罹먰뵾????) || bodyText.includes('?占쏙옙?罹먰뵾?占쏀솃');
+          let isHome = bodyText.includes('현대캐피탈홈') || bodyText.includes('천안유관순');
           
           const teamStadiums = {
             'OK?占쎌텞占???: '遺?占쎄컯?占쎌껜?占쏙옙?',
@@ -415,7 +415,7 @@ async function crawlVolleyballPastMatches(browser, count = 5) {
 
       const pageText = await page.evaluate(() => document.body.textContent);
       
-      if ((pageText.includes('?占쏙옙?罹먰뵾??) || pageText.includes('?占쎌뭅?占쎌썙而ㅼ뒪')) && 
+      if ((pageText.includes('현대캐피탈') || pageText.includes('스카이워커스')) && 
           pageText.includes('醫낅즺')) {
         
         const matchData = await page.evaluate(() => {
@@ -439,7 +439,7 @@ async function crawlVolleyballPastMatches(browser, count = 5) {
             homeScore = parseInt(scoreMatch[2]);
             awayScore = parseInt(scoreMatch[4]);
             
-            if (homeTeam.includes('?占쏙옙?罹먰뵾??) || homeTeam.includes('?占쎌뭅?占쎌썙而ㅼ뒪')) {
+            if (homeTeam.includes('현대캐피탈') || homeTeam.includes('스카이워커스')) {
               isHome = true;
             }
           }
@@ -469,8 +469,8 @@ async function crawlVolleyballPastMatches(browser, count = 5) {
         if (matchData && matchData.opponent && matchData.result) {
           matches.push({
             date: dateStr,
-            homeTeam: matchData.isHome ? '?占쏙옙?罹먰뵾?? : matchData.opponent,
-            awayTeam: matchData.isHome ? matchData.opponent : '?占쏙옙?罹먰뵾??,
+            homeTeam: matchData.isHome ? '현대캐피탈' : matchData.opponent,
+            awayTeam: matchData.isHome ? matchData.opponent : '현대캐피탈',
             result: matchData.result,
             score: `${matchData.homeScore}-${matchData.awayScore}`,
             location: matchData.location
