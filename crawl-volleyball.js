@@ -172,15 +172,6 @@ async function crawlVolleyball() {
     volleyball.fullRankings = volleyballData.allTeams;
     console.log('[諛곌뎄] ?占쎌옄遺 ?占쎌쐞 ?占쎈즺:', volleyball.rank);
     
-    // 1-2. ?占쎌옄遺 ?占쎌쐞 ?占쎈·占?
-    const womenRankings = await crawlWomenRankings(browser).catch(err => {
-      console.error('[諛곌뎄] ?占쎌옄遺 ?占쎌쐞 ?占쏀뙣:', err.message);
-      return [];
-    });
-    volleyball.womenRankings = womenRankings;
-    console.log('[諛곌뎄] ?占쎌옄遺 ?占쎌쐞 ?占쎈즺:', womenRankings.length + '?占?);
-    
-    // 2. ?占쎌쓬 寃쎄린?占?吏??寃쎄린 蹂묐젹 ?占쎈·占?
     const [nextMatch, pastMatches] = await Promise.all([
       crawlVolleyballNextMatch(browser).catch(err => {
         console.error('[諛곌뎄] ?占쎌쓬 寃쎄린 ?占쏀뙣:', err.message);
@@ -260,74 +251,6 @@ async function crawlVolleyball() {
 }
 
 // ?占쎌옄遺 ?占쎌쐞 ?占쎈·占?
-async function crawlWomenRankings(browser) {
-  try {
-    console.log('[諛곌뎄 ?占쎌옄遺 ?占쎌쐞] ?占쎈·占??占쎌옉...');
-    const page = await browser.newPage();
-    await setupPageOptimization(page);
-    
-    // ?占쎌옄遺 ?占쎌쐞 URL (seasonCode=023???占쎌옄遺)
-    const url = 'https://m.sports.naver.com/volleyball/record/kovo?seasonCode=023&tab=teamRank';
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    
-    try {
-      await page.waitForSelector('.TableBody_item__eCenH', { timeout: 5000 });
-    } catch (e) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    const womenData = await page.evaluate(() => {
-      const teamItems = document.querySelectorAll('.TableBody_item__eCenH');
-      const allTeams = [];
-      
-      for (let item of teamItems) {
-        const teamNameEl = item.querySelector('.TeamInfo_team_name__dni7F');
-        const teamName = teamNameEl ? teamNameEl.textContent.trim() : '';
-        
-        const cells = item.querySelectorAll('.TableBody_cell__rFrpm');
-        const rankText = cells[0] ? cells[0].textContent.trim() : '';
-        const rankMatch = rankText.match(/(\d+)위/);
-        const rank = rankMatch ? rankMatch[1] : '-';
-        
-        const fullText = item.textContent;
-        const pointsMatch = fullText.match(/승점(\d+)/);
-        const points = pointsMatch ? pointsMatch[1] : '-';
-        const gamesMatch = fullText.match(/경기(\d+)/);
-        const games = gamesMatch ? gamesMatch[1] : '-';
-        const winsMatch = fullText.match(/승(\d+)/);
-        const lossesMatch = fullText.match(/패(\d+)/);
-        const wins = winsMatch ? winsMatch[1] : '-';
-        const losses = lossesMatch ? lossesMatch[1] : '-';
-        const setRatioMatch = fullText.match(/세트득실률([\d.]+)/);
-        const setRatio = setRatioMatch ? setRatioMatch[1] : '-';
-        
-        const winRate = (wins !== '-' && games !== '-') 
-          ? (parseInt(wins) / parseInt(games)).toFixed(3) : '-';
-        
-        allTeams.push({
-          rank: parseInt(rank),
-          team: teamName,
-          wins: parseInt(wins) || 0,
-          losses: parseInt(losses) || 0,
-          points: parseInt(points) || 0,
-          winRate: winRate,
-          setRatio: setRatio
-        });
-      }
-      
-      return allTeams;
-    });
-
-    await page.close();
-    return womenData;
-
-  } catch (error) {
-    console.error('[諛곌뎄 ?占쎌옄遺 ?占쎌쐞] ?占쏀뙣:', error.message);
-    return [];
-  }
-}
-
-// ?占쎌쓬 寃쎄린 ?占쎈·占?
 async function crawlVolleyballNextMatch(browser) {
   try {
     console.log('[諛곌뎄 ?占쎌쓬 寃쎄린] ?占쎈·占??占쎌옉...');
