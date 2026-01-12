@@ -465,22 +465,52 @@
                         <span class="card-title-icon">✓</span>
                         리그 순위
                     </div>
-                    <table class="rankings-table" id="rankingsTable">
-                        <thead>
-                            <tr>
-                                <th class="rank-col">순위</th>
-                                <th class="team-col">팀</th>
-                                <th class="record-col">승점</th>
-                                <th class="record-col">전적</th>
-                                <th class="record-col">승률</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="5" class="loading">로딩 중...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    
+                    <!-- 탭 버튼 -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button id="menTab" onclick="switchRankingTab('men')" style="flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; background: rgba(102, 126, 234, 0.3); color: white;">남자부</button>
+                        <button id="womenTab" onclick="switchRankingTab('women')" style="flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; background: rgba(255, 255, 255, 0.1); color: rgba(255,255,255,0.6);">여자부</button>
+                    </div>
+                    
+                    <!-- 남자부 순위 -->
+                    <div id="menRankings">
+                        <table class="rankings-table">
+                            <thead>
+                                <tr>
+                                    <th class="rank-col">순위</th>
+                                    <th class="team-col">팀</th>
+                                    <th class="record-col">승점</th>
+                                    <th class="record-col">전적</th>
+                                    <th class="record-col">승률</th>
+                                </tr>
+                            </thead>
+                            <tbody id="menRankingsBody">
+                                <tr>
+                                    <td colspan="5" class="loading">로딩 중...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 여자부 순위 (숨김) -->
+                    <div id="womenRankings" style="display: none;">
+                        <table class="rankings-table">
+                            <thead>
+                                <tr>
+                                    <th class="rank-col">순위</th>
+                                    <th class="team-col">팀</th>
+                                    <th class="record-col">승점</th>
+                                    <th class="record-col">전적</th>
+                                    <th class="record-col">승률</th>
+                                </tr>
+                            </thead>
+                            <tbody id="womenRankingsBody">
+                                <tr>
+                                    <td colspan="5" class="loading">로딩 중...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- 다음 경기 (30%) -->
@@ -660,28 +690,55 @@
 
         // 시즌 중 UI
         function displaySeasonMode(vb, data) {
-            // 전체 순위 표시
-                    if (vb.fullRankings && vb.fullRankings.length > 0) {
-                        const rankingsTableBody = document.querySelector('#rankingsTable tbody');
-                        rankingsTableBody.innerHTML = vb.fullRankings.map(team => {
-                            // 순위에서 '위' 제거
-                            const rankNumber = team.rank.replace('위', '');
-                            
-                            // 전적을 "14승 5패" → "14-5" 형식으로 변환
-                            const recordMatch = team.record.match(/(\d+)승\s*(\d+)패/);
-                            const simpleRecord = recordMatch ? `${recordMatch[1]}-${recordMatch[2]}` : team.record;
-                            
-                            return `
-                                <tr class="${team.team.includes('현대캐피탈') ? 'highlight' : ''}">
-                                    <td class="rank-col">${rankNumber}</td>
-                                    <td class="team-col">${team.team}</td>
-                                    <td class="record-col">${team.points || '-'}</td>
-                                    <td class="record-col">${simpleRecord}</td>
-                                    <td class="record-col">${team.winRate}</td>
-                                </tr>
-                            `;
-                        }).join('');
-                    }
+            // 남자부 순위 표시
+            if (vb.fullRankings && vb.fullRankings.length > 0) {
+                const menRankingsBody = document.getElementById('menRankingsBody');
+                menRankingsBody.innerHTML = vb.fullRankings.map(team => {
+                    // 순위에서 '위' 제거
+                    const rankNumber = team.rank.replace('위', '');
+                    
+                    // 전적을 "14승 5패" → "14-5" 형식으로 변환
+                    const recordMatch = team.record.match(/(\d+)승\s*(\d+)패/);
+                    const simpleRecord = recordMatch ? `${recordMatch[1]}-${recordMatch[2]}` : team.record;
+                    
+                    return `
+                        <tr class="${team.team.includes('현대캐피탈') ? 'highlight' : ''}">
+                            <td class="rank-col">${rankNumber}</td>
+                            <td class="team-col">${team.team}</td>
+                            <td class="record-col">${team.points || '-'}</td>
+                            <td class="record-col">${simpleRecord}</td>
+                            <td class="record-col">${team.winRate}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            // 여자부 순위 (목업 데이터 - 실제로는 크롤링 필요)
+            const womenTeams = [
+                { rank: '1', team: '흥국생명', points: '52', record: '18승 3패', winRate: '0.857' },
+                { rank: '2', team: '현대건설', points: '48', record: '16승 5패', winRate: '0.762' },
+                { rank: '3', team: 'IBK기업은행', points: '42', record: '14승 7패', winRate: '0.667' },
+                { rank: '4', team: 'GS칼텍스', points: '36', record: '12승 9패', winRate: '0.571' },
+                { rank: '5', team: 'KGC인삼공사', points: '30', record: '10승 11패', winRate: '0.476' },
+                { rank: '6', team: '페퍼저축은행', points: '24', record: '8승 13패', winRate: '0.381' },
+                { rank: '7', team: '한국도로공사', points: '18', record: '6승 15패', winRate: '0.286' }
+            ];
+            
+            const womenRankingsBody = document.getElementById('womenRankingsBody');
+            womenRankingsBody.innerHTML = womenTeams.map(team => {
+                const recordMatch = team.record.match(/(\d+)승\s*(\d+)패/);
+                const simpleRecord = recordMatch ? `${recordMatch[1]}-${recordMatch[2]}` : team.record;
+                
+                return `
+                    <tr>
+                        <td class="rank-col">${team.rank}</td>
+                        <td class="team-col">${team.team}</td>
+                        <td class="record-col">${team.points}</td>
+                        <td class="record-col">${simpleRecord}</td>
+                        <td class="record-col">${team.winRate}</td>
+                    </tr>
+                `;
+            }).join('');
                     
                     // 다음 경기
                     const nextMatchContainer = document.getElementById('nextMatchContainer');
