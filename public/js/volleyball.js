@@ -45,11 +45,30 @@ async function loadVolleyballData() {
     // 시즌 설정 먼저 로드
     await loadVolleyballSeasonConfig();
     
-    const response = await fetch('./public/data/sports.json');
-    console.log('🏐 [배구] API 응답:', response.status);
+    // 메인 데이터와 상세 데이터 병렬로 로드
+    const [sportsResponse, detailResponse] = await Promise.all([
+      fetch('./public/data/sports.json?t=' + Date.now()),
+      fetch('./public/data/volleyball-detail.json?t=' + Date.now()).catch(() => null)
+    ]);
     
-    const data = await response.json();
-    const volleyball = data.volleyball;
+    console.log('🏐 [배구] API 응답:', sportsResponse.status);
+    
+    const sportsData = await sportsResponse.json();
+    let volleyball = sportsData.volleyball;
+    
+    // 상세 페이지 데이터가 있으면 최신 데이터로 병합
+    if (detailResponse && detailResponse.ok) {
+      const detailData = await detailResponse.json();
+      console.log('🏐 [배구] 상세 데이터 로드 성공');
+      
+      // 최신 데이터로 덮어쓰기
+      if (detailData.nextMatch) {
+        volleyball.nextMatch = detailData.nextMatch;
+      }
+      if (detailData.pastMatches && detailData.pastMatches.length > 0) {
+        volleyball.pastMatches = detailData.pastMatches;
+      }
+    }
     
     console.log('🏐 [배구] 데이터:', volleyball);
     console.log('🏐 [배구] 시즌 중:', isVolleyballSeason());
@@ -78,8 +97,8 @@ function updateVolleyballSeasonMode(volleyball) {
   // 최근 경기 표시
   displayVolleyballRecentMatch(volleyball.pastMatches);
   
-  // 다음 경기 로딩
-  loadVolleyballNextMatch();
+  // 다음 경기 표시
+  displayVolleyballNextMatch(volleyball.nextMatch);
 }
 
 // 시즌 종료 UI (야구처럼)
