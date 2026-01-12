@@ -172,24 +172,7 @@ async function crawlVolleyball() {
     volleyball.fullRankings = volleyballData.allTeams;
     console.log('[諛곌뎄] ?占쎌옄遺 ?占쎌쐞 ?占쎈즺:', volleyball.rank);
     
-    // 1-2. ?占쎌옄遺 ?占쎌쐞 ?占쎈·占?
-    const womenRankings = await crawlWomenRankings(browser).catch(err => {
-      console.error('[諛곌뎄] ?占쎌옄遺 ?占쎌쐞 ?占쏀뙣:', err.message);
-      return [];
-    });
-    volleyball.womenRankings = womenRankings;
-    console.log('[諛곌뎄] ?占쎌옄遺 ?占쎌쐞 ?占쎈즺:', womenRankings.length + '?占?);
-    
     // 2. ?占쎌쓬 寃쎄린?占?吏??寃쎄린 蹂묐젹 ?占쎈·占?
-    const [nextMatch, pastMatches] = await Promise.all([
-      crawlVolleyballNextMatch(browser).catch(err => {
-        console.error('[諛곌뎄] ?占쎌쓬 寃쎄린 ?占쏀뙣:', err.message);
-        return null;
-      }),
-      crawlVolleyballPastMatches(browser, 5).catch(err => {
-        console.error('[諛곌뎄] 吏??寃쎄린 ?占쏀뙣:', err.message);
-        return [];
-      })
     ]);
     
     if (nextMatch) {
@@ -210,7 +193,6 @@ async function crawlVolleyball() {
     // ?占쎌꽭 ?占쎌씠吏???占쎌씠???占??
     const detailData = {
       standings: volleyballData.allTeams,
-      nextMatch: nextMatch,
       pastMatches: pastMatches,
       lastUpdate: new Date().toISOString()
     };
@@ -260,73 +242,6 @@ async function crawlVolleyball() {
 }
 
 // ?占쎌옄遺 ?占쎌쐞 ?占쎈·占?
-async function crawlWomenRankings(browser) {
-  try {
-    console.log('[諛곌뎄 ?占쎌옄遺 ?占쎌쐞] ?占쎈·占??占쎌옉...');
-    const page = await browser.newPage();
-    await setupPageOptimization(page);
-    
-    // ?占쎌옄遺 ?占쎌쐞 URL (seasonCode=023???占쎌옄遺)
-    const url = 'https://m.sports.naver.com/volleyball/record/kovo?seasonCode=023&tab=teamRank';
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    
-    try {
-      await page.waitForSelector('.TableBody_item__eCenH', { timeout: 5000 });
-    } catch (e) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    const womenData = await page.evaluate(() => {
-      const teamItems = document.querySelectorAll('.TableBody_item__eCenH');
-      const allTeams = [];
-      
-      for (let item of teamItems) {
-        const teamNameEl = item.querySelector('.TeamInfo_team_name__dni7F');
-        const teamName = teamNameEl ? teamNameEl.textContent.trim() : '';
-        
-        const cells = item.querySelectorAll('.TableBody_cell__rFrpm');
-        const rankText = cells[0] ? cells[0].textContent.trim() : '';
-        const rankMatch = rankText.match(/(\d+)위/);
-        const rank = rankMatch ? rankMatch[1] : '-';
-        
-        const fullText = item.textContent;
-        const pointsMatch = fullText.match(/승점(\d+)/);
-        const points = pointsMatch ? pointsMatch[1] : '-';
-        const gamesMatch = fullText.match(/경기(\d+)/);
-        const games = gamesMatch ? gamesMatch[1] : '-';
-        const winsMatch = fullText.match(/승(\d+)/);
-        const lossesMatch = fullText.match(/패(\d+)/);
-        const wins = winsMatch ? winsMatch[1] : '-';
-        const losses = lossesMatch ? lossesMatch[1] : '-';
-        const setRatioMatch = fullText.match(/세트득실률([\d.]+)/);
-        const setRatio = setRatioMatch ? setRatioMatch[1] : '-';
-        
-        const winRate = (wins !== '-' && games !== '-') 
-          ? (parseInt(wins) / parseInt(games)).toFixed(3) : '-';
-        
-        allTeams.push({
-          rank: parseInt(rank),
-          team: teamName,
-          wins: parseInt(wins) || 0,
-          losses: parseInt(losses) || 0,
-          points: parseInt(points) || 0,
-          winRate: winRate,
-          setRatio: setRatio
-        });
-      }
-      
-      return allTeams;
-    });
-
-    await page.close();
-    return womenData;
-
-  } catch (error) {
-    console.error('[諛곌뎄 ?占쎌옄遺 ?占쎌쐞] ?占쏀뙣:', error.message);
-    return [];
-  }
-}
-
 // ?占쎌쓬 寃쎄린 ?占쎈·占?
 async function crawlVolleyballNextMatch(browser) {
   try {
@@ -337,72 +252,6 @@ async function crawlVolleyballNextMatch(browser) {
     for (let i = 0; i < 14; i++) {
       const checkDate = new Date(today);
       checkDate.setDate(checkDate.getDate() + i);
-      const dateStr = checkDate.toISOString().split('T')[0];
-      
-      const url = `https://m.sports.naver.com/volleyball/schedule/index?date=${dateStr}`;
-      await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const pageText = await page.evaluate(() => document.body.textContent);
-      
-      if ((pageText.includes('현대캐피탈') || pageText.includes('스카이워커스')) && 
-          pageText.includes('?占쎌젙')) {
-        
-        const matchData = await page.evaluate(() => {
-          const bodyText = document.body.textContent || '';
-          const timeMatch = bodyText.match(/(\d{2}:\d{2})/);
-          const time = timeMatch ? timeMatch[1] : '19:00';
-          
-          const teams = ['우리카드', 'OK저축은행', '대한항공', '한국전력', '삼성화재', 'KB손해보험'];
-          let opponent = '';
-          for (const team of teams) {
-            if (bodyText.includes(team)) {
-              opponent = team;
-              break;
-            }
-          }
-          
-          let isHome = bodyText.includes('현대캐피탈홈') || bodyText.includes('천안유관순');
-          
-          const teamStadiums = {
-            'OK?占쎌텞占???: '遺?占쎄컯?占쎌껜?占쏙옙?',
-            '?占쏙옙?罹먰뵾??: '泥쒖븞?占쏙옙??占쎌껜?占쏙옙?',
-            '?占쎄뎅?占쎈젰': '?占쎌썝泥댁쑁愿',
-            '?占?占쏀빆占?: '?占쎌쿇怨꾩뼇泥댁쑁愿',
-            '?占쎈━移대뱶': '?占쎌땐泥댁쑁愿',
-            '?占쎌꽦?占쎌옱': '?占?占쎌땐臾댁껜?占쏙옙?',
-            'KB?占쏀빐蹂댄뿕': '?占쎌젙遺泥댁쑁愿'
-          };
-          
-          let location = isHome ? '泥쒖븞?占쏙옙??占쎌껜?占쏙옙?' : (teamStadiums[opponent] || '?占쎌냼 誘몄젙');
-          
-          return { time, opponent, location, isHome };
-        });
-        
-        if (matchData && matchData.opponent) {
-          await page.close();
-          return { date: dateStr, ...matchData };
-        }
-      }
-    }
-
-    await page.close();
-    return null;
-    
-  } catch (error) {
-    console.error('[諛곌뎄 ?占쎌쓬 寃쎄린] ?占쏀뙣:', error.message);
-    return null;
-  }
-}
-
-// 吏??寃쎄린 ?占쎈·占?
-async function crawlVolleyballPastMatches(browser, count = 5) {
-  try {
-    console.log('[諛곌뎄 吏??寃쎄린] ?占쎈·占??占쎌옉...');
-    const page = await browser.newPage();
-    const matches = [];
-    const today = new Date();
-    
     for (let i = 1; i <= 14 && matches.length < count; i++) {
       const checkDate = new Date(today);
       checkDate.setDate(checkDate.getDate() - i);
