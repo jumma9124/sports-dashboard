@@ -209,7 +209,9 @@ async function crawlVolleyball() {
     
     // ?占쎌꽭 ?占쎌씠吏???占쎌씠???占??
     const detailData = {
-      standings: volleyballData.allTeams,`n      womenStandings: womenRankings,`n      nextMatch: nextMatch,
+      standings: volleyballData.allTeams,
+      womenStandings: womenRankings,
+      nextMatch: nextMatch,
       pastMatches: pastMatches,
       lastUpdate: new Date().toISOString()
     };
