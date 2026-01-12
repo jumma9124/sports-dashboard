@@ -1,5 +1,5 @@
 // crawl-volleyball.js
-// 배구 (?��?캐피???�카?�워커스) ?�용 ?�롤�?
+// 배구 (?��?캐피???�카?�워커스) ?�용 ?�롤�?
 
 const puppeteer = require('puppeteer-core');
 const fs = require('fs').promises;
@@ -7,25 +7,25 @@ const path = require('path');
 
 const DATA_DIR = path.join(__dirname, 'public', 'data');
 
-// ?�즌 ?�정 로드
+// ?�즌 ?�정 로드
 async function loadSeasonConfig() {
   try {
     const configPath = path.join(DATA_DIR, 'season-config.json');
     const data = await fs.readFile(configPath, 'utf8');
     return JSON.parse(data);
   } catch (error) {
-    console.log('[배구] ?�즌 ?�정 ?�일 ?�음, 기본�??�용');
+    console.log('[배구] ?�즌 ?�정 ?�일 ?�음, 기본�??�용');
     return null;
   }
 }
 
-// ?�즌 체크 (10??4?�이 ?�즌)
+// ?�즌 체크 (10??4?�이 ?�즌)
 function isVolleyballSeason(config = null) {
   const now = new Date();
   const month = now.getMonth() + 1;
   
   if (config && config.volleyball) {
-    // ?�정 ?�일?�서 ?�즌 ?�인
+    // ?�정 ?�일?�서 ?�즌 ?�인
     const seasons = config.volleyball.seasons;
     for (const [key, season] of Object.entries(seasons)) {
       const start = new Date(season.start);
@@ -37,11 +37,11 @@ function isVolleyballSeason(config = null) {
     return false;
   }
   
-  // 기본�? 10??4??
+  // 기본�? 10??4??
   return month >= 10 || month <= 4;
 }
 
-// 리소??차단?�로 ?�도 ?�상
+// 리소??차단?�로 ?�도 ?�상
 async function setupPageOptimization(page) {
   await page.setRequestInterception(true);
   page.on('request', (req) => {
@@ -54,7 +54,7 @@ async function setupPageOptimization(page) {
   });
 }
 
-// 브라?��? ?�행 ?�션
+// 브라?��? ?�행 ?�션
 function getLaunchOptions() {
   const options = {
     headless: 'new',
@@ -78,22 +78,22 @@ function getLaunchOptions() {
   return options;
 }
 
-// 메인 ?�롤�??�수
+// 메인 ?�롤�??�수
 async function crawlVolleyball() {
   let browser;
   try {
-    console.log('[배구] ?�롤�??�작...');
+    console.log('[배구] ?�롤�??�작...');
     const startTime = Date.now();
     
     const config = await loadSeasonConfig();
     const isSeason = isVolleyballSeason(config);
-    console.log('[배구] ?�즌 �?', isSeason);
+    console.log('[배구] ?�즌 �?', isSeason);
     
     browser = await puppeteer.launch(getLaunchOptions());
     const page = await browser.newPage();
     await setupPageOptimization(page);
     
-    // 1. ?�위 ?�롤�?
+    // 1. ?�위 ?�롤�?
     const url = 'https://m.sports.naver.com/volleyball/record/kovo?seasonCode=022&tab=teamRank';
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
     
@@ -118,7 +118,7 @@ async function crawlVolleyball() {
         const rank = rankMatch ? rankMatch[1] : '-';
         
         const fullText = item.textContent;
-        const pointsMatch = fullText.match(/?�점(\d+)/);
+        const pointsMatch = fullText.match(/?�점(\d+)/);
         const points = pointsMatch ? pointsMatch[1] : '-';
         const gamesMatch = fullText.match(/경기(\d+)/);
         const games = gamesMatch ? gamesMatch[1] : '-';
@@ -126,7 +126,7 @@ async function crawlVolleyball() {
         const lossesMatch = fullText.match(/??\d+)/);
         const wins = winsMatch ? winsMatch[1] : '-';
         const losses = lossesMatch ? lossesMatch[1] : '-';
-        const setRatioMatch = fullText.match(/?�트?�실�?[\d.]+)/);
+        const setRatioMatch = fullText.match(/?�트?�실�?[\d.]+)/);
         const setRatio = setRatioMatch ? setRatioMatch[1] : '-';
         
         const winRate = (wins !== '-' && games !== '-') 
@@ -142,10 +142,10 @@ async function crawlVolleyball() {
           setRatio: setRatio
         });
         
-        if (teamName.includes('?��?캐피??)) {
+        if (teamName.includes('?��?캐피??)) {
           currentTeamData = {
             sport: '배구',
-            team: '?��?캐피???�카?�워커스',
+            team: '?��?캐피???�카?�워커스',
             league: 'V-리그',
             rank: rank + '??,
             record: wins + '??' + losses + '??,
@@ -162,39 +162,39 @@ async function crawlVolleyball() {
 
     const volleyball = volleyballData.currentTeam || {
       sport: '배구',
-      team: '?��?캐피???�카?�워커스',
+      team: '?��?캐피???�카?�워커스',
       league: 'V-리그',
       rank: '-',
-      record: '?�이???�음',
+      record: '?�이???�음',
       winRate: '-'
     };
     
     volleyball.fullRankings = volleyballData.allTeams;
-    console.log('[배구] ?�자부 ?�위 ?�료:', volleyball.rank);
+    console.log('[배구] ?�자부 ?�위 ?�료:', volleyball.rank);
     
-    // 1-2. ?�자부 ?�위 ?�롤�?
+    // 1-2. ?�자부 ?�위 ?�롤�?
     const womenRankings = await crawlWomenRankings(browser).catch(err => {
-      console.error('[배구] ?�자부 ?�위 ?�패:', err.message);
+      console.error('[배구] ?�자부 ?�위 ?�패:', err.message);
       return [];
     });
     volleyball.womenRankings = womenRankings;
-    console.log('[배구] ?�자부 ?�위 ?�료:', womenRankings.length + '?�');
+    console.log('[배구] ?�자부 ?�위 ?�료:', womenRankings.length + '?�?);
     
-    // 2. ?�음 경기?� 지??경기 병렬 ?�롤�?
+    // 2. ?�음 경기?�?지??경기 병렬 ?�롤�?
     const [nextMatch, pastMatches] = await Promise.all([
       crawlVolleyballNextMatch(browser).catch(err => {
-        console.error('[배구] ?�음 경기 ?�패:', err.message);
+        console.error('[배구] ?�음 경기 ?�패:', err.message);
         return null;
       }),
       crawlVolleyballPastMatches(browser, 5).catch(err => {
-        console.error('[배구] 지??경기 ?�패:', err.message);
+        console.error('[배구] 지??경기 ?�패:', err.message);
         return [];
       })
     ]);
     
     if (nextMatch) {
       volleyball.nextMatch = nextMatch;
-      console.log('[배구] ?�음 경기:', nextMatch.opponent);
+      console.log('[배구] ?�음 경기:', nextMatch.opponent);
     }
     
     if (pastMatches && pastMatches.length > 0) {
@@ -207,9 +207,10 @@ async function crawlVolleyball() {
     
     await browser.close();
     
-    // ?�세 ?�이지???�이???�??
+    // ?�세 ?�이지???�이???�??
     const detailData = {
       standings: volleyballData.allTeams,
+      womenStandings: womenRankings,
       womenStandings: womenRankings,
       nextMatch: nextMatch,
       pastMatches: pastMatches,
@@ -218,14 +219,14 @@ async function crawlVolleyball() {
     
     const detailPath = path.join(DATA_DIR, 'volleyball-detail.json');
     await fs.writeFile(detailPath, JSON.stringify(detailData, null, 2), 'utf8');
-    console.log('[배구] ?�세 ?�이???�??', detailPath);
+    console.log('[배구] ?�세 ?�이???�??', detailPath);
     
-    // 메인 ?�이지??sports.json ?�데?�트
+    // 메인 ?�이지??sports.json ?�데?�트
     const sportsPath = path.join(DATA_DIR, 'sports.json');
     let sportsData = { volleyball, lastUpdated: new Date().toISOString() };
     
     try {
-      // 기존 ?�일???�으�??�어??baseball ?�이???��?
+      // 기존 ?�일???�으�??�어??baseball ?�이???��?
       const existingData = await fs.readFile(sportsPath, 'utf8');
       const existing = JSON.parse(existingData);
       sportsData = {
@@ -234,25 +235,25 @@ async function crawlVolleyball() {
         lastUpdated: new Date().toISOString()
       };
     } catch (err) {
-      // ?�일???�으�??�로 ?�성 (baseball ?�이???�이)
-      console.log('[배구] sports.json ?�일 ?�음, ?�로 ?�성');
+      // ?�일???�으�??�로 ?�성 (baseball ?�이???�이)
+      console.log('[배구] sports.json ?�일 ?�음, ?�로 ?�성');
     }
     
     await fs.writeFile(sportsPath, JSON.stringify(sportsData, null, 2), 'utf8');
-    console.log('[배구] 메인 ?�이???�??', sportsPath);
+    console.log('[배구] 메인 ?�이???�??', sportsPath);
     
-    console.log(`[배구] ?�롤�??�료 (${Date.now() - startTime}ms)`);
+    console.log(`[배구] ?�롤�??�료 (${Date.now() - startTime}ms)`);
     return volleyball;
 
   } catch (error) {
     if (browser) await browser.close();
-    console.error('[배구] ?�롤�??�패:', error.message);
+    console.error('[배구] ?�롤�??�패:', error.message);
     return {
       sport: '배구',
-      team: '?��?캐피???�카?�워커스',
+      team: '?��?캐피???�카?�워커스',
       league: 'V-리그',
       rank: '-',
-      record: '?�롤�??�패',
+      record: '?�롤�??�패',
       winRate: '-',
       error: error.message,
       lastUpdated: new Date().toISOString()
@@ -260,14 +261,14 @@ async function crawlVolleyball() {
   }
 }
 
-// ?�자부 ?�위 ?�롤�?
+// ?�자부 ?�위 ?�롤�?
 async function crawlWomenRankings(browser) {
   try {
-    console.log('[배구 ?�자부 ?�위] ?�롤�??�작...');
+    console.log('[배구 ?�자부 ?�위] ?�롤�??�작...');
     const page = await browser.newPage();
     await setupPageOptimization(page);
     
-    // ?�자부 ?�위 URL (seasonCode=023???�자부)
+    // ?�자부 ?�위 URL (seasonCode=023???�자부)
     const url = 'https://m.sports.naver.com/volleyball/record/kovo?seasonCode=023&tab=teamRank';
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
     
@@ -291,7 +292,7 @@ async function crawlWomenRankings(browser) {
         const rank = rankMatch ? rankMatch[1] : '-';
         
         const fullText = item.textContent;
-        const pointsMatch = fullText.match(/?�점(\d+)/);
+        const pointsMatch = fullText.match(/?�점(\d+)/);
         const points = pointsMatch ? pointsMatch[1] : '-';
         const gamesMatch = fullText.match(/경기(\d+)/);
         const games = gamesMatch ? gamesMatch[1] : '-';
@@ -299,7 +300,7 @@ async function crawlWomenRankings(browser) {
         const lossesMatch = fullText.match(/??\d+)/);
         const wins = winsMatch ? winsMatch[1] : '-';
         const losses = lossesMatch ? lossesMatch[1] : '-';
-        const setRatioMatch = fullText.match(/?�트?�실�?[\d.]+)/);
+        const setRatioMatch = fullText.match(/?�트?�실�?[\d.]+)/);
         const setRatio = setRatioMatch ? setRatioMatch[1] : '-';
         
         const winRate = (wins !== '-' && games !== '-') 
@@ -323,15 +324,15 @@ async function crawlWomenRankings(browser) {
     return womenData;
 
   } catch (error) {
-    console.error('[배구 ?�자부 ?�위] ?�패:', error.message);
+    console.error('[배구 ?�자부 ?�위] ?�패:', error.message);
     return [];
   }
 }
 
-// ?�음 경기 ?�롤�?
+// ?�음 경기 ?�롤�?
 async function crawlVolleyballNextMatch(browser) {
   try {
-    console.log('[배구 ?�음 경기] ?�롤�??�작...');
+    console.log('[배구 ?�음 경기] ?�롤�??�작...');
     const page = await browser.newPage();
     const today = new Date();
     
@@ -346,15 +347,15 @@ async function crawlVolleyballNextMatch(browser) {
       
       const pageText = await page.evaluate(() => document.body.textContent);
       
-      if ((pageText.includes('?��?캐피??) || pageText.includes('?�카?�워커스')) && 
-          pageText.includes('?�정')) {
+      if ((pageText.includes('?��?캐피??) || pageText.includes('?�카?�워커스')) && 
+          pageText.includes('?�정')) {
         
         const matchData = await page.evaluate(() => {
           const bodyText = document.body.textContent || '';
           const timeMatch = bodyText.match(/(\d{2}:\d{2})/);
           const time = timeMatch ? timeMatch[1] : '19:00';
           
-          const teams = ['?�리카드', 'OK?�축�???, '?�?�항�?, '?�국?�력', '?�성?�재', 'KB?�해보험'];
+          const teams = ['?�리카드', 'OK?�축�???, '?�?�항�?, '?�국?�력', '?�성?�재', 'KB?�해보험'];
           let opponent = '';
           for (const team of teams) {
             if (bodyText.includes(team)) {
@@ -363,19 +364,19 @@ async function crawlVolleyballNextMatch(browser) {
             }
           }
           
-          let isHome = bodyText.includes('?��?캐피????) || bodyText.includes('?��?캐피?�홈');
+          let isHome = bodyText.includes('?��?캐피????) || bodyText.includes('?��?캐피?�홈');
           
           const teamStadiums = {
-            'OK?�축�???: '부?�강?�체?��?',
-            '?��?캐피??: '천안?��??�체?��?',
-            '?�국?�력': '?�원체육관',
-            '?�?�항�?: '?�천계양체육관',
-            '?�리카드': '?�충체육관',
-            '?�성?�재': '?�?�충무체?��?',
-            'KB?�해보험': '?�정부체육관'
+            'OK?�축�???: '부?�강?�체?��?',
+            '?��?캐피??: '천안?��??�체?��?',
+            '?�국?�력': '?�원체육관',
+            '?�?�항�?: '?�천계양체육관',
+            '?�리카드': '?�충체육관',
+            '?�성?�재': '?�?�충무체?��?',
+            'KB?�해보험': '?�정부체육관'
           };
           
-          let location = isHome ? '천안?��??�체?��?' : (teamStadiums[opponent] || '?�소 미정');
+          let location = isHome ? '천안?��??�체?��?' : (teamStadiums[opponent] || '?�소 미정');
           
           return { time, opponent, location, isHome };
         });
@@ -391,15 +392,15 @@ async function crawlVolleyballNextMatch(browser) {
     return null;
     
   } catch (error) {
-    console.error('[배구 ?�음 경기] ?�패:', error.message);
+    console.error('[배구 ?�음 경기] ?�패:', error.message);
     return null;
   }
 }
 
-// 지??경기 ?�롤�?
+// 지??경기 ?�롤�?
 async function crawlVolleyballPastMatches(browser, count = 5) {
   try {
-    console.log('[배구 지??경기] ?�롤�??�작...');
+    console.log('[배구 지??경기] ?�롤�??�작...');
     const page = await browser.newPage();
     const matches = [];
     const today = new Date();
@@ -415,13 +416,13 @@ async function crawlVolleyballPastMatches(browser, count = 5) {
 
       const pageText = await page.evaluate(() => document.body.textContent);
       
-      if ((pageText.includes('?��?캐피??) || pageText.includes('?�카?�워커스')) && 
+      if ((pageText.includes('?��?캐피??) || pageText.includes('?�카?�워커스')) && 
           pageText.includes('종료')) {
         
         const matchData = await page.evaluate(() => {
           const bodyText = document.body.textContent || '';
           
-          const teams = ['?�리카드', 'OK?�축�???, '?�?�항�?, '?�국?�력', '?�성?�재', 'KB?�해보험'];
+          const teams = ['?�리카드', 'OK?�축�???, '?�?�항�?, '?�국?�력', '?�성?�재', 'KB?�해보험'];
           let opponent = '';
           for (const team of teams) {
             if (bodyText.includes(team)) {
@@ -433,13 +434,13 @@ async function crawlVolleyballPastMatches(browser, count = 5) {
           let homeScore = 0, awayScore = 0;
           let isHome = false;
           
-          const scoreMatch = bodyText.match(/(\S+)\s*??s*?�코??s*(\d)\s*(\S+)\s*?�코??s*(\d)/);
+          const scoreMatch = bodyText.match(/(\S+)\s*??s*?�코??s*(\d)\s*(\S+)\s*?�코??s*(\d)/);
           if (scoreMatch) {
             const homeTeam = scoreMatch[1];
             homeScore = parseInt(scoreMatch[2]);
             awayScore = parseInt(scoreMatch[4]);
             
-            if (homeTeam.includes('?��?캐피??) || homeTeam.includes('?�카?�워커스')) {
+            if (homeTeam.includes('?��?캐피??) || homeTeam.includes('?�카?�워커스')) {
               isHome = true;
             }
           }
@@ -452,16 +453,16 @@ async function crawlVolleyballPastMatches(browser, count = 5) {
           }
           
           const teamStadiums = {
-            'OK?�축�???: '부?�강?�체?��?',
-            '?��?캐피??: '천안?��??�체?��?',
-            '?�국?�력': '?�원체육관',
-            '?�?�항�?: '?�천계양체육관',
-            '?�리카드': '?�충체육관',
-            '?�성?�재': '?�?�충무체?��?',
-            'KB?�해보험': '?�정부체육관'
+            'OK?�축�???: '부?�강?�체?��?',
+            '?��?캐피??: '천안?��??�체?��?',
+            '?�국?�력': '?�원체육관',
+            '?�?�항�?: '?�천계양체육관',
+            '?�리카드': '?�충체육관',
+            '?�성?�재': '?�?�충무체?��?',
+            'KB?�해보험': '?�정부체육관'
           };
           
-          let location = isHome ? '천안?��??�체?��?' : (teamStadiums[opponent] || '미정');
+          let location = isHome ? '천안?��??�체?��?' : (teamStadiums[opponent] || '미정');
           
           return { opponent, isHome, homeScore, awayScore, result, location };
         });
@@ -469,8 +470,8 @@ async function crawlVolleyballPastMatches(browser, count = 5) {
         if (matchData && matchData.opponent && matchData.result) {
           matches.push({
             date: dateStr,
-            homeTeam: matchData.isHome ? '?��?캐피?? : matchData.opponent,
-            awayTeam: matchData.isHome ? matchData.opponent : '?��?캐피??,
+            homeTeam: matchData.isHome ? '?��?캐피?? : matchData.opponent,
+            awayTeam: matchData.isHome ? matchData.opponent : '?��?캐피??,
             result: matchData.result,
             score: `${matchData.homeScore}-${matchData.awayScore}`,
             location: matchData.location
@@ -483,19 +484,19 @@ async function crawlVolleyballPastMatches(browser, count = 5) {
     return matches.sort((a, b) => new Date(b.date) - new Date(a.date));
     
   } catch (error) {
-    console.error('[배구 지??경기] ?�패:', error.message);
+    console.error('[배구 지??경기] ?�패:', error.message);
     return [];
   }
 }
 
-// ?�립 ?�행
+// ?�립 ?�행
 async function main() {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
     const result = await crawlVolleyball();
     console.log('\n[배구] 결과:', JSON.stringify(result, null, 2));
   } catch (error) {
-    console.error('?�러:', error);
+    console.error('?�러:', error);
     process.exit(1);
   }
 }
