@@ -675,9 +675,9 @@
                     
                     // 시즌 중/종료에 따라 다른 UI 표시
                     if (isVolleyballSeason()) {
-                        displaySeasonMode(vb, sportsData);
+                        displaySeasonMode(vb, sportsData, detailData);
                     } else {
-                        displayOffseasonMode(vb, sportsData);
+                        displayOffseasonMode(vb, sportsData, detailData);
                     }
                 }
                 
@@ -713,32 +713,28 @@
                 }).join('');
             }
             
-            // 여자부 순위 (목업 데이터 - 실제로는 크롤링 필요)
-            const womenTeams = [
-                { rank: '1', team: '흥국생명', points: '52', record: '18승 3패', winRate: '0.857' },
-                { rank: '2', team: '현대건설', points: '48', record: '16승 5패', winRate: '0.762' },
-                { rank: '3', team: 'IBK기업은행', points: '42', record: '14승 7패', winRate: '0.667' },
-                { rank: '4', team: 'GS칼텍스', points: '36', record: '12승 9패', winRate: '0.571' },
-                { rank: '5', team: 'KGC인삼공사', points: '30', record: '10승 11패', winRate: '0.476' },
-                { rank: '6', team: '페퍼저축은행', points: '24', record: '8승 13패', winRate: '0.381' },
-                { rank: '7', team: '한국도로공사', points: '18', record: '6승 15패', winRate: '0.286' }
-            ];
-            
-            const womenRankingsBody = document.getElementById('womenRankingsBody');
-            womenRankingsBody.innerHTML = womenTeams.map(team => {
-                const recordMatch = team.record.match(/(\d+)승\s*(\d+)패/);
-                const simpleRecord = recordMatch ? `${recordMatch[1]}-${recordMatch[2]}` : team.record;
-                
-                return `
-                    <tr>
-                        <td class="rank-col">${team.rank}</td>
-                        <td class="team-col">${team.team}</td>
-                        <td class="record-col">${team.points}</td>
-                        <td class="record-col">${simpleRecord}</td>
-                        <td class="record-col">${team.winRate}</td>
-                    </tr>
-                `;
-            }).join('');
+            // 여자부 순위 표시
+            if (detailData.womenStandings && detailData.womenStandings.length > 0) {
+                const womenRankingsBody = document.getElementById('womenRankingsBody');
+                womenRankingsBody.innerHTML = detailData.womenStandings.map(team => {
+                    const record = `${team.wins}승 ${team.losses}패`;
+                    const recordMatch = record.match(/(\d+)승\s*(\d+)패/);
+                    const simpleRecord = recordMatch ? `${recordMatch[1]}-${recordMatch[2]}` : record;
+                    
+                    return `
+                        <tr>
+                            <td class="rank-col">${team.rank}</td>
+                            <td class="team-col">${team.team}</td>
+                            <td class="record-col">${team.points || '-'}</td>
+                            <td class="record-col">${simpleRecord}</td>
+                            <td class="record-col">${team.winRate}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                const womenRankingsBody = document.getElementById('womenRankingsBody');
+                womenRankingsBody.innerHTML = '<tr><td colspan="5" class="no-data">데이터를 불러올 수 없습니다.</td></tr>';
+            }
                     
                     // 다음 경기
                     const nextMatchContainer = document.getElementById('nextMatchContainer');
