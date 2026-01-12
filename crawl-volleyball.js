@@ -114,7 +114,7 @@ async function crawlVolleyball() {
         
         const cells = item.querySelectorAll('.TableBody_cell__rFrpm');
         const rankText = cells[0] ? cells[0].textContent.trim() : '';
-        const rankMatch = rankText.match(/(\d+)??;
+        const rankMatch = rankText.match(/(\d+)위/;
         const rank = rankMatch ? rankMatch[1] : '-';
         
         const fullText = item.textContent;
@@ -287,7 +287,7 @@ async function crawlWomenRankings(browser) {
         
         const cells = item.querySelectorAll('.TableBody_cell__rFrpm');
         const rankText = cells[0] ? cells[0].textContent.trim() : '';
-        const rankMatch = rankText.match(/(\d+)??;
+        const rankMatch = rankText.match(/(\d+)위/;
         const rank = rankMatch ? rankMatch[1] : '-';
         
         const fullText = item.textContent;
