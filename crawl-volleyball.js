@@ -178,7 +178,7 @@ async function crawlVolleyball() {
       return [];
     });
     volleyball.womenRankings = womenRankings;
-    console.log('[諛곌뎄] ?占쎌옄遺 ?占쎌쐞 ?占쎈즺:', womenRankings.length + '?占?);
+    console.log('[諛곌뎄] ?ъ옄遺 ?쒖쐞 ?꾨즺:', womenRankings.length + '?');
     
     // 2. ?占쎌쓬 寃쎄린?占?吏??寃쎄린 蹂묐젹 ?占쎈·占?
     const [nextMatch, pastMatches] = await Promise.all([
