@@ -172,11 +172,6 @@ async function crawlVolleyball() {
     volleyball.fullRankings = volleyballData.allTeams;
     console.log('[諛곌뎄] ?占쎌옄遺 ?占쎌쐞 ?占쎈즺:', volleyball.rank);
     
-    // 1-2. ?占쎌옄遺 ?占쎌쐞 ?占쎈·占?
-      console.error('[諛곌뎄] ?占쎌옄遺 ?占쎌쐞 ?占쏀뙣:', err.message);
-      return [];
-    });
-    
     // 2. ?占쎌쓬 寃쎄린?占?吏??寃쎄린 蹂묐젹 ?占쎈·占?
     const [nextMatch, pastMatches] = await Promise.all([
       crawlVolleyballNextMatch(browser).catch(err => {
