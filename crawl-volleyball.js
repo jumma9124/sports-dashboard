@@ -118,15 +118,15 @@ async function crawlVolleyball() {
         const rank = rankMatch ? rankMatch[1] : '-';
         
         const fullText = item.textContent;
-        const pointsMatch = fullText.match(/?占쎌젏(\d+)/);
+        const pointsMatch = fullText.match(/승점(\d+)/);
         const points = pointsMatch ? pointsMatch[1] : '-';
-        const gamesMatch = fullText.match(/寃쎄린(\d+)/);
+        const gamesMatch = fullText.match(/경기(\d+)/);
         const games = gamesMatch ? gamesMatch[1] : '-';
-        const winsMatch = fullText.match(/??\d+)/);
-        const lossesMatch = fullText.match(/??\d+)/);
+        const winsMatch = fullText.match(/승(\d+)/);
+        const lossesMatch = fullText.match(/패(\d+)/);
         const wins = winsMatch ? winsMatch[1] : '-';
         const losses = lossesMatch ? lossesMatch[1] : '-';
-        const setRatioMatch = fullText.match(/?占쏀듃?占쎌떎占?[\d.]+)/);
+        const setRatioMatch = fullText.match(/세트득실률([\d.]+)/);
         const setRatio = setRatioMatch ? setRatioMatch[1] : '-';
         
         const winRate = (wins !== '-' && games !== '-') 
@@ -291,15 +291,15 @@ async function crawlWomenRankings(browser) {
         const rank = rankMatch ? rankMatch[1] : '-';
         
         const fullText = item.textContent;
-        const pointsMatch = fullText.match(/?占쎌젏(\d+)/);
+        const pointsMatch = fullText.match(/승점(\d+)/);
         const points = pointsMatch ? pointsMatch[1] : '-';
-        const gamesMatch = fullText.match(/寃쎄린(\d+)/);
+        const gamesMatch = fullText.match(/경기(\d+)/);
         const games = gamesMatch ? gamesMatch[1] : '-';
-        const winsMatch = fullText.match(/??\d+)/);
-        const lossesMatch = fullText.match(/??\d+)/);
+        const winsMatch = fullText.match(/승(\d+)/);
+        const lossesMatch = fullText.match(/패(\d+)/);
         const wins = winsMatch ? winsMatch[1] : '-';
         const losses = lossesMatch ? lossesMatch[1] : '-';
-        const setRatioMatch = fullText.match(/?占쏀듃?占쎌떎占?[\d.]+)/);
+        const setRatioMatch = fullText.match(/세트득실률([\d.]+)/);
         const setRatio = setRatioMatch ? setRatioMatch[1] : '-';
         
         const winRate = (wins !== '-' && games !== '-') 
